@@ -1,0 +1,1 @@
+export { PromptPayQR } from './PromptPayQR';
