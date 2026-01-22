@@ -3,6 +3,12 @@ export interface ProductImage {
   altText?: string;
 }
 
+export interface ProductCategory {
+  id: number;
+  name: string;
+  slug: string;
+}
+
 export interface SimpleProduct {
   price: string;
   regularPrice?: string;
@@ -10,8 +16,10 @@ export interface SimpleProduct {
 
 export interface Product {
   id: string;
+  databaseId: number;
   name: string;
   slug: string;
+  language?: string;
   image?: ProductImage;
   galleryImages?: {
     nodes: ProductImage[];
@@ -19,10 +27,10 @@ export interface Product {
   price?: string;
   regularPrice?: string;
   description?: string;
-  length?: number; // Length in meters
-  width?: number; // Width in meters
-  thickness?: number; // Thickness in meters
-  volume?: number; // Volume in cubic meters
+  thickness?: string; // Thickness in cm
+  width?: string; // Width in cm
+  length?: string; // Length in meters
+  categories?: ProductCategory[];
 }
 
 export interface ProductsResponse {

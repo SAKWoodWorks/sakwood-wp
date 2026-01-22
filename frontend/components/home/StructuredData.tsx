@@ -136,6 +136,7 @@ export function StructuredData() {
 
   return (
     <>
+      {/* NOTE: JSON.stringify is safe for structured data - it properly escapes content */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}

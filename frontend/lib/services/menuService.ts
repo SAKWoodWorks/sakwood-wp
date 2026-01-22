@@ -53,7 +53,6 @@ export async function getMenu(location: string = 'PRIMARY'): Promise<MenuItem[]>
     const data = await graphqlRequest<MenuData>(GET_MENU_QUERY, { location });
     
     if (!data || !data.menuItems || !data.menuItems.nodes) {
-      console.warn('Menu data not found, using fallback menu');
       return FALLBACK_MENU;
     }
 
@@ -74,7 +73,6 @@ export async function getMenu(location: string = 'PRIMARY'): Promise<MenuItem[]>
     
     // If menu is empty, use fallback
     if (menuTree.length === 0) {
-      console.warn('Menu is empty, using fallback menu');
       return FALLBACK_MENU;
     }
     

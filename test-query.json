@@ -1,0 +1,3 @@
+{
+  "query": "query GetPost { post(id: \"cG9zdDo1Ng==\", idType: DATABASE_ID) { id title slug } }"
+}

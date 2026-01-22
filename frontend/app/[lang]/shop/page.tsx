@@ -12,7 +12,7 @@ interface ShopPageProps {
 export default async function ShopPage({ params }: ShopPageProps) {
   const { lang } = await params;
   const [products, dictionary] = await Promise.all([
-    getProducts(),
+    getProducts(lang),
     getDictionary(lang),
   ]);
 
@@ -35,7 +35,7 @@ export default async function ShopPage({ params }: ShopPageProps) {
         {products.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {products.map((product) => (
-              <ProductCard key={product.id} product={product} lang={lang} />
+              <ProductCard key={product.id} product={product} lang={lang} dictionary={dictionary} />
             ))}
           </div>
         ) : (
@@ -48,11 +48,17 @@ export default async function ShopPage({ params }: ShopPageProps) {
             <h3 className="text-2xl font-bold text-gray-700 mb-2">
               {lang === 'th' ? 'ไม่พบสินค้า' : 'No products found'}
             </h3>
-            <p className="text-gray-500">
+            <p className="text-gray-500 mb-6">
               {lang === 'th'
-                ? 'ขณะนี้ยังไม่มีสินค้าในร้านค้า'
-                : 'There are no products available at the moment'}
+                ? 'ไม่มีสินค้าภาษาอังกฤษในขณะนี้'
+                : 'No English products available at the moment'}
             </p>
+            <a
+              href={`/${lang === 'th' ? 'en' : 'th'}/shop`}
+              className="inline-block px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              {lang === 'th' ? 'ดูสินค้าภาษาไทย' : 'View Thai Products'}
+            </a>
           </div>
         )}
       </div>

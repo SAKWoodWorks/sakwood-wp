@@ -2,10 +2,15 @@
 /**
  * Plugin Name: Sakwood Integration
  * Plugin URI: https://sakwood.com
- * Description: Custom integration for Sakwood - handles orders, quotes, and custom post types
+ * Description: Integration plugin for Sakwood Next.js frontend - adds custom post types, REST API endpoints, and admin functionality
  * Version: 1.0.0
  * Author: Sakwood
- * Text Domain: sakwood
+ * Author URI: https://sakwood.com
+ * Text Domain: sakwood-integration
+ * Requires at least: 5.8
+ * Requires PHP: 7.4
+ *
+ * @package SakwoodIntegration
  */
 
 // Prevent direct access
@@ -19,336 +24,178 @@ define('SAKWOOD_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('SAKWOOD_PLUGIN_URL', plugin_dir_url(__FILE__));
 
 /**
- * Main Plugin Class
+ * Main plugin class
  */
 class Sakwood_Integration {
 
-    public function __construct() {
-        // Initialize hooks
-        add_action('init', array($this, 'register_custom_post_types'));
-        add_action('rest_api_init', array($this, 'register_rest_routes'));
-        add_action('admin_menu', array($this, 'add_admin_menu'));
-        add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
-    }
+    /**
+     * Singleton instance
+     */
+    private static $instance = null;
 
     /**
-     * Register Custom Post Types
+     * Get singleton instance
      */
-    public function register_custom_post_types() {
-        // Register Quotes Post Type
-        register_post_type('sakwood_quote', array(
-            'labels' => array(
-                'name' => __('Quotes', 'sakwood'),
-                'singular_name' => __('Quote', 'sakwood'),
-                'menu_name' => __('Quotes', 'sakwood'),
-                'add_new' => __('Add New', 'sakwood'),
-                'add_new_item' => __('Add New Quote', 'sakwood'),
-                'edit_item' => __('Edit Quote', 'sakwood'),
-                'new_item' => __('New Quote', 'sakwood'),
-                'view_item' => __('View Quote', 'sakwood'),
-                'search_items' => __('Search Quotes', 'sakwood'),
-                'not_found' => __('No quotes found', 'sakwood'),
-                'not_found_in_trash' => __('No quotes found in trash', 'sakwood'),
-            ),
-            'public' => true,
-            'show_ui' => true,
-            'show_in_menu' => true,
-            'menu_position' => 20,
-            'menu_icon' => 'dashicons-format-aside',
-            'supports' => array('title', 'editor'),
-            'has_archive' => true,
-            'rewrite' => array('slug' => 'quotes'),
-            'show_in_rest' => true,
-        ));
-
-        // Register Orders Post Type
-        register_post_type('sakwood_order', array(
-            'labels' => array(
-                'name' => __('Orders', 'sakwood'),
-                'singular_name' => __('Order', 'sakwood'),
-                'menu_name' => __('Orders', 'sakwood'),
-                'add_new' => __('Add New', 'sakwood'),
-                'add_new_item' => __('Add New Order', 'sakwood'),
-                'edit_item' => __('Edit Order', 'sakwood'),
-                'new_item' => __('New Order', 'sakwood'),
-                'view_item' => __('View Order', 'sakwood'),
-                'search_items' => __('Search Orders', 'sakwood'),
-                'not_found' => __('No orders found', 'sakwood'),
-                'not_found_in_trash' => __('No orders found in trash', 'sakwood'),
-            ),
-            'public' => true,
-            'show_ui' => true,
-            'show_in_menu' => true,
-            'menu_position' => 21,
-            'menu_icon' => 'dashicons-cart',
-            'supports' => array('title', 'editor'),
-            'has_archive' => true,
-            'rewrite' => array('slug' => 'orders'),
-            'show_in_rest' => true,
-        ));
-    }
-
-    /**
-     * Register REST API Routes
-     */
-    public function register_rest_routes() {
-        // Quote submission endpoint
-        register_rest_route('sakwood/v1', '/quotes', array(
-            'methods' => 'POST',
-            'callback' => array($this, 'handle_quote_submission'),
-            'permission_callback' => '__return_true',
-        ));
-
-        // Quote listing endpoint
-        register_rest_route('sakwood/v1', '/quotes', array(
-            'methods' => 'GET',
-            'callback' => array($this, 'get_quotes'),
-            'permission_callback' => function() {
-                return current_user_can('manage_options');
-            },
-        ));
-
-        // Order submission endpoint
-        register_rest_route('sakwood/v1', '/orders', array(
-            'methods' => 'POST',
-            'callback' => array($this, 'handle_order_submission'),
-            'permission_callback' => '__return_true',
-        ));
-
-        // Order listing endpoint
-        register_rest_route('sakwood/v1', '/orders', array(
-            'methods' => 'GET',
-            'callback' => array($this, 'get_orders'),
-            'permission_callback' => function() {
-                return current_user_can('manage_options');
-            },
-        ));
-    }
-
-    /**
-     * Handle Quote Submission
-     */
-    public function handle_quote_submission($request) {
-        $params = $request->get_json_params();
-
-        // Validate required fields
-        if (empty($params['customer']['firstName']) || empty($params['customer']['lastName']) || 
-            empty($params['customer']['email']) || empty($params['customer']['phone'])) {
-            return new WP_Error('missing_fields', 'Please fill in all required fields', array('status' => 400));
+    public static function get_instance() {
+        if (null === self::$instance) {
+            self::$instance = new self();
         }
-
-        // Create quote post
-        $quote_id = wp_insert_post(array(
-            'post_title' => sprintf('Quote %s', $params['id'] ?? uniqid()),
-            'post_type' => 'sakwood_quote',
-            'post_status' => 'publish',
-            'post_content' => wp_json_encode($params),
-        ));
-
-        if (is_wp_error($quote_id)) {
-            return $quote_id;
-        }
-
-        // Store quote data as post meta
-        update_post_meta($quote_id, '_quote_id', $params['id'] ?? '');
-        update_post_meta($quote_id, '_quote_date', $params['date'] ?? '');
-        update_post_meta($quote_id, '_quote_status', $params['status'] ?? 'pending');
-        update_post_meta($quote_id, '_customer_data', $params['customer'] ?? array());
-        update_post_meta($quote_id, '_project_data', $params['project'] ?? array());
-        update_post_meta($quote_id, '_products_data', $params['products'] ?? array());
-        update_post_meta($quote_id, '_additional_notes', $params['additionalNotes'] ?? '');
-
-        return new WP_REST_Response(array(
-            'success' => true,
-            'quote_id' => $quote_id,
-            'message' => 'Quote submitted successfully',
-        ), 201);
+        return self::$instance;
     }
 
     /**
-     * Get Quotes
+     * Constructor
      */
-    public function get_quotes($request) {
-        $args = array(
-            'post_type' => 'sakwood_quote',
-            'posts_per_page' => -1,
-            'orderby' => 'date',
-            'order' => 'DESC',
-        );
-
-        $quotes = get_posts($args);
-        $data = array();
-
-        foreach ($quotes as $quote) {
-            $data[] = array(
-                'id' => $quote->ID,
-                'title' => $quote->post_title,
-                'date' => $quote->post_date,
-                'quote_id' => get_post_meta($quote->ID, '_quote_id', true),
-                'quote_date' => get_post_meta($quote->ID, '_quote_date', true),
-                'status' => get_post_meta($quote->ID, '_quote_status', true),
-                'customer' => get_post_meta($quote->ID, '_customer_data', true),
-                'project' => get_post_meta($quote->ID, '_project_data', true),
-                'products' => get_post_meta($quote->ID, '_products_data', true),
-                'notes' => get_post_meta($quote->ID, '_additional_notes', true),
-            );
-        }
-
-        return new WP_REST_Response($data, 200);
+    private function __construct() {
+        $this->load_dependencies();
+        $this->init_hooks();
     }
 
     /**
-     * Handle Order Submission
+     * Load plugin dependencies
      */
-    public function handle_order_submission($request) {
-        $params = $request->get_json_params();
+    private function load_dependencies() {
+        // Load Hero Slides CPT
+        require_once SAKWOOD_PLUGIN_DIR . 'hero-slides-cpt.php';
 
-        // Validate required fields
-        if (empty($params['customer']) || empty($params['products'])) {
-            return new WP_Error('missing_fields', 'Please fill in all required fields', array('status' => 400));
-        }
+        // Load Language Meta Boxes
+        require_once SAKWOOD_PLUGIN_DIR . 'blog-language-meta-box.php';
+        require_once SAKWOOD_PLUGIN_DIR . 'product-language-meta-box.php';
 
-        // Create order post
-        $order_id = wp_insert_post(array(
-            'post_title' => sprintf('Order %s', $params['id'] ?? uniqid()),
-            'post_type' => 'sakwood_order',
-            'post_status' => 'publish',
-            'post_content' => wp_json_encode($params),
-        ));
+        // Load Product Dimensions
+        require_once SAKWOOD_PLUGIN_DIR . 'product-dimensions-meta-box.php';
+        require_once SAKWOOD_PLUGIN_DIR . 'product-dimensions-graphql.php';
 
-        if (is_wp_error($order_id)) {
-            return $order_id;
-        }
+        // Load GraphQL files
+        require_once SAKWOOD_PLUGIN_DIR . 'language-enum.php';
+        require_once SAKWOOD_PLUGIN_DIR . 'blog-language-graphql.php';
+        // Product GraphQL filter temporarily disabled
+        // require_once SAKWOOD_PLUGIN_DIR . 'product-language-graphql.php';
 
-        // Store order data as post meta
-        update_post_meta($order_id, '_order_id', $params['id'] ?? '');
-        update_post_meta($order_id, '_order_date', $params['date'] ?? '');
-        update_post_meta($order_id, '_order_status', $params['status'] ?? 'pending');
-        update_post_meta($order_id, '_customer_data', $params['customer'] ?? array());
-        update_post_meta($order_id, '_shipping_data', $params['shipping'] ?? array());
-        update_post_meta($order_id, '_products_data', $params['products'] ?? array());
-        update_post_meta($order_id, '_payment_method', $params['paymentMethod'] ?? '');
-        update_post_meta($order_id, '_total_amount', $params['totalAmount'] ?? 0);
+        // Load PromptPay Admin
+        require_once SAKWOOD_PLUGIN_DIR . 'promptpay-admin.php';
 
-        return new WP_REST_Response(array(
-            'success' => true,
-            'order_id' => $order_id,
-            'message' => 'Order submitted successfully',
-        ), 201);
+        // Load CRM components
+        require_once SAKWOOD_PLUGIN_DIR . 'crm-database.php';
+        require_once SAKWOOD_PLUGIN_DIR . 'crm-customers.php';
+        require_once SAKWOOD_PLUGIN_DIR . 'crm-interactions.php';
+        require_once SAKWOOD_PLUGIN_DIR . 'crm-tasks.php';
+        require_once SAKWOOD_PLUGIN_DIR . 'crm-admin.php';
+
+        // Load Wholesale components
+        require_once SAKWOOD_PLUGIN_DIR . 'wholesale-database.php';
+        require_once SAKWOOD_PLUGIN_DIR . 'wholesale-admin.php';
+        require_once SAKWOOD_PLUGIN_DIR . 'wholesale-api.php';
+
+        // Load Popup Settings
+        require_once SAKWOOD_PLUGIN_DIR . 'popup-settings.php';
+        require_once SAKWOOD_PLUGIN_DIR . 'popup-api.php';
+
+        // Load REST API endpoints
+        require_once SAKWOOD_PLUGIN_DIR . 'rest-api.php';
+        require_once SAKWOOD_PLUGIN_DIR . 'blog-rest-api.php';
+        require_once SAKWOOD_PLUGIN_DIR . 'product-rest-api.php';
+        require_once SAKWOOD_PLUGIN_DIR . 'create-order.php';
+        require_once SAKWOOD_PLUGIN_DIR . 'get-order.php';
+
+        // Initialize CRM database
+        $crm_db = new Sakwood_CRM_Database();
+
+        // Initialize Wholesale database
+        Sakwood_Wholesale_Database::create_tables();
     }
 
     /**
-     * Get Orders
+     * Initialize WordPress hooks
      */
-    public function get_orders($request) {
-        $args = array(
-            'post_type' => 'sakwood_order',
-            'posts_per_page' => -1,
-            'orderby' => 'date',
-            'order' => 'DESC',
-        );
-
-        $orders = get_posts($args);
-        $data = array();
-
-        foreach ($orders as $order) {
-            $data[] = array(
-                'id' => $order->ID,
-                'title' => $order->post_title,
-                'date' => $order->post_date,
-                'order_id' => get_post_meta($order->ID, '_order_id', true),
-                'order_date' => get_post_meta($order->ID, '_order_date', true),
-                'status' => get_post_meta($order->ID, '_order_status', true),
-                'customer' => get_post_meta($order->ID, '_customer_data', true),
-                'shipping' => get_post_meta($order->ID, '_shipping_data', true),
-                'products' => get_post_meta($order->ID, '_products_data', true),
-                'payment_method' => get_post_meta($order->ID, '_payment_method', true),
-                'total_amount' => get_post_meta($order->ID, '_total_amount', true),
-            );
-        }
-
-        return new WP_REST_Response($data, 200);
+    private function init_hooks() {
+        add_action('plugins_loaded', array($this, 'load_textdomain'));
+        add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
     }
 
     /**
-     * Add Admin Menu
+     * Load plugin text domain
      */
-    public function add_admin_menu() {
-        // Quotes page
-        add_menu_page(
-            'Sakwood Quotes',
-            'Sakwood Quotes',
-            'manage_options',
-            'sakwood-quotes',
-            array($this, 'render_quotes_page'),
-            'dashicons-format-aside',
-            25
-        );
-
-        // Orders page
-        add_submenu_page(
-            'sakwood-quotes',
-            'Sakwood Orders',
-            'Sakwood Orders',
-            'manage_options',
-            'sakwood-orders',
-            array($this, 'render_orders_page')
+    public function load_textdomain() {
+        load_plugin_textdomain(
+            'sakwood-integration',
+            false,
+            dirname(plugin_basename(__FILE__)) . '/languages'
         );
     }
 
     /**
-     * Render Quotes Page
+     * Enqueue scripts and styles
      */
-    public function render_quotes_page() {
-        ?>
-        <div class="wrap">
-            <h1><?php _e('Sakwood Quotes', 'sakwood'); ?></h1>
-            <div id="sakwood-quotes-app"></div>
-        </div>
-        <?php
-    }
-
-    /**
-     * Render Orders Page
-     */
-    public function render_orders_page() {
-        ?>
-        <div class="wrap">
-            <h1><?php _e('Sakwood Orders', 'sakwood'); ?></h1>
-            <div id="sakwood-orders-app"></div>
-        </div>
-        <?php
-    }
-
-    /**
-     * Enqueue Admin Scripts
-     */
-    public function enqueue_admin_scripts($hook) {
-        if (strpos($hook, 'sakwood') === false) {
-            return;
-        }
-
+    public function enqueue_scripts() {
         wp_enqueue_style(
-            'sakwood-admin',
-            SAKWOOD_PLUGIN_URL . 'admin/css/admin.css',
+            'sakwood-integration',
+            SAKWOOD_PLUGIN_URL . 'assets/css/sakwood-integration.css',
             array(),
             SAKWOOD_VERSION
         );
 
         wp_enqueue_script(
-            'sakwood-admin',
-            SAKWOOD_PLUGIN_URL . 'admin/js/admin.js',
-            array('wp-api'),
+            'sakwood-integration',
+            SAKWOOD_PLUGIN_URL . 'assets/js/sakwood-integration.js',
+            array('jquery'),
             SAKWOOD_VERSION,
             true
         );
 
-        wp_localize_script('sakwood-admin', 'sakwoodAdmin', array(
-            'restUrl' => rest_url('sakwood/v1'),
-            'nonce' => wp_create_nonce('wp_rest'),
+        wp_localize_script('sakwood-integration', 'sakwoodData', array(
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('sakwood-ajax-nonce'),
         ));
     }
 }
 
-// Initialize the plugin
-new Sakwood_Integration();
+/**
+ * Initialize the plugin
+ */
+function sakwood_integration_init() {
+    return Sakwood_Integration::get_instance();
+}
+
+// Start the plugin
+sakwood_integration_init();
+
+/**
+ * Activation hook
+ */
+register_activation_hook(__FILE__, 'sakwood_integration_activate');
+function sakwood_integration_activate() {
+    // Flush rewrite rules after activation
+    flush_rewrite_rules();
+
+    // Create CRM database tables
+    Sakwood_CRM_Database::create_tables();
+
+    // Create Wholesale database tables
+    Sakwood_Wholesale_Database::create_tables();
+
+    // Add wholesale customer role
+    add_role(
+        'wholesale_customer',
+        'Wholesale Customer',
+        array(
+            'read' => true,
+            'edit_posts' => false,
+            'delete_posts' => false,
+        )
+    );
+
+    // Set default options
+    add_option('sakwood_promptpay_merchant_id', '0225559000467');
+    add_option('sakwood_promptpay_auto_verify', 0);
+    add_option('sakwood_promptpay_pending_status', 1);
+}
+
+/**
+ * Deactivation hook
+ */
+register_deactivation_hook(__FILE__, 'sakwood_integration_deactivate');
+function sakwood_integration_deactivate() {
+    // Flush rewrite rules after deactivation
+    flush_rewrite_rules();
+}

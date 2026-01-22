@@ -16,10 +16,11 @@ export interface ShippingRate {
 }
 
 export interface CartItem {
-  length?: number;
-  width?: number;
-  thickness?: number;
+  length?: number | string;
+  width?: number | string;
+  thickness?: number | string;
   volume?: number;
+  surfaceArea?: number | string;
   quantity: number;
 }
 
@@ -166,7 +167,7 @@ export function determineTruckType(items: CartItem[]): TruckType {
   let totalVolume = 0;
 
   items.forEach(item => {
-    const length = item.length || 0;
+    const length = typeof item.length === 'string' ? parseFloat(item.length) || 0 : (item.length || 0);
     const volume = item.volume || 0;
     totalLength += length * item.quantity;
     totalVolume += volume * item.quantity;
@@ -176,7 +177,10 @@ export function determineTruckType(items: CartItem[]): TruckType {
   // - Any single item is 6 meters or longer, OR
   // - Total length exceeds 12 meters, OR
   // - Total volume exceeds 5 cubic meters
-  const hasLongItem = items.some(item => (item.length || 0) >= 6);
+  const hasLongItem = items.some(item => {
+    const length = typeof item.length === 'string' ? parseFloat(item.length) || 0 : (item.length || 0);
+    return length >= 6;
+  });
   const totalLengthExceedsLimit = totalLength > 12;
   const totalVolumeExceedsLimit = totalVolume > 5;
 
@@ -188,7 +192,10 @@ export function determineTruckType(items: CartItem[]): TruckType {
   // - Any single item is 3-6 meters, OR
   // - Total length exceeds 6 meters, OR
   // - Total volume exceeds 2 cubic meters
-  const hasMediumItem = items.some(item => (item.length || 0) >= 3 && (item.length || 0) < 6);
+  const hasMediumItem = items.some(item => {
+    const length = typeof item.length === 'string' ? parseFloat(item.length) || 0 : (item.length || 0);
+    return length >= 3 && length < 6;
+  });
   const totalLengthExceedsMedium = totalLength > 6;
   const totalVolumeExceedsMedium = totalVolume > 2;
 

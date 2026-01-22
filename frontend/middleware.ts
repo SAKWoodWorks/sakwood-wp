@@ -32,6 +32,10 @@ export function middleware(request: NextRequest) {
       '/favicon.ico',
       '/logo.png',
       '/hero-video.mp4',
+      '/line-logo.png',
+      '/telegram-logo.png',
+      '/msg-logo.png',
+      '/call-logo.png',
       // เพิ่มไฟล์อื่นๆ ที่ต้องการยกเว้นที่นี่
     ].includes(pathname) ||
     pathname.startsWith('/_next/') ||
@@ -46,6 +50,7 @@ export function middleware(request: NextRequest) {
   );
 
   // ถ้ายังไม่มีภาษา ให้ Redirect ไปภาษาที่เหมาะสม
+  // แต่ถ้า URL มีภาษาอยู่แล้ว ให้ใช้ภาษานั้นต่อไป ไม่ต้อง redirect
   if (pathnameIsMissingLocale) {
     const locale = getLocale(request);
 
@@ -57,6 +62,10 @@ export function middleware(request: NextRequest) {
       )
     );
   }
+
+  // ถ้า URL มีภาษาอยู่แล้ว ให้ใช้ค่าเดิม ไม่ต้อง detect จาก browser
+  // ทำให้ URL ที่ user คลิกมาไม่ถูกเปลี่ยนโดยอัตโนมัติ
+  return NextResponse.next();
 }
 
 export const config = {

@@ -14,6 +14,7 @@ interface BlogSectionProps {
 }
 
 export function BlogSection({ lang, dictionary }: BlogSectionProps) {
+  const { blog, common } = dictionary;
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -21,7 +22,7 @@ export function BlogSection({ lang, dictionary }: BlogSectionProps) {
     async function loadPosts() {
       setLoading(true);
       try {
-        const data = await getBlogPosts();
+        const data = await getBlogPosts(lang);
         setPosts(data.slice(0, 3)); // Show only 3 latest posts
       } catch (error) {
         console.error('Failed to load blog posts:', error);
@@ -29,8 +30,9 @@ export function BlogSection({ lang, dictionary }: BlogSectionProps) {
         setLoading(false);
       }
     }
+
     loadPosts();
-  }, []);
+  }, [lang]);
 
   // Format date based on locale
   const formatDate = (dateString: string) => {
@@ -50,20 +52,20 @@ export function BlogSection({ lang, dictionary }: BlogSectionProps) {
       <div className="max-w-7xl mx-auto">
         <header className="flex flex-col md:flex-row justify-between items-end mb-12 border-b border-slate-200 pb-6">
           <div>
-            <span className="text-blue-600 font-bold tracking-wider uppercase text-sm">Latest News</span>
+            <span className="text-blue-600 font-bold tracking-wider uppercase text-sm">{blog.title}</span>
             <h2
               id="blog-heading"
               className="text-3xl md:text-4xl font-extrabold mt-2 uppercase text-slate-900"
             >
-              From Our <span className="text-blue-600">Blog</span>
+              {blog.subtitle}
             </h2>
           </div>
           <Link
             href={`/${lang}/blog`}
             className="hidden md:inline-block px-6 py-3 border border-slate-300 hover:border-blue-600 hover:text-blue-600 transition-colors uppercase text-sm font-bold tracking-wide"
-            aria-label="View all blog articles"
+            aria-label={blog.view_all}
           >
-            View All Articles →
+            {blog.view_all} →
           </Link>
         </header>
 
@@ -75,7 +77,7 @@ export function BlogSection({ lang, dictionary }: BlogSectionProps) {
                 <div className="p-6">
                   <div className="h-4 bg-slate-200 rounded mb-2 animate-pulse w-1/3" />
                   <div className="h-6 bg-slate-200 rounded mb-3 animate-pulse" />
-                  <div className="h-4 bg-slate-200 rounded mb-4 animate-pulse" />
+                  <div className="h-6 bg-slate-200 rounded mb-4 animate-pulse" />
                   <div className="h-4 bg-slate-200 rounded w-2/3 animate-pulse" />
                 </div>
               </div>
@@ -95,6 +97,7 @@ export function BlogSection({ lang, dictionary }: BlogSectionProps) {
                         width={640}
                         height={360}
                         className="object-cover w-full h-full group-hover:scale-110 transition duration-500"
+                        unoptimized
                       />
                     ) : (
                       <div className="flex items-center justify-center h-full text-slate-400" aria-hidden="true">
@@ -151,21 +154,11 @@ export function BlogSection({ lang, dictionary }: BlogSectionProps) {
               </svg>
             </div>
             <h3 className="text-2xl font-bold text-gray-900 mb-3">
-              No Articles Found
+              {blog.title}
             </h3>
             <p className="text-gray-600 mb-6">
-              Unable to connect to WordPress backend. Please ensure:
+              {blog.no_articles_desc}
             </p>
-            <ul className="text-left text-gray-600 space-y-2 max-w-md mx-auto mb-6">
-              <li className="flex items-start gap-2">
-                <span className="text-blue-500 mt-1" aria-hidden="true">•</span>
-                <span><strong>WPGraphQL</strong> plugin is installed and activated</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-blue-500 mt-1" aria-hidden="true">•</span>
-                <span>WordPress container is running and accessible</span>
-              </li>
-            </ul>
           </div>
         )}
 
@@ -174,9 +167,9 @@ export function BlogSection({ lang, dictionary }: BlogSectionProps) {
             <Link
               href={`/${lang}/blog`}
               className="inline-block px-8 py-3 bg-blue-600 text-white font-bold uppercase tracking-wide hover:bg-blue-700 transition rounded-lg"
-              aria-label="View all blog articles"
+              aria-label={blog.view_all}
             >
-              View All Articles
+              {blog.view_all}
             </Link>
           </div>
         )}

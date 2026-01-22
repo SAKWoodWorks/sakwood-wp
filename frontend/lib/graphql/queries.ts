@@ -1,15 +1,47 @@
 import { ProductsResponse, ProductResponse, MenuResponse, BlogPostsResponse, BlogPostResponse } from '@/lib/types';
 
+export const GET_HERO_SLIDES_QUERY = `
+  query GetHeroSlides {
+    heroSlides(first: 10, where: {status: PUBLISH}) {
+      nodes {
+        id
+        title
+        slug
+        status
+        featuredImage {
+          node {
+            sourceUrl
+            altText
+          }
+        }
+        slideSubtitle
+        slideDescription
+        slideCtaText
+        slideCtaLink
+        slideTextColor
+        slideOverlay
+        slidePosition
+        slideVideo
+      }
+    }
+  }
+`;
+
 export const GET_PRODUCTS_QUERY = `
   query GetProducts($first: Int) {
     products(first: $first) {
       nodes {
         id
+        databaseId
         name
         slug
         image {
           sourceUrl
         }
+        width
+        length
+        thickness
+        volume
         ... on SimpleProduct {
           price
           regularPrice
@@ -23,6 +55,7 @@ export const GET_PRODUCT_QUERY = `
   query GetProduct($slug: ID!) {
     product(id: $slug, idType: SLUG) {
       id
+      databaseId
       name
       slug
       description
@@ -35,6 +68,10 @@ export const GET_PRODUCT_QUERY = `
           altText
         }
       }
+      width
+      length
+      thickness
+      volume
       ... on SimpleProduct {
         price
         regularPrice

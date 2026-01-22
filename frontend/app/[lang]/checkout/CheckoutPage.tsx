@@ -1,11 +1,15 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import { PromptPayQR } from '@/components/checkout';
+import { PromptPayInstructions } from '@/components/checkout/PromptPayInstructions';
+import { ProvinceSearch } from '@/components/checkout/ProvinceSearch';
 import { useCart } from '@/lib/context/CartContext';
 import { calculateShippingCost, getShippingRate, getAllProvinces, TruckType } from '@/lib/services/deliveryService';
+import { useFormPersistence } from '@/lib/hooks/useFormPersistence';
+import { validateEmail, validateThaiPhone, validateThaiPostalCode, validateRequired } from '@/lib/utils/formValidation';
 import type { Locale } from '@/i18n-config';
 import { createWooCommerceOrder, type WooCommerceOrderData } from '@/lib/services/woocommerceService';
 
@@ -54,6 +58,15 @@ interface CheckoutPageProps {
       price_tier: string;
       contact_sales: string;
       add_line_friend: string;
+      restore_draft?: string;
+      search_province?: string;
+      no_province_results?: string;
+      invalid_email?: string;
+      invalid_phone?: string;
+      invalid_postal_code?: string;
+      field_required?: string;
+      network_error?: string;
+      timeout_error?: string;
     };
   };
 }
@@ -63,6 +76,14 @@ export function CheckoutPage({ lang, dictionary }: CheckoutPageProps) {
   const { items, getCartTotal, clearCart } = useCart();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
+  const formInitializedRef = useRef(false);
+
+  // Form persistence hook
+  const { saveForm, loadForm, clearForm, hasSavedForm } = useFormPersistence('sakwood-checkout');
+
+  // Validation state
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     setMounted(true);
@@ -71,8 +92,10 @@ export function CheckoutPage({ lang, dictionary }: CheckoutPageProps) {
   const [selectedProvince, setSelectedProvince] = useState('');
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const [paymentError, setPaymentError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
+    lineId: '',
     phone: '',
     firstName: '',
     lastName: '',
@@ -82,6 +105,39 @@ export function CheckoutPage({ lang, dictionary }: CheckoutPageProps) {
     notes: '',
     paymentMethod: 'bank_transfer',
   });
+
+  // Load saved form data on mount
+  useEffect(() => {
+    if (mounted && !formInitializedRef.current) {
+      const saved = loadForm();
+      if (saved) {
+        setFormData({
+          email: saved.email || '',
+          lineId: saved.lineId || '',
+          phone: saved.phone || '',
+          firstName: saved.firstName || '',
+          lastName: saved.lastName || '',
+          address: saved.address || '',
+          city: saved.city || '',
+          postalCode: saved.postalCode || '',
+          notes: saved.notes || '',
+          paymentMethod: saved.paymentMethod || 'bank_transfer',
+        });
+        setSelectedProvince(saved.province || '');
+      }
+      formInitializedRef.current = true;
+    }
+  }, [mounted, loadForm]);
+
+  // Auto-save form data on change
+  useEffect(() => {
+    if (mounted && formInitializedRef.current) {
+      saveForm({
+        ...formData,
+        province: selectedProvince,
+      });
+    }
+  }, [formData, selectedProvince, mounted, saveForm]);
 
   const subtotal = getCartTotal();
   const shippingResult = useMemo(() => {
@@ -107,38 +163,125 @@ export function CheckoutPage({ lang, dictionary }: CheckoutPageProps) {
 
   const provinces = getAllProvinces();
 
-  const handleProvinceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedProvince(e.target.value);
+  // Field validation function
+  const validateField = (name: string, value: string): string | null => {
+    // Use dictionary keys for error messages if available
+    const errorMessages = {
+      email: checkout.invalid_email || 'Please enter a valid email address',
+      phone: checkout.invalid_phone || 'Please enter a valid Thai phone number (e.g., 081-234-5678)',
+      postalCode: checkout.invalid_postal_code || 'Please enter a 5-digit postal code',
+      firstName: checkout.field_required?.replace('This field', 'First name') || 'First name is required',
+      lastName: checkout.field_required?.replace('This field', 'Last name') || 'Last name is required',
+      address: checkout.field_required?.replace('This field', 'Address') || 'Address is required',
+      city: checkout.field_required?.replace('This field', 'City') || 'City is required',
+    };
+
+    switch (name) {
+      case 'email':
+        const emailResult = validateEmail(value);
+        return emailResult.valid ? null : errorMessages.email;
+      case 'phone':
+        const phoneResult = validateThaiPhone(value);
+        return phoneResult.valid ? null : errorMessages.phone;
+      case 'postalCode':
+        const postalResult = validateThaiPostalCode(value);
+        return postalResult.valid ? null : errorMessages.postalCode;
+      case 'firstName':
+      case 'lastName':
+      case 'address':
+      case 'city': {
+        const requiredResult = validateRequired(value, name === 'firstName' ? 'First name' : name === 'lastName' ? 'Last name' : name);
+        return requiredResult.valid ? null : errorMessages[name as keyof typeof errorMessages];
+      }
+      default:
+        return null;
+    }
+  };
+
+  // Handle blur validation
+  const handleBlur = (fieldName: string) => {
+    setTouchedFields(prev => new Set(prev).add(fieldName));
+    const error = validateField(fieldName, formData[fieldName as keyof typeof formData]);
+    setFieldErrors(prev => ({ ...prev, [fieldName]: error || '' }));
+  };
+
+  const handleProvinceChange = (province: string) => {
+    setSelectedProvince(province);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
+
+    // Clear error for this field if user is typing
+    if (touchedFields.has(name)) {
+      const error = validateField(name, value);
+      setFieldErrors(prev => ({ ...prev, [name]: error || '' }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validate payment confirmation for PromptPay
+
+    // Prevent double submission
+    if (isSubmitting) {
+      return;
+    }
+
+    // Validate all required fields
+    const requiredFields = ['email', 'phone', 'firstName', 'lastName', 'address', 'city', 'postalCode'];
+    const errors: Record<string, string> = {};
+
+    for (const field of requiredFields) {
+      const error = validateField(field, formData[field as keyof typeof formData]);
+      if (error) {
+        errors[field] = error;
+      }
+    }
+
+    // Validate province
+    if (!selectedProvince) {
+      errors.province = checkout.field_required?.replace('This field', 'Province') || 'Please select a province';
+    }
+
+    // Validate PromptPay confirmation
     if (formData.paymentMethod === 'promptpay' && !paymentConfirmed) {
       setPaymentError(checkout.confirm_payment_error);
       return;
     }
-    
+
+    // Set all fields as touched
+    setTouchedFields(new Set(requiredFields));
+
+    // If there are errors, display them and prevent submission
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+
+      // Scroll to first error
+      const firstErrorField = document.querySelector(`[name="${Object.keys(errors)[0]}"]`) as HTMLElement;
+      if (firstErrorField) {
+        firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        firstErrorField.focus();
+      }
+      return;
+    }
+
     // Clear any previous payment error
     setPaymentError('');
-    
+    setIsSubmitting(true);
+
     // Map payment method to WooCommerce payment method
     const paymentMethodMap: Record<string, { method: string; title: string }> = {
       'bank_transfer': { method: 'bacs', title: 'Bank Transfer' },
       'cash_on_delivery': { method: 'cod', title: 'Cash on Delivery' },
       'promptpay': { method: 'promptpay', title: 'PromptPay' },
     };
-    
+
     const paymentInfo = paymentMethodMap[formData.paymentMethod] || { method: 'bacs', title: 'Bank Transfer' };
-    
+
     // Create WooCommerce order data object
     const orderData: WooCommerceOrderData = {
       payment_method: paymentInfo.method,
@@ -163,7 +306,7 @@ export function CheckoutPage({ lang, dictionary }: CheckoutPageProps) {
         postcode: formData.postalCode,
       },
       line_items: items.map(item => ({
-        product_id: parseInt(item.id),
+        product_id: item.databaseId,
         quantity: item.quantity,
       })),
       shipping_lines: [
@@ -173,23 +316,41 @@ export function CheckoutPage({ lang, dictionary }: CheckoutPageProps) {
           total: shippingCost.toFixed(2),
         },
       ],
-      customer_note: formData.notes,
+      customer_note: formData.notes + (formData.lineId ? `\n\nLINE ID: ${formData.lineId}` : ''),
     };
-    
-    console.log('Order submitted:', orderData);
-    
+
     try {
       // Submit to WooCommerce API
       const result = await createWooCommerceOrder(orderData);
-      
-      // Clear cart after successful order
+
+      // Clear saved form data and cart after successful order
+      clearForm();
       clearCart();
-      
+
       // Redirect to order success page
       router.push(`/${lang}/checkout/success?orderId=${result.id}`);
     } catch (error) {
       console.error('Error submitting order:', error);
-      setPaymentError(checkout.confirm_payment_error);
+
+      // Better error messages based on error type
+      let errorMessage = 'Failed to submit order. Please try again.';
+
+      if (error instanceof Error) {
+        const errorLower = error.message.toLowerCase();
+        if (errorLower.includes('network') || errorLower.includes('fetch')) {
+          errorMessage = checkout.network_error || 'Network error. Please check your connection and try again.';
+        } else if (errorLower.includes('timeout')) {
+          errorMessage = checkout.timeout_error || 'Request timed out. Please try again.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+
+      setPaymentError(errorMessage);
+      setIsSubmitting(false);
+
+      // Scroll to error message
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -245,6 +406,18 @@ export function CheckoutPage({ lang, dictionary }: CheckoutPageProps) {
           {checkout.page_title}
         </h1>
 
+        {/* Restore Draft Indicator */}
+        {hasSavedForm() && (
+          <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
+            <svg className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+            <p className="text-sm text-yellow-800">
+              {checkout.restore_draft || 'We found your unfinished order. Your information has been restored.'}
+            </p>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit}>
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Checkout Form */}
@@ -257,14 +430,34 @@ export function CheckoutPage({ lang, dictionary }: CheckoutPageProps) {
                 <div className="space-y-4">
                   <div>
                     <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1">
-                      {checkout.email} *
+                      Email *
                     </label>
                     <input
-                      type="text"
+                      type="email"
                       id="email"
                       name="email"
                       required
                       value={formData.email}
+                      onChange={handleInputChange}
+                      onBlur={() => handleBlur('email')}
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-blue-500 outline-none transition-all ${
+                        fieldErrors.email ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                      }`}
+                      placeholder="your@email.com"
+                    />
+                    {touchedFields.has('email') && fieldErrors.email && (
+                      <p className="mt-1 text-sm text-red-600">{fieldErrors.email}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label htmlFor="lineId" className="block text-sm font-semibold text-gray-700 mb-1">
+                      LINE ID
+                    </label>
+                    <input
+                      type="text"
+                      id="lineId"
+                      name="lineId"
+                      value={formData.lineId}
                       onChange={handleInputChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                       placeholder="your_line_id"
@@ -281,9 +474,15 @@ export function CheckoutPage({ lang, dictionary }: CheckoutPageProps) {
                       required
                       value={formData.phone}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                      onBlur={() => handleBlur('phone')}
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-blue-500 outline-none transition-all ${
+                        fieldErrors.phone ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                      }`}
                       placeholder="081-234-5678"
                     />
+                    {touchedFields.has('phone') && fieldErrors.phone && (
+                      <p className="mt-1 text-sm text-red-600">{fieldErrors.phone}</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -306,9 +505,15 @@ export function CheckoutPage({ lang, dictionary }: CheckoutPageProps) {
                         required
                         value={formData.firstName}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                        onBlur={() => handleBlur('firstName')}
+                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-blue-500 outline-none transition-all ${
+                          fieldErrors.firstName ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                        }`}
                         placeholder="John"
                       />
+                      {touchedFields.has('firstName') && fieldErrors.firstName && (
+                        <p className="mt-1 text-sm text-red-600">{fieldErrors.firstName}</p>
+                      )}
                     </div>
                     <div>
                       <label htmlFor="lastName" className="block text-sm font-semibold text-gray-700 mb-1">
@@ -321,9 +526,15 @@ export function CheckoutPage({ lang, dictionary }: CheckoutPageProps) {
                         required
                         value={formData.lastName}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                        onBlur={() => handleBlur('lastName')}
+                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-blue-500 outline-none transition-all ${
+                          fieldErrors.lastName ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                        }`}
                         placeholder="Doe"
                       />
+                      {touchedFields.has('lastName') && fieldErrors.lastName && (
+                        <p className="mt-1 text-sm text-red-600">{fieldErrors.lastName}</p>
+                      )}
                     </div>
                   </div>
                   <div>
@@ -337,9 +548,15 @@ export function CheckoutPage({ lang, dictionary }: CheckoutPageProps) {
                       required
                       value={formData.address}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                      onBlur={() => handleBlur('address')}
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-blue-500 outline-none transition-all ${
+                        fieldErrors.address ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                      }`}
                       placeholder="123 Street Name"
                     />
+                    {touchedFields.has('address') && fieldErrors.address && (
+                      <p className="mt-1 text-sm text-red-600">{fieldErrors.address}</p>
+                    )}
                   </div>
                   <div>
                     <label htmlFor="city" className="block text-sm font-semibold text-gray-700 mb-1">
@@ -352,30 +569,31 @@ export function CheckoutPage({ lang, dictionary }: CheckoutPageProps) {
                       required
                       value={formData.city}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                      onBlur={() => handleBlur('city')}
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-blue-500 outline-none transition-all ${
+                        fieldErrors.city ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                      }`}
                       placeholder="Bangkok"
                     />
+                    {touchedFields.has('city') && fieldErrors.city && (
+                      <p className="mt-1 text-sm text-red-600">{fieldErrors.city}</p>
+                    )}
                   </div>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
                       <label htmlFor="province" className="block text-sm font-semibold text-gray-700 mb-1">
                         {checkout.province} *
                       </label>
-                      <select
-                        id="province"
-                        name="province"
-                        required
+                      <ProvinceSearch
+                        provinces={provinces}
                         value={selectedProvince}
                         onChange={handleProvinceChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                      >
-                        <option value="">{checkout.select_province}</option>
-                        {provinces.map((province) => (
-                          <option key={province} value={province}>
-                            {province}
-                          </option>
-                        ))}
-                      </select>
+                        placeholder={checkout.search_province || checkout.select_province}
+                        lang={lang}
+                      />
+                      {fieldErrors.province && (
+                        <p className="mt-1 text-sm text-red-600">{fieldErrors.province}</p>
+                      )}
                     </div>
                     <div>
                       <label htmlFor="postalCode" className="block text-sm font-semibold text-gray-700 mb-1">
@@ -388,9 +606,15 @@ export function CheckoutPage({ lang, dictionary }: CheckoutPageProps) {
                         required
                         value={formData.postalCode}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                        onBlur={() => handleBlur('postalCode')}
+                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-blue-500 outline-none transition-all ${
+                          fieldErrors.postalCode ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                        }`}
                         placeholder="10110"
                       />
+                      {touchedFields.has('postalCode') && fieldErrors.postalCode && (
+                        <p className="mt-1 text-sm text-red-600">{fieldErrors.postalCode}</p>
+                      )}
                     </div>
                   </div>
                   <div>
@@ -462,20 +686,25 @@ export function CheckoutPage({ lang, dictionary }: CheckoutPageProps) {
 
                 {/* PromptPay QR Code */}
                 {formData.paymentMethod === 'promptpay' && (
-                  <div className="mt-4 p-6 bg-gray-50 rounded-lg text-center">
-                    <h3 className="text-lg font-bold text-blue-900 mb-4">{checkout.scan_qr}</h3>
-                    <PromptPayQR
-                      merchantId="0225559000467"
-                      amount={total}
-                      size={256}
-                      showMerchantInfo={true}
-                    />
-                    <p className="text-sm text-gray-600 mt-4">
-                      {checkout.promptpay_desc}
-                    </p>
-                    
+                  <div className="mt-4 space-y-6">
+                    <div className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-lg p-6 border border-blue-200">
+                      <h3 className="text-lg font-bold text-blue-900 mb-4 text-center">{checkout.scan_qr}</h3>
+                      <div className="flex justify-center">
+                        <PromptPayQR
+                          merchantId="0225559000467"
+                          amount={total}
+                          size={280}
+                          showMerchantInfo={true}
+                          orderRef={`ORDER-${Date.now()}`}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Payment Instructions */}
+                    <PromptPayInstructions />
+
                     {/* Payment Confirmation Checkbox */}
-                    <div className="mt-6">
+                    <div className="bg-white rounded-lg p-4 border border-gray-200">
                       <label className="flex items-start gap-3 cursor-pointer">
                         <input
                           type="checkbox"
@@ -486,14 +715,14 @@ export function CheckoutPage({ lang, dictionary }: CheckoutPageProps) {
                               setPaymentError('');
                             }
                           }}
-                          className="mt-1 w-4 h-4 text-blue-900 focus:ring-blue-500 rounded"
+                          className="mt-1 w-5 h-5 text-blue-900 focus:ring-blue-500 rounded"
                         />
                         <span className="text-sm text-gray-700">
                           {checkout.confirm_payment}
                         </span>
                       </label>
                       {paymentError && (
-                        <p className="mt-2 text-sm text-red-600">
+                        <p className="mt-3 text-sm text-red-600 font-semibold bg-red-50 p-2 rounded">
                           {paymentError}
                         </p>
                       )}
@@ -572,10 +801,18 @@ export function CheckoutPage({ lang, dictionary }: CheckoutPageProps) {
 
                 <button
                   type="submit"
-                  className="w-full px-6 py-4 bg-blue-900 text-white font-bold hover:bg-blue-800 transition-all uppercase tracking-wide rounded-none"
+                  disabled={isSubmitting}
+                  className="w-full px-6 py-4 bg-blue-900 text-white font-bold hover:bg-blue-800 transition-all uppercase tracking-wide rounded-none disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
-                  {checkout.place_order}
+                  {isSubmitting ? 'Processing...' : checkout.place_order}
                 </button>
+
+                {paymentError && (
+                  <div className="mt-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+                    <p className="font-semibold">Order Failed</p>
+                    <p className="text-sm">{paymentError}</p>
+                  </div>
+                )}
 
                 <a
                   href={`/${lang}/cart`}

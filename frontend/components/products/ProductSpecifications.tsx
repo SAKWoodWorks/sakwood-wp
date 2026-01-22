@@ -22,9 +22,16 @@ interface ProductSpecificationsProps {
 export function ProductSpecifications({ product, dictionary }: ProductSpecificationsProps) {
   const { product: dict } = dictionary;
 
+  // Build dimensions string if dimensions exist
+  const dimensions = [];
+  if (product.thickness) dimensions.push(`${product.thickness}cm`);
+  if (product.width) dimensions.push(`${product.width}cm`);
+  if (product.length) dimensions.push(`${product.length}m`);
+  const dimensionsText = dimensions.length > 0 ? dimensions.join(' × ') : dict.standard_size;
+
   const specs = [
     { label: dict.material_label, value: dict.wood_type },
-    { label: dict.dimensions_label, value: dict.standard_size },
+    { label: dict.dimensions_label, value: dimensionsText },
     { label: dict.weight_label, value: dict.standard_weight },
     { label: dict.grade_label, value: dict.grade_a },
     { label: dict.origin_label, value: dict.imported },
@@ -38,7 +45,7 @@ export function ProductSpecifications({ product, dictionary }: ProductSpecificat
       >
         {dict.specifications_title}
       </h2>
-      
+
       <div className="bg-gray-50 rounded-lg p-6">
         <div className="grid md:grid-cols-2 gap-6">
           {specs.map((spec, index) => (

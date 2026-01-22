@@ -29,7 +29,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const savedCart = localStorage.getItem('sakwood-cart');
       if (savedCart) {
         const parsed = JSON.parse(savedCart);
-        console.log('CartContext: Loaded from localStorage', parsed);
         setItems(parsed);
       }
     } catch (error) {
@@ -42,7 +41,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (typeof window !== 'undefined') {
       try {
         localStorage.setItem('sakwood-cart', JSON.stringify(items));
-        console.log('CartContext: Saved to localStorage', items);
       } catch (error) {
         console.error('CartContext: Error saving to localStorage', error);
       }
@@ -50,35 +48,26 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [items]);
 
   const addToCart = useCallback((product: Product) => {
-    console.log('CartContext: Adding to cart', product);
     setItems(prevItems => {
       const existingItem = prevItems.find(item => item.id === product.id);
       if (existingItem) {
-        const updated = prevItems.map(item =>
+        return prevItems.map(item =>
           item.id === product.id
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
-        console.log('CartContext: Updated existing item', updated);
-        return updated;
       }
-      const newItems = [...prevItems, { ...product, quantity: 1 }];
-      console.log('CartContext: Added new item', newItems);
-      return newItems;
+      return [...prevItems, { ...product, quantity: 1 }];
     });
   }, []);
 
   const removeFromCart = useCallback((productId: string) => {
-    console.log('CartContext: Removing from cart', productId);
     setItems(prevItems => {
-      const filtered = prevItems.filter(item => item.id !== productId);
-      console.log('CartContext: Remaining items', filtered);
-      return filtered;
+      return prevItems.filter(item => item.id !== productId);
     });
   }, []);
 
   const updateQuantity = useCallback((productId: string, quantity: number) => {
-    console.log('CartContext: Updating quantity', productId, quantity);
     if (quantity < 1) {
       removeFromCart(productId);
       return;
@@ -91,23 +80,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [removeFromCart]);
 
   const clearCart = useCallback(() => {
-    console.log('CartContext: Clearing cart');
     setItems([]);
   }, []);
 
   const getCartTotal = useCallback(() => {
-    const total = items.reduce((total, item) => {
-      const price = parseFloat(item.price?.replace(/[^0-9.]/g, '') || '0');
+    return items.reduce((total, item) => {
+      const priceStr = typeof item.price === 'string' ? item.price : '';
+      const price = parseFloat(priceStr.replace(/[^0-9.]/g, '') || '0');
       return total + (price * item.quantity);
     }, 0);
-    console.log('CartContext: Calculated total', total);
-    return total;
   }, [items]);
 
   const getCartCount = useCallback(() => {
-    const count = items.reduce((count, item) => count + item.quantity, 0);
-    console.log('CartContext: Calculated count', count);
-    return count;
+    return items.reduce((count, item) => count + item.quantity, 0);
   }, [items]);
 
   return (

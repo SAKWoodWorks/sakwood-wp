@@ -32,6 +32,7 @@ export interface BlogPost {
   excerpt?: string;
   content?: string;
   date: string;
+  language?: string;
   featuredImage?: BlogImage;
   author?: BlogAuthor;
   categories?: {

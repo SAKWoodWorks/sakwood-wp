@@ -20,7 +20,7 @@ export function HeroSection({ lang, dictionary }: HeroSectionProps) {
 
   return (
     <section
-      className="relative h-[600px] md:h-[700px] bg-blue-900 flex items-center overflow-hidden"
+      className="relative min-h-[500px] h-[550px] sm:h-[600px] md:h-[700px] bg-blue-900 flex items-center overflow-hidden"
       aria-labelledby="hero-heading"
     >
       {/* Background Image with Blue Overlay */}
@@ -35,40 +35,40 @@ export function HeroSection({ lang, dictionary }: HeroSectionProps) {
         <div className="absolute inset-0 bg-gradient-to-r from-blue-900 via-blue-900/90 to-blue-800/50"></div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 w-full">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 w-full">
         <div className="max-w-2xl">
-          <div className="flex items-center gap-2 mb-6">
-            <div className="h-1 w-12 bg-white" aria-hidden="true"></div>
-            <span className="text-blue-200 font-bold tracking-widest uppercase text-sm">
+          <div className="flex items-center gap-2 mb-4 sm:mb-6">
+            <div className="h-1 w-8 sm:w-12 bg-white" aria-hidden="true"></div>
+            <span className="text-blue-200 font-bold tracking-widest uppercase text-xs sm:text-sm">
               {hero.badge}
             </span>
           </div>
-          
+
           <h1
             id="hero-heading"
-            className="text-5xl md:text-7xl font-extrabold text-white leading-tight mb-6"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-extrabold text-white leading-tight mb-4 sm:mb-6"
           >
             {hero.title} <br/>
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white">
               {hero.title_highlight}
             </span>
           </h1>
-          
-          <p className="text-lg text-blue-100 mb-10 leading-relaxed max-w-lg border-l-4 border-blue-400 pl-6">
+
+          <p className="text-sm sm:text-base md:text-lg text-blue-100 mb-6 sm:mb-8 md:mb-10 leading-relaxed max-w-lg border-l-2 sm:border-l-4 border-blue-400 pl-4 sm:pl-6">
             {hero.description}
           </p>
-          
-          <nav className="flex flex-col sm:flex-row gap-4" aria-label="Hero navigation">
+
+          <nav className="flex flex-col sm:flex-row gap-3 sm:gap-4" aria-label="Hero navigation">
             <Link
               href={`/${lang}/shop`}
-              className="px-8 py-4 bg-white text-blue-900 rounded-none font-bold hover:bg-blue-50 transition-all text-center uppercase tracking-wide skew-x-[-10deg]"
+              className="px-6 sm:px-8 py-3 sm:py-4 bg-white text-blue-900 rounded-none font-bold hover:bg-blue-50 transition-all text-center uppercase tracking-wide text-sm sm:text-base skew-x-[-10deg]"
               aria-label={hero.btn_catalog}
             >
               <span className="block skew-x-[10deg]">{hero.btn_catalog}</span>
             </Link>
             <Link
               href={`/${lang}/quote`}
-              className="px-8 py-4 border-2 border-blue-300 text-blue-100 rounded-none font-bold hover:bg-blue-800 hover:text-white transition-all text-center uppercase tracking-wide skew-x-[-10deg]"
+              className="px-6 sm:px-8 py-3 sm:py-4 border-2 border-blue-300 text-blue-100 rounded-none font-bold hover:bg-blue-800 hover:text-white transition-all text-center uppercase tracking-wide text-sm sm:text-base skew-x-[-10deg]"
               aria-label={hero.btn_quote}
             >
               <span className="block skew-x-[10deg]">{hero.btn_quote}</span>

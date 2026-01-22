@@ -7,6 +7,12 @@ import { getMenu } from "@/lib/services/menuService";
 import { getDictionary } from "@/lib/get-dictionary";
 import type { Locale } from "@/i18n-config";
 import { CartProvider } from "@/lib/context/CartContext";
+import { AuthProvider } from "@/lib/context/AuthContext";
+import { CompareProvider } from "@/lib/context/CompareContext";
+import { ChatProvider } from "@/lib/context/ChatContext";
+import { OrganizationStructuredData } from "@/components/seo/OrganizationStructuredData";
+import { ChatButtons } from "@/components/chat";
+import { PromotionalPopup } from "@/components/ui/PromotionalPopup";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,11 +25,12 @@ interface LayoutProps {
 
 export async function generateMetadata({ params }: LayoutProps): Promise<Metadata> {
   const { lang } = await params;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://sakwood.com";
   const isThai = lang === 'th';
 
   return {
     title: {
-      default: isThai 
+      default: isThai
         ? "Sakwood - ผู้จำหน่ายไม้คุณภาพสูงในประเทศไทย"
         : "Sakwood - Premium Wood Products Supplier in Thailand",
       template: "%s | Sakwood"
@@ -62,14 +69,20 @@ export async function generateMetadata({ params }: LayoutProps): Promise<Metadat
       address: false,
       telephone: false,
     },
-    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://sakwood.com"),
+    metadataBase: new URL(siteUrl),
     alternates: {
-      canonical: "/",
+      canonical: `/${lang}`,
+      languages: {
+        'th': `${siteUrl}/th`,
+        'en': `${siteUrl}/en`,
+        'x-default': `${siteUrl}/th`
+      },
     },
     openGraph: {
       type: "website",
       locale: isThai ? "th_TH" : "en_US",
-      url: "/",
+      alternateLocale: ['th_TH', 'en_US'],
+      url: `${siteUrl}/${lang}`,
       title: isThai
         ? "Sakwood - ผู้จำหน่ายไม้คุณภาพสูงในประเทศไทย"
         : "Sakwood - Premium Wood Products Supplier in Thailand",
@@ -79,7 +92,7 @@ export async function generateMetadata({ params }: LayoutProps): Promise<Metadat
       siteName: "Sakwood",
       images: [
         {
-          url: "/og-image.jpg",
+          url: `${siteUrl}/og-image.jpg`,
           width: 1200,
           height: 630,
           alt: isThai ? "Sakwood - ผลิตภัณฑ์ไม้คุณภาพสูง" : "Sakwood - Premium Wood Products"
@@ -94,7 +107,7 @@ export async function generateMetadata({ params }: LayoutProps): Promise<Metadat
       description: isThai
         ? "พันธมิตรที่เชื่อถือได้ของประเทศไทยในด้านไม้สนโครงสร้าง เพลย์วูดทางเรือ และไม้วิศวกรรม ผลิตภัณฑ์ไม้คุณภาพ พร้อมบริการจัดส่งภายในวันในกรุงเทพฯ"
         : "Thailand's trusted supplier of structural pine, marine plywood, and engineering timber. Quality wood products with same-day delivery in Bangkok.",
-      images: ["/og-image.jpg"],
+      images: [`${siteUrl}/og-image.jpg`],
       creator: "@sakwood"
     },
     robots: {
@@ -116,19 +129,31 @@ export async function generateMetadata({ params }: LayoutProps): Promise<Metadat
 
 export default async function RootLayout({ children, params }: LayoutProps) {
   const { lang } = await params;
-  
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://sakwood.com";
+
   // Fetch primary menu from WordPress and dictionary
   const menuItems = await getMenu('PRIMARY');
   const dictionary = await getDictionary(lang as Locale);
 
   return (
-    <html lang={lang}>
+    <html lang={lang} className="scroll-smooth">
+      <head>
+        <OrganizationStructuredData siteUrl={siteUrl} />
+      </head>
       <body className={inter.className}>
-        <CartProvider>
-          <Header menuItems={menuItems} lang={lang as Locale} dictionary={dictionary} />
-          <main>{children}</main>
-          <Footer lang={lang as Locale} />
-        </CartProvider>
+        <AuthProvider>
+          <CartProvider>
+            <CompareProvider>
+              <ChatProvider>
+                <Header menuItems={menuItems} lang={lang as Locale} dictionary={dictionary} />
+                <main className="bg-transparent">{children}</main>
+                <Footer lang={lang as Locale} />
+                <ChatButtons dictionary={dictionary} />
+                <PromotionalPopup />
+              </ChatProvider>
+            </CompareProvider>
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );
