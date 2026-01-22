@@ -323,6 +323,7 @@
     "logout": "Logout",
     "my_account": "My Account",
     "email": "Email",
+    "email_or_username": "Email or Username",
     "password": "Password",
     "confirm_password": "Confirm Password",
     "forgot_password": "Forgot Password?",

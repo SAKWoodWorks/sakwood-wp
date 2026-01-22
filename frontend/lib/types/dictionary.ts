@@ -72,6 +72,7 @@ export interface Dictionary {
     logout: string;
     my_account: string;
     email: string;
+    email_or_username: string;
     password: string;
     confirm_password: string;
     forgot_password: string;

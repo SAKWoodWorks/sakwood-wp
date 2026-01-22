@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/context/AuthContext';
 import type { Locale } from '@/i18n-config';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import { Button } from '@/components/ui';
+import { getCustomerAddresses, createCustomerAddress, updateCustomerAddress, deleteCustomerAddress } from '@/lib/services/customerAddressService';
 
 interface AccountDashboardProps {
   lang: Locale;
@@ -36,6 +37,46 @@ export function AccountDashboard({ lang, dictionary }: AccountDashboardProps) {
   const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
   const [hasRefreshed, setHasRefreshed] = useState(false);
 
+  // Address form state
+  const [showAddressForm, setShowAddressForm] = useState(false);
+  const [editingAddress, setEditingAddress] = useState<any>(null);
+  const [addresses, setAddresses] = useState<any[]>([]);
+  const [addressForm, setAddressForm] = useState({
+    first_name: '',
+    last_name: '',
+    company: '',
+    address_1: '',
+    address_2: '',
+    city: '',
+    state: '',
+    postcode: '',
+    country: 'TH',
+    phone: '',
+  });
+  const [addressLoading, setAddressLoading] = useState(false);
+  const [addressError, setAddressError] = useState('');
+  const [addressSuccess, setAddressSuccess] = useState('');
+  const [isSubmittingAddress, setIsSubmittingAddress] = useState(false);
+
+  // Load addresses
+  const loadAddresses = async () => {
+    setAddressLoading(true);
+    setAddressError('');
+
+    console.log('[AccountDashboard] Loading addresses for user:', user?.id, user);
+
+    const result = await getCustomerAddresses(user?.id);
+    console.log('[AccountDashboard] Addresses result:', result);
+
+    if (result.addresses) {
+      setAddresses(result.addresses);
+    } else {
+      setAddressError('Failed to load addresses');
+    }
+
+    setAddressLoading(false);
+  };
+
   // Refresh user data once when loaded to get fresh data with firstName/lastName
   useEffect(() => {
     if (!isLoading && user && !hasRefreshed && refreshUser) {
@@ -43,6 +84,14 @@ export function AccountDashboard({ lang, dictionary }: AccountDashboardProps) {
       setHasRefreshed(true);
     }
   }, [isLoading, user, refreshUser, hasRefreshed]);
+
+  // Load addresses when switching to addresses tab
+  useEffect(() => {
+    if (activeTab === 'addresses' && !addressLoading && user?.id) {
+      console.log('[AccountDashboard] Switching to addresses tab, user ID:', user.id);
+      loadAddresses();
+    }
+  }, [activeTab, user?.id]);
 
   // Mock orders - replace with actual orders from your backend
   const orders: any[] = [];
@@ -82,6 +131,121 @@ export function AccountDashboard({ lang, dictionary }: AccountDashboardProps) {
       setTimeout(() => setPasswordSuccess(''), 3000);
     } else {
       setPasswordError(result.error || 'Failed to change password');
+    }
+  };
+
+  // Handle add new address
+  const handleAddAddress = () => {
+    setEditingAddress(null);
+    setAddressForm({
+      first_name: user?.firstName || '',
+      last_name: user?.lastName || '',
+      company: '',
+      address_1: '',
+      address_2: '',
+      city: '',
+      state: '',
+      postcode: '',
+      country: 'TH',
+      phone: '',
+    });
+    setShowAddressForm(true);
+  };
+
+  // Handle edit address
+  const handleEditAddress = (address: any) => {
+    setEditingAddress(address);
+    setAddressForm(address);
+    setShowAddressForm(true);
+  };
+
+  // Handle save address
+  const handleSaveAddress = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAddressError('');
+    setAddressSuccess('');
+    setIsSubmittingAddress(true);
+
+    console.log('[AccountDashboard] Saving address. User ID:', user?.id, 'User:', user);
+    console.log('[AccountDashboard] Address form:', addressForm);
+
+    try {
+      let result;
+
+      if (editingAddress) {
+        // Update existing address
+        result = await updateCustomerAddress(editingAddress.id, addressForm, user?.id);
+      } else {
+        // Create new address
+        result = await createCustomerAddress(addressForm, user?.id);
+      }
+
+      console.log('[AccountDashboard] Save result:', result);
+
+      if (result.success) {
+        setAddressSuccess(editingAddress ? 'Address updated successfully' : 'Address added successfully');
+        setShowAddressForm(false);
+        setEditingAddress(null);
+        setAddressForm({
+          first_name: '',
+          last_name: '',
+          company: '',
+          address_1: '',
+          address_2: '',
+          city: '',
+          state: '',
+          postcode: '',
+          country: 'TH',
+          phone: '',
+        });
+
+        // Reload addresses
+        await loadAddresses();
+
+        // Clear success message after 3 seconds
+        setTimeout(() => setAddressSuccess(''), 3000);
+      } else {
+        setAddressError(result.error || 'Failed to save address');
+      }
+    } catch (err) {
+      setAddressError('Failed to save address');
+    } finally {
+      setIsSubmittingAddress(false);
+    }
+  };
+
+  // Handle cancel address form
+  const handleCancelAddress = () => {
+    setShowAddressForm(false);
+    setEditingAddress(null);
+    setAddressForm({
+      first_name: '',
+      last_name: '',
+      company: '',
+      address_1: '',
+      address_2: '',
+      city: '',
+      state: '',
+      postcode: '',
+      country: 'TH',
+      phone: '',
+    });
+  };
+
+  // Handle delete address
+  const handleDeleteAddress = async (addressId: string) => {
+    if (!confirm('Are you sure you want to delete this address?')) {
+      return;
+    }
+
+    const result = await deleteCustomerAddress(addressId, user?.id);
+
+    if (result.success) {
+      setAddressSuccess('Address deleted successfully');
+      await loadAddresses();
+      setTimeout(() => setAddressSuccess(''), 3000);
+    } else {
+      setAddressError(result.error || 'Failed to delete address');
     }
   };
 
@@ -361,19 +525,217 @@ export function AccountDashboard({ lang, dictionary }: AccountDashboardProps) {
                   <div>
                     <div className="flex justify-between items-center mb-6">
                       <h2 className="text-2xl font-bold text-gray-900">{account.addresses}</h2>
-                      <Button variant="primary" size="sm">
-                        {account.add_address}
-                      </Button>
+                      {!showAddressForm && (
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={handleAddAddress}
+                        >
+                          {account.add_address || 'Add Address'}
+                        </Button>
+                      )}
                     </div>
 
-                    <div className="text-center py-12">
-                      <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      <h3 className="mt-2 text-sm font-medium text-gray-900">No addresses found</h3>
-                      <p className="mt-1 text-sm text-gray-500">Add your first address to get started</p>
-                    </div>
+                    {/* Success/Error Messages */}
+                    {addressSuccess && (
+                      <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
+                        {addressSuccess}
+                      </div>
+                    )}
+                    {addressError && (
+                      <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                        {addressError}
+                      </div>
+                    )}
+
+                    {/* Address Form */}
+                    {showAddressForm && (
+                      <div className="mb-6 p-6 border border-gray-200 rounded-lg bg-gray-50">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                          {editingAddress ? (account.edit_address || 'Edit Address') : (account.add_address || 'Add Address')}
+                        </h3>
+                        <form onSubmit={handleSaveAddress} className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                {auth.first_name} *
+                              </label>
+                              <input
+                                type="text"
+                                value={addressForm.first_name}
+                                onChange={(e) => setAddressForm({ ...addressForm, first_name: e.target.value })}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                required
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                {auth.last_name} *
+                              </label>
+                              <input
+                                type="text"
+                                value={addressForm.last_name}
+                                onChange={(e) => setAddressForm({ ...addressForm, last_name: e.target.value })}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                required
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              {account.company || 'Company'}
+                            </label>
+                            <input
+                              type="text"
+                              value={addressForm.company}
+                              onChange={(e) => setAddressForm({ ...addressForm, company: e.target.value })}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              {account.address_1 || 'Address'} *
+                            </label>
+                            <input
+                              type="text"
+                              value={addressForm.address_1}
+                              onChange={(e) => setAddressForm({ ...addressForm, address_1: e.target.value })}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              {account.address_2 || 'Apartment, suite, etc.'}
+                            </label>
+                            <input
+                              type="text"
+                              value={addressForm.address_2}
+                              onChange={(e) => setAddressForm({ ...addressForm, address_2: e.target.value })}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            />
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                {account.city || 'City'} *
+                              </label>
+                              <input
+                                type="text"
+                                value={addressForm.city}
+                                onChange={(e) => setAddressForm({ ...addressForm, city: e.target.value })}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                required
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                {account.state || 'Province'} *
+                              </label>
+                              <input
+                                type="text"
+                                value={addressForm.state}
+                                onChange={(e) => setAddressForm({ ...addressForm, state: e.target.value })}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                required
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                {account.postcode || 'Postcode'} *
+                              </label>
+                              <input
+                                type="text"
+                                value={addressForm.postcode}
+                                onChange={(e) => setAddressForm({ ...addressForm, postcode: e.target.value })}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                required
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              {account.phone || 'Phone'}
+                            </label>
+                            <input
+                              type="tel"
+                              value={addressForm.phone}
+                              onChange={(e) => setAddressForm({ ...addressForm, phone: e.target.value })}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            />
+                          </div>
+                          <div className="flex gap-4">
+                            <Button
+                              variant="primary"
+                              size="md"
+                              type="submit"
+                              disabled={isSubmittingAddress}
+                            >
+                              {isSubmittingAddress ? (account.saving || 'Saving...') : (account.save || 'Save')}
+                            </Button>
+                            <Button
+                              variant="secondary"
+                              size="md"
+                              type="button"
+                              onClick={handleCancelAddress}
+                              disabled={isSubmittingAddress}
+                            >
+                              {account.cancel || 'Cancel'}
+                            </Button>
+                          </div>
+                        </form>
+                      </div>
+                    )}
+
+                    {/* Addresses List */}
+                    {addressLoading ? (
+                      <div className="text-center py-12">
+                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                        <p className="mt-4 text-gray-600">{account.loading_addresses || 'Loading addresses...'}</p>
+                      </div>
+                    ) : addresses.length === 0 && !showAddressForm ? (
+                      <div className="text-center py-12">
+                        <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <h3 className="mt-2 text-sm font-medium text-gray-900">No addresses found</h3>
+                        <p className="mt-1 text-sm text-gray-500">Add your first address to get started</p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {addresses.map((address) => (
+                          <div key={address.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                            <div className="flex justify-between items-start mb-3">
+                              <div className="flex-1">
+                                <p className="font-semibold text-gray-900">{address.first_name} {address.last_name}</p>
+                                {address.company && <p className="text-sm text-gray-600">{address.company}</p>}
+                              </div>
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleEditAddress(address)}
+                                  className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                                >
+                                  {account.edit || 'Edit'}
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteAddress(address.id)}
+                                  className="text-red-600 hover:text-red-700 text-sm font-medium"
+                                >
+                                  {account.delete || 'Delete'}
+                                </button>
+                              </div>
+                            </div>
+                            <div className="text-sm text-gray-600 space-y-1">
+                              <p>{address.address_1}</p>
+                              {address.address_2 && <p>{address.address_2}</p>}
+                              <p>{address.city}, {address.state} {address.postcode}</p>
+                              {address.phone && <p>{account.phone}: {address.phone}</p>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

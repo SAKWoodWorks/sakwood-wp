@@ -323,6 +323,7 @@
     "logout": "ออกจากระบบ",
     "my_account": "บัญชีของฉัน",
     "email": "อีเมล",
+    "email_or_username": "อีเมลหรือชื่อผู้ใช้",
     "password": "รหัสผ่าน",
     "confirm_password": "ยืนยันรหัสผ่าน",
     "forgot_password": "ลืมรหัสผ่าน?",
