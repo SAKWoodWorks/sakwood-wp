@@ -10,6 +10,11 @@ export function OrganizationStructuredData({ siteUrl = 'https://sakwood.com' }: 
     "url": siteUrl,
     "logo": `${siteUrl}/logo.png`,
     "description": "Thailand's trusted supplier of structural pine, marine plywood, and engineering timber. Quality wood products for construction, wholesale, and industrial use with same-day delivery in Bangkok.",
+    "foundingDate": "2020",
+    "founder": {
+      "@type": "Person",
+      "name": "Sakwood Team"
+    },
     "address": {
       "@type": "PostalAddress",
       "addressCountry": "TH",
@@ -32,7 +37,34 @@ export function OrganizationStructuredData({ siteUrl = 'https://sakwood.com' }: 
     "areaServed": {
       "@type": "Country",
       "name": "Thailand"
-    }
+    },
+    "knowsAbout": [
+      "Structural Pine",
+      "Marine Plywood",
+      "Engineering Timber",
+      "Construction Wood",
+      "Wholesale Plywood",
+      "Industrial Timber",
+      "Wood Products",
+      "Plywood Sheets",
+      "Timber Supplies",
+      "Building Materials",
+      "Wood Flooring",
+      "Decorative Plywood",
+      "Furniture Grade Plywood",
+      "Structural Lumber"
+    ],
+    "award": [
+      // Add awards when available
+      // {
+      //   "@type": "Award",
+      //   "name": "Best Wood Supplier 2023",
+      //   "awarder": {
+      //     "@type": "Organization",
+      //     "name": "Thai Construction Industry Association"
+      //   }
+      // }
+    ]
   };
 
   const websiteSchema = {
