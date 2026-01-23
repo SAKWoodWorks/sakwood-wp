@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { Announcer } from '@/components/ui/Announcer';
 
 export type UserRole = 'retail' | 'wholesale';
 export type WholesaleStatus = 'pending' | 'approved' | 'rejected' | 'active';
@@ -81,6 +82,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
+  const [announcement, setAnnouncement] = useState('');
 
   // Set mounted state
   useEffect(() => {
@@ -127,6 +129,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(data.user);
       localStorage.setItem(TOKEN_KEY, data.token);
       localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+      setAnnouncement(`Welcome back, ${data.user.displayName || data.user.firstName}`);
 
       return { success: true };
     } catch (error) {
@@ -169,6 +172,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+    setAnnouncement('You have been logged out successfully');
   }, []);
 
   const refreshUser = useCallback(async () => {
@@ -300,7 +304,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     updateProfile,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+      <Announcer message={announcement} role="status" />
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {

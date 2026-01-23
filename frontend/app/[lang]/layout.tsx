@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { SkipLink } from "@/components/ui/SkipLink";
 import { getMenu } from "@/lib/services/menuService";
 import { getDictionary } from "@/lib/get-dictionary";
 import type { Locale } from "@/i18n-config";
@@ -141,12 +142,13 @@ export default async function RootLayout({ children, params }: LayoutProps) {
         <OrganizationStructuredData siteUrl={siteUrl} />
       </head>
       <body className={inter.className}>
+        <SkipLink />
         <AuthProvider>
           <CartProvider>
             <CompareProvider>
               <ChatProvider>
                 <Header menuItems={menuItems} lang={lang as Locale} dictionary={dictionary} />
-                <main className="bg-transparent">{children}</main>
+                <main id="main-content" className="bg-transparent">{children}</main>
                 <Footer lang={lang as Locale} />
                 <ChatButtons dictionary={dictionary} />
                 <PromotionalPopup />

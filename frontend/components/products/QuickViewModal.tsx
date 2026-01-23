@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, ShoppingCart, GitCompare, Loader2 } from 'lucide-react';
 import { useCompare } from '@/lib/context/CompareContext';
 import { useCart } from '@/lib/context/CartContext';
@@ -45,6 +45,8 @@ export function QuickViewModal({ product, isOpen, onClose, lang = 'th', dictiona
   const [loading, setLoading] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const previousActiveElement = useRef<HTMLElement | null>(null);
 
   const dict = dictionary?.quick_view || {
     title: lang === 'th' ? 'ดูสินค้าอย่างรวดเห็น' : 'Quick View',
@@ -78,6 +80,58 @@ export function QuickViewModal({ product, isOpen, onClose, lang = 'th', dictiona
     }
   }, [isOpen]);
 
+  // Focus management for accessibility
+  useEffect(() => {
+    if (isOpen && modalRef.current) {
+      // Store the currently focused element
+      previousActiveElement.current = document.activeElement as HTMLElement;
+
+      // Get all focusable elements within the modal
+      const focusableElements = modalRef.current.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      const firstElement = focusableElements[0];
+
+      // Focus the first element
+      firstElement?.focus();
+
+      // Handle Tab key to trap focus within modal
+      const handleTab = (e: KeyboardEvent) => {
+        if (e.key !== 'Tab') return;
+
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        // If Shift+Tab on first element, move to last element
+        if (e.shiftKey && document.activeElement === firstElement) {
+          e.preventDefault();
+          lastElement?.focus();
+        }
+        // If Tab on last element, move to first element
+        else if (!e.shiftKey && document.activeElement === lastElement) {
+          e.preventDefault();
+          firstElement?.focus();
+        }
+      };
+
+      // Handle Escape key to close modal
+      const handleEscape = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          onClose();
+        }
+      };
+
+      document.addEventListener('keydown', handleTab);
+      document.addEventListener('keydown', handleEscape);
+
+      return () => {
+        document.removeEventListener('keydown', handleTab);
+        document.removeEventListener('keydown', handleEscape);
+        // Restore focus when modal closes
+        previousActiveElement.current?.focus();
+      };
+    }
+  }, [isOpen, onClose]);
+
   if (!product) return null;
 
   const handleAddToCart = async () => {
@@ -108,8 +162,12 @@ export function QuickViewModal({ product, isOpen, onClose, lang = 'th', dictiona
       onClick={onClose}
     >
       <div
+        ref={modalRef}
         className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl max-w-3xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto relative mx-2 sm:mx-0"
         onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="quick-view-title"
       >
         {/* Close Button */}
         <button
@@ -122,7 +180,7 @@ export function QuickViewModal({ product, isOpen, onClose, lang = 'th', dictiona
 
         {/* Header */}
         <div className="bg-gradient-to-r from-green-600 to-green-700 text-white p-4 sm:p-6 rounded-t-2xl sm:rounded-t-3xl">
-          <h2 className="text-xl sm:text-2xl font-bold">{dict.title}</h2>
+          <h2 id="quick-view-title" className="text-xl sm:text-2xl font-bold">{dict.title}</h2>
         </div>
 
         <div className="p-4 sm:p-6">
