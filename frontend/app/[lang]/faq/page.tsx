@@ -2,6 +2,7 @@ import { getFAQs, getFAQCategories } from '@/lib/services/faqService';
 import { getDictionary } from '@/lib/get-dictionary';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import { FAQList, FAQSearch, FAQCategories } from '@/components/faq';
+import { FAQPageStructuredData } from '@/components/seo/FAQPageStructuredData';
 import type { Locale } from '@/i18n-config';
 import type { FAQ, FAQCategory } from '@/lib/types';
 
@@ -61,6 +62,8 @@ export default async function FAQPage({ params, searchParams }: FAQPageProps) {
 
   return (
     <>
+      <FAQPageStructuredData faqs={filteredFAQs} />
+
       <Breadcrumbs items={breadcrumbItems} lang={lang as Locale} />
 
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-16 px-6">

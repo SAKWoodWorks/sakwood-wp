@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation';
 import { getKBArticleBySlug, getKBArticles, getKBCategories } from '@/lib/services/knowledgeBaseService';
 import { getDictionary } from '@/lib/get-dictionary';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
+import { HowToStructuredData } from '@/components/seo/HowToStructuredData';
+import { SpeakableStructuredData } from '@/components/seo/SpeakableStructuredData';
 import {
   KBDifficultyBadge,
   KBTableOfContents,
@@ -60,8 +62,14 @@ export default async function KnowledgeArticlePage({
     { name: article.title, href: `/${lang}/knowledge/${slug}` },
   ];
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://sakwood.com';
+  const articleUrl = `${siteUrl}/${lang}/knowledge/${slug}`;
+
   return (
     <>
+      <HowToStructuredData article={article} url={articleUrl} />
+      <SpeakableStructuredData cssSelectors={['.kb-content']} />
+
       <Breadcrumbs items={breadcrumbItems} lang={lang as Locale} />
 
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-16 px-6">

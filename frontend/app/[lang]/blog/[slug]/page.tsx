@@ -6,6 +6,8 @@ import { getBlogPostBySlug } from '@/lib/services/blogService';
 import { getDictionary } from '@/lib/get-dictionary';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import { sanitizeHTML } from '@/lib/utils/sanitize';
+import { ArticleStructuredData } from '@/components/seo/ArticleStructuredData';
+import { SpeakableStructuredData } from '@/components/seo/SpeakableStructuredData';
 import type { Locale } from '@/i18n-config';
 
 interface PageProps {
@@ -86,8 +88,14 @@ export default async function BlogPostPage({ params }: PageProps) {
     { name: post.title, href: `/${lang}/blog/${slug}` },
   ];
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://sakwood.com';
+  const articleUrl = `${siteUrl}/${lang}/blog/${slug}`;
+
   return (
     <>
+      <ArticleStructuredData article={post} url={articleUrl} />
+      <SpeakableStructuredData cssSelectors={['.prose']} />
+
       <Breadcrumbs items={breadcrumbItems} lang={lang as Locale} />
 
       <article className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
