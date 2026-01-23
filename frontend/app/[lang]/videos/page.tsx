@@ -42,40 +42,40 @@ export default async function VideosPage({ params, searchParams }: VideosPagePro
     <>
       <Breadcrumbs items={breadcrumbItems} lang={lang as Locale} />
 
-      <VideoPlayerWrapper />
+      <VideoPlayerWrapper>
+        <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-16 px-6">
+          <div className="max-w-7xl mx-auto">
+            {/* Header */}
+            <div className="text-center mb-12">
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                {videosDict.title}
+              </h1>
+              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+                {videosDict.subtitle}
+              </p>
+            </div>
 
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-16 px-6">
-        <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              {videosDict.title}
-            </h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              {videosDict.subtitle}
-            </p>
+            {/* Categories */}
+            {categories.length > 0 && (
+              <div className="mb-8">
+                <VideoCategories
+                  categories={categories}
+                  allLabel={videosDict.all_categories}
+                />
+              </div>
+            )}
+
+            {/* Video Grid */}
+            {filteredVideos.length > 0 ? (
+              <VideoGrid videos={filteredVideos} />
+            ) : (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+                <p className="text-gray-600">{videosDict.no_results}</p>
+              </div>
+            )}
           </div>
-
-          {/* Categories */}
-          {categories.length > 0 && (
-            <div className="mb-8">
-              <VideoCategories
-                categories={categories}
-                allLabel={videosDict.all_categories}
-              />
-            </div>
-          )}
-
-          {/* Video Grid */}
-          {filteredVideos.length > 0 ? (
-            <VideoGrid videos={filteredVideos} />
-          ) : (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
-              <p className="text-gray-600">{videosDict.no_results}</p>
-            </div>
-          )}
         </div>
-      </div>
+      </VideoPlayerWrapper>
     </>
   );
 }
