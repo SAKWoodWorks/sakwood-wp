@@ -1,8 +1,19 @@
 import { getVideos, getVideoCategories } from '@/lib/services/videoService';
 import { getDictionary } from '@/lib/get-dictionary';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
-import { VideoGrid, VideoCategories } from '@/components/video';
 import { VideoPlayerWrapper } from '@/components/video/VideoPlayerWrapper';
+import dynamic from 'next/dynamic';
+
+// Dynamically import video components with ssr: false to prevent client-server mismatch
+const VideoGrid = dynamic(() => import('@/components/video/VideoGrid').then(mod => mod.VideoGrid), {
+  ssr: false,
+  loading: () => <div className="text-center py-12">กำลังโหลดวิดีโอ...</div>
+});
+
+const VideoCategories = dynamic(() => import('@/components/video/VideoCategories').then(mod => mod.VideoCategories), {
+  ssr: false,
+  loading: () => <div className="text-center py-12">กำลังโหลดหมวดหมู่...</div>
+});
 import type { Locale } from '@/i18n-config';
 
 interface VideosPageProps {
@@ -19,7 +30,7 @@ export default async function VideosPage({ params, searchParams }: VideosPagePro
   const { category: categorySlug } = await searchParams;
 
   const dictionary = await getDictionary(lang as Locale);
-  const { videos: videosDict, common } = dictionary;
+  const { videos: videosDict = {}, common } = dictionary;
 
   // Fetch videos and categories
   const videosResult = await getVideos(lang);
@@ -30,7 +41,7 @@ export default async function VideosPage({ params, searchParams }: VideosPagePro
 
   // Filter videos by category if specified
   const filteredVideos = categorySlug
-    ? videos.filter((v) => v.category === categorySlug)
+    ? videos.filter((v) => v.videoCategory === categorySlug)
     : videos;
 
   const breadcrumbItems = [
