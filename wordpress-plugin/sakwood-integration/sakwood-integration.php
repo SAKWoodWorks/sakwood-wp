@@ -103,10 +103,34 @@ class Sakwood_Integration {
         // Load Product API
         require_once SAKWOOD_PLUGIN_DIR . 'product-api.php';
 
+        // Load Customer Orders API
+        require_once SAKWOOD_PLUGIN_DIR . 'customer-orders-api.php';
+
+        // Load Customer Addresses API
+        require_once SAKWOOD_PLUGIN_DIR . 'customer-addresses-api.php';
+
         // Load User Roles and Management
         require_once SAKWOOD_PLUGIN_DIR . 'user-roles.php';
         require_once SAKWOOD_PLUGIN_DIR . 'user-management.php';
         require_once SAKWOOD_PLUGIN_DIR . 'password-management.php';
+
+        // Load FAQ System
+        require_once SAKWOOD_PLUGIN_DIR . 'faq-cpt.php';
+        require_once SAKWOOD_PLUGIN_DIR . 'faq-rest-api.php';
+
+        // Load Video Gallery
+        require_once SAKWOOD_PLUGIN_DIR . 'video-gallery-cpt.php';
+        require_once SAKWOOD_PLUGIN_DIR . 'video-gallery-api.php';
+
+        // Load Knowledge Base
+        require_once SAKWOOD_PLUGIN_DIR . 'knowledge-base-cpt.php';
+        require_once SAKWOOD_PLUGIN_DIR . 'knowledge-base-taxonomy.php';
+        require_once SAKWOOD_PLUGIN_DIR . 'knowledge-base-rest-api.php';
+
+        // Load CRM Customer-Facing APIs
+        require_once SAKWOOD_PLUGIN_DIR . 'crm-customer-api.php';
+        require_once SAKWOOD_PLUGIN_DIR . 'crm-interactions-api.php';
+        require_once SAKWOOD_PLUGIN_DIR . 'crm-tasks-api.php';
 
         // Initialize CRM database
         $crm_db = new Sakwood_CRM_Database();
