@@ -3,15 +3,16 @@
 import { Play } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
+import { useVideoPlayerStore } from './VideoPlayerWrapper';
 import type { VideoGalleryItem } from '@/lib/types';
 
 interface VideoCardProps {
   video: VideoGalleryItem;
-  onPlay: (video: VideoGalleryItem) => void;
 }
 
-export function VideoCard({ video, onPlay }: VideoCardProps) {
+export function VideoCard({ video }: VideoCardProps) {
   const [imageError, setImageError] = useState(false);
+  const { openModal } = useVideoPlayerStore();
 
   // Generate thumbnail URL based on video type
   const getThumbnailUrl = () => {
@@ -33,7 +34,7 @@ export function VideoCard({ video, onPlay }: VideoCardProps) {
 
   return (
     <div
-      onClick={() => onPlay(video)}
+      onClick={() => openModal(video)}
       className="group cursor-pointer"
     >
       <div className="relative aspect-video bg-gray-200 rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300">

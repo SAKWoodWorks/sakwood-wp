@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 interface VideoCategory {
@@ -11,25 +12,35 @@ interface VideoCategory {
 
 interface VideoCategoriesProps {
   categories: VideoCategory[];
-  selectedCategory?: string;
-  onSelectCategory: (slug: string | undefined) => void;
   allLabel: string;
   className?: string;
 }
 
 export function VideoCategories({
   categories,
-  selectedCategory,
-  onSelectCategory,
   allLabel,
   className,
 }: VideoCategoriesProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const selectedCategory = searchParams.get('category');
+
+  const handleCategorySelect = (slug: string | undefined) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (slug) {
+      params.set('category', slug);
+    } else {
+      params.delete('category');
+    }
+    router.push(`?${params.toString()}`, { scroll: false });
+  };
+
   return (
     <div className={className}>
       <div className="flex flex-wrap gap-2">
         {/* All Categories Button */}
         <button
-          onClick={() => onSelectCategory(undefined)}
+          onClick={() => handleCategorySelect(undefined)}
           className={cn(
             'px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200',
             !selectedCategory
@@ -44,7 +55,7 @@ export function VideoCategories({
         {categories?.map((category) => (
           <button
             key={category.id}
-            onClick={() => onSelectCategory(category.slug)}
+            onClick={() => handleCategorySelect(category.slug)}
             className={cn(
               'px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200',
               selectedCategory === category.slug

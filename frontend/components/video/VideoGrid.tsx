@@ -3,11 +3,10 @@ import type { VideoGalleryItem } from '@/lib/types';
 
 interface VideoGridProps {
   videos: VideoGalleryItem[];
-  onPlay: (video: VideoGalleryItem) => void;
   className?: string;
 }
 
-export function VideoGrid({ videos, onPlay, className }: VideoGridProps) {
+export function VideoGrid({ videos, className }: VideoGridProps) {
   if (!videos || videos.length === 0) {
     return (
       <div className={className}>
@@ -20,7 +19,7 @@ export function VideoGrid({ videos, onPlay, className }: VideoGridProps) {
     <div className={className}>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {videos.map((video) => (
-          <VideoCard key={video.id} video={video} onPlay={onPlay} />
+          <VideoCard key={video.id} video={video} />
         ))}
       </div>
     </div>
