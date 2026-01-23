@@ -79,19 +79,6 @@ export default async function FAQPage({ params, searchParams }: FAQPageProps) {
           <div className="mb-8">
             <FAQSearch
               placeholder={faq.search_placeholder}
-              defaultValue={searchQuery}
-              onSearch={(query) => {
-                // This will trigger a page navigation with the search query
-                if (typeof window !== 'undefined') {
-                  const url = new URL(window.location.href);
-                  if (query) {
-                    url.searchParams.set('q', query);
-                  } else {
-                    url.searchParams.delete('q');
-                  }
-                  window.location.href = url.toString();
-                }
-              }}
             />
           </div>
 
@@ -100,18 +87,6 @@ export default async function FAQPage({ params, searchParams }: FAQPageProps) {
             <div className="mb-8">
               <FAQCategories
                 categories={categories}
-                selectedCategory={categorySlug}
-                onSelectCategory={(slug) => {
-                  if (typeof window !== 'undefined') {
-                    const url = new URL(window.location.href);
-                    if (slug) {
-                      url.searchParams.set('category', slug);
-                    } else {
-                      url.searchParams.delete('category');
-                    }
-                    window.location.href = url.toString();
-                  }
-                }}
                 allLabel={faq.all_categories}
               />
             </div>

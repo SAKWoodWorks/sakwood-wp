@@ -1,23 +1,22 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Search, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface FAQSearchProps {
-  onSearch: (query: string) => void;
   placeholder?: string;
   className?: string;
-  defaultValue?: string;
 }
 
 export function FAQSearch({
-  onSearch,
   placeholder = 'ค้นหาคำตอบ...',
   className,
-  defaultValue = '',
 }: FAQSearchProps) {
-  const [query, setQuery] = useState(defaultValue);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [query, setQuery] = useState(searchParams.get('q') || '');
   const debounceRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
@@ -28,7 +27,14 @@ export function FAQSearch({
 
     // Set new timeout for debounced search
     debounceRef.current = setTimeout(() => {
-      onSearch(query);
+      // Update URL with search query
+      const params = new URLSearchParams(searchParams.toString());
+      if (query) {
+        params.set('q', query);
+      } else {
+        params.delete('q');
+      }
+      router.push(`?${params.toString()}`, { scroll: false });
     }, 300);
 
     // Cleanup on unmount
@@ -37,11 +43,10 @@ export function FAQSearch({
         clearTimeout(debounceRef.current);
       }
     };
-  }, [query, onSearch]);
+  }, [query, searchParams, router]);
 
   const handleClear = () => {
     setQuery('');
-    onSearch('');
   };
 
   return (
