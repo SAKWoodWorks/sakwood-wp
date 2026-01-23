@@ -16,8 +16,8 @@ export function VideoCard({ video }: VideoCardProps) {
 
   // Generate thumbnail URL based on video type
   const getThumbnailUrl = () => {
-    if (video.thumbnail) {
-      return video.thumbnail;
+    if (video.thumbnailUrl) {
+      return video.thumbnailUrl;
     }
 
     if (video.videoType === 'youtube' && video.videoId) {
@@ -28,8 +28,8 @@ export function VideoCard({ video }: VideoCardProps) {
     return '/images/video-placeholder.jpg';
   };
 
-  const duration = video.duration
-    ? video.duration
+  const duration = video.videoDuration
+    ? video.videoDuration
     : null;
 
   return (
@@ -69,9 +69,9 @@ export function VideoCard({ video }: VideoCardProps) {
         )}
 
         {/* Category Badge */}
-        {video.category && (
+        {video.videoCategory && (
           <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
-            {video.category}
+            {video.videoCategory}
           </div>
         )}
       </div>

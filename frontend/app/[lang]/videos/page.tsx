@@ -2,18 +2,7 @@ import { getVideos, getVideoCategories } from '@/lib/services/videoService';
 import { getDictionary } from '@/lib/get-dictionary';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import { VideoPlayerWrapper } from '@/components/video/VideoPlayerWrapper';
-import dynamic from 'next/dynamic';
-
-// Dynamically import video components with ssr: false to prevent client-server mismatch
-const VideoGrid = dynamic(() => import('@/components/video/VideoGrid').then(mod => mod.VideoGrid), {
-  ssr: false,
-  loading: () => <div className="text-center py-12">กำลังโหลดวิดีโอ...</div>
-});
-
-const VideoCategories = dynamic(() => import('@/components/video/VideoCategories').then(mod => mod.VideoCategories), {
-  ssr: false,
-  loading: () => <div className="text-center py-12">กำลังโหลดหมวดหมู่...</div>
-});
+import { VideoGalleryContent } from '@/components/video/VideoGalleryContent';
 import type { Locale } from '@/i18n-config';
 
 interface VideosPageProps {
@@ -66,24 +55,12 @@ export default async function VideosPage({ params, searchParams }: VideosPagePro
               </p>
             </div>
 
-            {/* Categories */}
-            {categories.length > 0 && (
-              <div className="mb-8">
-                <VideoCategories
-                  categories={categories}
-                  allLabel={videosDict.all_categories}
-                />
-              </div>
-            )}
-
-            {/* Video Grid */}
-            {filteredVideos.length > 0 ? (
-              <VideoGrid videos={filteredVideos} />
-            ) : (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
-                <p className="text-gray-600">{videosDict.no_results}</p>
-              </div>
-            )}
+            {/* Video Content Grid with Client Components */}
+            <VideoGalleryContent
+              videos={filteredVideos}
+              categories={categories}
+              videosDict={videosDict}
+            />
           </div>
         </div>
       </VideoPlayerWrapper>
