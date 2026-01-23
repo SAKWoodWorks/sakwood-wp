@@ -12,6 +12,7 @@ import { AuthProvider } from "@/lib/context/AuthContext";
 import { CompareProvider } from "@/lib/context/CompareContext";
 import { ChatProvider } from "@/lib/context/ChatContext";
 import { OrganizationStructuredData } from "@/components/seo/OrganizationStructuredData";
+import { GoogleAnalytics } from "@/components/seo/GoogleAnalytics";
 import { ChatButtons } from "@/components/chat";
 import { PromotionalPopup } from "@/components/ui/PromotionalPopup";
 
@@ -139,6 +140,7 @@ export default async function RootLayout({ children, params }: LayoutProps) {
   return (
     <html lang={lang} className="scroll-smooth">
       <head>
+        <GoogleAnalytics />
         <OrganizationStructuredData siteUrl={siteUrl} />
       </head>
       <body className={inter.className}>
