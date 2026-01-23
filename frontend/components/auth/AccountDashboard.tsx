@@ -9,6 +9,9 @@ import type { Locale } from '@/i18n-config';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import { Button } from '@/components/ui';
 import { getCustomerAddresses, createCustomerAddress, updateCustomerAddress, deleteCustomerAddress } from '@/lib/services/customerAddressService';
+import { getCRMProfile, getInteractions, getTasks } from '@/lib/services/crmService';
+import { CRMProfile, CRMInteractionsList, CRMTasksList, CRMStats } from '@/components/crm';
+import type { CRMCustomer, Interaction, Task } from '@/lib/types';
 
 interface AccountDashboardProps {
   lang: Locale;
@@ -16,15 +19,16 @@ interface AccountDashboardProps {
     account: any;
     common: any;
     auth: any;
+    crm: any;
   };
 }
 
 export function AccountDashboard({ lang, dictionary }: AccountDashboardProps) {
-  const { account, common, auth } = dictionary;
+  const { account, common, auth, crm } = dictionary;
   const { user, isLoading, logout, changePassword, refreshUser } = useAuth();
   const { getCartCount } = useCart();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'overview' | 'orders' | 'details' | 'addresses'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'orders' | 'details' | 'addresses' | 'crm'>('overview');
 
   // Password form state
   const [passwordData, setPasswordData] = useState({
@@ -58,6 +62,12 @@ export function AccountDashboard({ lang, dictionary }: AccountDashboardProps) {
   const [addressSuccess, setAddressSuccess] = useState('');
   const [isSubmittingAddress, setIsSubmittingAddress] = useState(false);
 
+  // CRM state
+  const [crmProfile, setCrmProfile] = useState<CRMCustomer | null>(null);
+  const [crmInteractions, setCrmInteractions] = useState<Interaction[]>([]);
+  const [crmTasks, setCrmTasks] = useState<Task[]>([]);
+  const [crmLoading, setCrmLoading] = useState(false);
+
   // Load addresses
   const loadAddresses = async () => {
     setAddressLoading(true);
@@ -77,6 +87,31 @@ export function AccountDashboard({ lang, dictionary }: AccountDashboardProps) {
     setAddressLoading(false);
   };
 
+  // Load CRM data
+  const loadCRMData = async () => {
+    if (!user?.id) return;
+
+    setCrmLoading(true);
+
+    const [profileResult, interactionsResult, tasksResult] = await Promise.all([
+      getCRMProfile(user.id),
+      getInteractions(user.id),
+      getTasks(user.id),
+    ]);
+
+    if (profileResult.success && profileResult.data) {
+      setCrmProfile(profileResult.data);
+    }
+    if (interactionsResult.success && interactionsResult.data?.interactions) {
+      setCrmInteractions(interactionsResult.data.interactions);
+    }
+    if (tasksResult.success && tasksResult.data?.tasks) {
+      setCrmTasks(tasksResult.data.tasks);
+    }
+
+    setCrmLoading(false);
+  };
+
   // Refresh user data once when loaded to get fresh data with firstName/lastName
   useEffect(() => {
     if (!isLoading && user && !hasRefreshed && refreshUser) {
@@ -90,6 +125,13 @@ export function AccountDashboard({ lang, dictionary }: AccountDashboardProps) {
     if (activeTab === 'addresses' && !addressLoading && user?.id) {
       console.log('[AccountDashboard] Switching to addresses tab, user ID:', user.id);
       loadAddresses();
+    }
+  }, [activeTab, user?.id]);
+
+  // Load CRM data when switching to CRM tab
+  useEffect(() => {
+    if (activeTab === 'crm' && !crmLoading && user?.id) {
+      loadCRMData();
     }
   }, [activeTab, user?.id]);
 
@@ -327,6 +369,16 @@ export function AccountDashboard({ lang, dictionary }: AccountDashboardProps) {
                     }`}
                   >
                     {account.addresses}
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('crm')}
+                    className={`w-full text-left px-4 py-2 rounded-md transition-colors ${
+                      activeTab === 'crm'
+                        ? 'bg-blue-600 text-white'
+                        : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    {crm.title}
                   </button>
                   <hr className="my-2" />
                   <button
@@ -735,6 +787,110 @@ export function AccountDashboard({ lang, dictionary }: AccountDashboardProps) {
                           </div>
                         ))}
                       </div>
+                    )}
+                  </div>
+                )}
+
+                {activeTab === 'crm' && (
+                  <div className="space-y-8">
+                    {crmLoading ? (
+                      <div className="text-center py-12">
+                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                        <p className="mt-4 text-gray-600">Loading CRM data...</p>
+                      </div>
+                    ) : (
+                      <>
+                        {/* CRM Stats */}
+                        {crmProfile && (
+                          <CRMStats
+                            stats={{
+                              total_orders: crmProfile.totalOrders,
+                              total_spent: crmProfile.totalSpent,
+                              avg_order_value: crmProfile.avgOrderValue,
+                              member_since: crmProfile.memberSince,
+                            }}
+                            labels={{
+                              total_orders: crm.total_orders,
+                              total_spent: crm.total_spent,
+                              avg_order_value: crm.avg_order_value,
+                              member_since: crm.member_since,
+                            }}
+                          />
+                        )}
+
+                        {/* CRM Profile */}
+                        {crmProfile && (
+                          <CRMProfile
+                            profile={crmProfile}
+                            userId={user?.id}
+                            labels={{
+                              customer_type: crm.customer_type,
+                              phone: crm.phone,
+                              line_id: crm.line_id,
+                              company: crm.company,
+                              tax_id: crm.tax_id,
+                              edit: crm.edit,
+                              save: crm.save,
+                              cancel: crm.cancel,
+                              retail: crm.retail,
+                              wholesale: crm.wholesale,
+                              vip: crm.vip,
+                              profile_title: crm.profile_title,
+                            }}
+                            onUpdate={loadCRMData}
+                          />
+                        )}
+
+                        {/* Grid for Interactions and Tasks */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                          {/* Interactions */}
+                          <CRMInteractionsList
+                            interactions={crmInteractions}
+                            userId={user?.id}
+                            labels={{
+                              title: crm.interactions_title,
+                              no_results: crm.no_interactions,
+                              add_note: crm.add_note,
+                              note_placeholder: crm.note_placeholder,
+                              send: account.save,
+                              call: crm.call,
+                              email: crm.email,
+                              line: crm.line,
+                              visit: crm.visit,
+                              note: crm.note,
+                              inbound: crm.inbound,
+                              outbound: crm.outbound,
+                            }}
+                            onUpdate={loadCRMData}
+                            locale={lang}
+                          />
+
+                          {/* Tasks */}
+                          <CRMTasksList
+                            tasks={crmTasks}
+                            labels={{
+                              title: crm.tasks_title,
+                              no_results: crm.no_tasks,
+                              pending_tasks: crm.pending_tasks,
+                              completed_tasks: crm.completed_tasks,
+                              priority: crm.priority,
+                              status: crm.status,
+                              due_date: crm.due_date,
+                              call: crm.call,
+                              email: crm.email,
+                              line: crm.line,
+                              visit: crm.visit,
+                              note: crm.note,
+                              follow_up: crm.follow_up,
+                              payment_reminder: crm.payment_reminder,
+                              send_quote: crm.send_quote,
+                              order_confirmation: crm.order_confirmation,
+                              shipping_update: crm.shipping_update,
+                            }}
+                            locale={lang}
+                          />
+                        </div>
+                      </>
                     )}
                   </div>
                 )}
