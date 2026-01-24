@@ -186,6 +186,7 @@ class Sakwood_Product_API {
             'databaseId' => $product->get_id(),
             'name' => $name,
             'slug' => urldecode($product->get_slug()),
+            'sku' => $product->get_sku(),
             'language' => $language,
             'price' => $product->get_price(),
             'regularPrice' => $product->get_regular_price(),

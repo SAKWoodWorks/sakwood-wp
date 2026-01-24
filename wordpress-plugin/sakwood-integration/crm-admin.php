@@ -252,123 +252,332 @@ new Sakwood_CRM_Admin();
 /**
  * AJAX: Save customer interaction
  */
-add_action('wp_ajax_sakwood_save_interaction', function() {
+add_action('wp_ajax_sakwood_crm_save_interaction', function() {
     check_ajax_referer('sakwood_crm_nonce', 'nonce');
 
     if (!current_user_can('manage_woocommerce')) {
-        wp_send_json_error('Permission denied');
+        wp_send_json_error(array('message' => 'Permission denied'));
     }
 
+    $interaction_id = isset($_POST['interaction_id']) ? intval($_POST['interaction_id']) : 0;
     $customer_id = isset($_POST['customer_id']) ? intval($_POST['customer_id']) : 0;
     $interaction_type = isset($_POST['interaction_type']) ? sanitize_text_field($_POST['interaction_type']) : '';
     $subject = isset($_POST['subject']) ? sanitize_text_field($_POST['subject']) : '';
     $message = isset($_POST['message']) ? sanitize_textarea_field($_POST['message']) : '';
     $direction = isset($_POST['direction']) ? sanitize_text_field($_POST['direction']) : 'outbound';
 
-    if (!$customer_id || empty($interaction_type)) {
-        wp_send_json_error('Missing required fields');
+    if (!$customer_id || empty($interaction_type) || empty($subject)) {
+        wp_send_json_error(array('message' => 'Missing required fields'));
     }
 
-    $interaction_id = Sakwood_CRM_Interaction::create(array(
+    $data = array(
         'customer_id' => $customer_id,
         'interaction_type' => $interaction_type,
         'subject' => $subject,
         'message' => $message,
         'direction' => $direction,
-    ));
+    );
 
     if ($interaction_id) {
-        wp_send_json_success(array('interaction_id' => $interaction_id));
+        // Update existing interaction
+        $result = Sakwood_CRM_Interaction::update($interaction_id, $data);
     } else {
-        wp_send_json_error('Failed to save interaction');
+        // Create new interaction
+        $result = Sakwood_CRM_Interaction::create($data);
+    }
+
+    if ($result) {
+        wp_send_json_success(array('message' => 'Interaction saved successfully', 'interaction_id' => $result));
+    } else {
+        wp_send_json_error(array('message' => 'Failed to save interaction'));
     }
 });
 
 /**
  * AJAX: Save task
  */
-add_action('wp_ajax_sakwood_save_task', function() {
+add_action('wp_ajax_sakwood_crm_save_task', function() {
     check_ajax_referer('sakwood_crm_nonce', 'nonce');
 
     if (!current_user_can('manage_woocommerce')) {
-        wp_send_json_error('Permission denied');
+        wp_send_json_error(array('message' => 'Permission denied'));
     }
 
+    $task_id = isset($_POST['task_id']) ? intval($_POST['task_id']) : 0;
     $customer_id = isset($_POST['customer_id']) ? intval($_POST['customer_id']) : 0;
     $title = isset($_POST['title']) ? sanitize_text_field($_POST['title']) : '';
     $description = isset($_POST['description']) ? sanitize_textarea_field($_POST['description']) : '';
-    $task_type = isset($_POST['task_type']) ? sanitize_text_field($_POST['task_type']) : 'follow_up';
+    $task_type = isset($_POST['task_type']) ? sanitize_text_field($_POST['task_type']) : 'other';
     $priority = isset($_POST['priority']) ? sanitize_text_field($_POST['priority']) : 'medium';
     $due_date = isset($_POST['due_date']) ? sanitize_text_field($_POST['due_date']) : '';
+    $assigned_to = isset($_POST['assigned_to']) ? sanitize_text_field($_POST['assigned_to']) : '';
 
-    if (!$customer_id || empty($title)) {
-        wp_send_json_error('Missing required fields');
+    if (empty($title)) {
+        wp_send_json_error(array('message' => 'Missing required field: title'));
     }
 
-    $task_id = Sakwood_CRM_Task::create(array(
-        'customer_id' => $customer_id,
+    $data = array(
+        'customer_id' => $customer_id ?: null,
         'title' => $title,
         'description' => $description,
         'task_type' => $task_type,
         'priority' => $priority,
-        'due_date' => !empty($due_date) ? date('Y-m-d H:i:s', strtotime($due_date)) : null,
-    ));
+        'assigned_to' => $assigned_to,
+    );
+
+    if (!empty($due_date)) {
+        $data['due_date'] = date('Y-m-d H:i:s', strtotime($due_date));
+    }
 
     if ($task_id) {
-        wp_send_json_success(array('task_id' => $task_id));
+        // Update existing task
+        $result = Sakwood_CRM_Task::update($task_id, $data);
     } else {
-        wp_send_json_error('Failed to create task');
+        // Create new task
+        $result = Sakwood_CRM_Task::create($data);
+    }
+
+    if ($result) {
+        wp_send_json_success(array('message' => 'Task saved successfully', 'task_id' => $result));
+    } else {
+        wp_send_json_error(array('message' => 'Failed to save task'));
     }
 });
 
 /**
  * AJAX: Complete task
  */
-add_action('wp_ajax_sakwood_complete_task', function() {
+add_action('wp_ajax_sakwood_crm_complete_task', function() {
     check_ajax_referer('sakwood_crm_nonce', 'nonce');
 
     if (!current_user_can('manage_woocommerce')) {
-        wp_send_json_error('Permission denied');
+        wp_send_json_error(array('message' => 'Permission denied'));
     }
 
     $task_id = isset($_POST['task_id']) ? intval($_POST['task_id']) : 0;
 
     if (!$task_id) {
-        wp_send_json_error('Invalid task ID');
+        wp_send_json_error(array('message' => 'Invalid task ID'));
     }
 
-    $result = Sakwood_CRM_Task::complete($task_id);
+    $result = Sakwood_CRM_Task::update($task_id, array('status' => 'completed'));
 
-    if ($result !== false) {
-        wp_send_json_success('Task completed');
+    if ($result) {
+        wp_send_json_success(array('message' => 'Task completed successfully'));
     } else {
-        wp_send_json_error('Failed to complete task');
+        wp_send_json_error(array('message' => 'Failed to complete task'));
     }
 });
 
 /**
- * AJAX: Update customer
+ * AJAX: Reopen task
  */
-add_action('wp_ajax_sakwood_update_customer', function() {
+add_action('wp_ajax_sakwood_crm_reopen_task', function() {
     check_ajax_referer('sakwood_crm_nonce', 'nonce');
 
     if (!current_user_can('manage_woocommerce')) {
-        wp_send_json_error('Permission denied');
+        wp_send_json_error(array('message' => 'Permission denied'));
     }
 
-    $customer_id = isset($_POST['customer_id']) ? intval($_POST['customer_id']) : 0;
-    $field = isset($_POST['field']) ? sanitize_text_field($_POST['field']) : '';
-    $value = isset($_POST['value']) ? sanitize_text_field($_POST['value']) : '';
+    $task_id = isset($_POST['task_id']) ? intval($_POST['task_id']) : 0;
 
-    if (!$customer_id || empty($field)) {
-        wp_send_json_error('Missing required fields');
+    if (!$task_id) {
+        wp_send_json_error(array('message' => 'Invalid task ID'));
     }
 
-    $result = Sakwood_CRM_Customer::update($customer_id, array($field => $value));
+    $result = Sakwood_CRM_Task::update($task_id, array('status' => 'pending'));
 
-    if ($result !== false) {
-        wp_send_json_success('Customer updated');
+    if ($result) {
+        wp_send_json_success(array('message' => 'Task reopened successfully'));
     } else {
-        wp_send_json_error('Failed to update customer');
+        wp_send_json_error(array('message' => 'Failed to reopen task'));
     }
+});
+
+/**
+ * AJAX: Delete task
+ */
+add_action('wp_ajax_sakwood_crm_delete_task', function() {
+    check_ajax_referer('sakwood_crm_nonce', 'nonce');
+
+    if (!current_user_can('manage_woocommerce')) {
+        wp_send_json_error(array('message' => 'Permission denied'));
+    }
+
+    $task_id = isset($_POST['task_id']) ? intval($_POST['task_id']) : 0;
+
+    if (!$task_id) {
+        wp_send_json_error(array('message' => 'Invalid task ID'));
+    }
+
+    $result = Sakwood_CRM_Task::delete($task_id);
+
+    if ($result) {
+        wp_send_json_success(array('message' => 'Task deleted successfully'));
+    } else {
+        wp_send_json_error(array('message' => 'Failed to delete task'));
+    }
+});
+
+/**
+ * AJAX: Delete interaction
+ */
+add_action('wp_ajax_sakwood_crm_delete_interaction', function() {
+    check_ajax_referer('sakwood_crm_nonce', 'nonce');
+
+    if (!current_user_can('manage_woocommerce')) {
+        wp_send_json_error(array('message' => 'Permission denied'));
+    }
+
+    $interaction_id = isset($_POST['interaction_id']) ? intval($_POST['interaction_id']) : 0;
+
+    if (!$interaction_id) {
+        wp_send_json_error(array('message' => 'Invalid interaction ID'));
+    }
+
+    $result = Sakwood_CRM_Interaction::delete($interaction_id);
+
+    if ($result) {
+        wp_send_json_success(array('message' => 'Interaction deleted successfully'));
+    } else {
+        wp_send_json_error(array('message' => 'Failed to delete interaction'));
+    }
+});
+
+/**
+ * AJAX: Get interaction for viewing
+ */
+add_action('wp_ajax_sakwood_crm_get_interaction', function() {
+    check_ajax_referer('sakwood_crm_nonce', 'nonce');
+
+    if (!current_user_can('manage_woocommerce')) {
+        wp_send_json_error(array('message' => 'Permission denied'));
+    }
+
+    $interaction_id = isset($_POST['interaction_id']) ? intval($_POST['interaction_id']) : 0;
+
+    if (!$interaction_id) {
+        wp_send_json_error(array('message' => 'Invalid interaction ID'));
+    }
+
+    $result = Sakwood_CRM_Interaction::get($interaction_id);
+
+    if ($result && $result['success']) {
+        $interaction = $result['data'];
+        wp_send_json_success(array(
+            'id' => $interaction->id,
+            'interaction_type' => $interaction->interaction_type,
+            'subject' => $interaction->subject,
+            'message' => $interaction->message,
+            'direction' => $interaction->direction,
+            'created_at' => $interaction->created_at,
+            'created_by_name' => $interaction->created_by_name,
+        ));
+    } else {
+        wp_send_json_error(array('message' => 'Interaction not found'));
+    }
+});
+
+/**
+ * AJAX: Get task for editing
+ */
+add_action('wp_ajax_sakwood_crm_get_task', function() {
+    check_ajax_referer('sakwood_crm_nonce', 'nonce');
+
+    if (!current_user_can('manage_woocommerce')) {
+        wp_send_json_error(array('message' => 'Permission denied'));
+    }
+
+    $task_id = isset($_POST['task_id']) ? intval($_POST['task_id']) : 0;
+
+    if (!$task_id) {
+        wp_send_json_error(array('message' => 'Invalid task ID'));
+    }
+
+    $result = Sakwood_CRM_Task::get($task_id);
+
+    if ($result && $result['success']) {
+        $task = $result['data'];
+        wp_send_json_success(array(
+            'id' => $task->id,
+            'customer_id' => $task->customer_id,
+            'title' => $task->title,
+            'description' => $task->description,
+            'task_type' => $task->task_type,
+            'priority' => $task->priority,
+            'due_date' => $task->due_date,
+            'assigned_to' => $task->assigned_to,
+        ));
+    } else {
+        wp_send_json_error(array('message' => 'Task not found'));
+    }
+});
+
+/**
+ * AJAX: Export interactions to CSV
+ */
+add_action('wp_ajax_sakwood_crm_export_interactions', function() {
+    if (!current_user_can('manage_woocommerce')) {
+        wp_die('Permission denied');
+    }
+
+    // Get filters from URL parameters
+    $interaction_type = isset($_GET['interaction_type']) ? sanitize_text_field($_GET['interaction_type']) : '';
+    $direction = isset($_GET['direction']) ? sanitize_text_field($_GET['direction']) : '';
+    $date_from = isset($_GET['date_from']) ? sanitize_text_field($_GET['date_from']) : '';
+    $date_to = isset($_GET['date_to']) ? sanitize_text_field($_GET['date_to']) : '';
+    $customer_id = isset($_GET['customer_id']) ? intval($_GET['customer_id']) : '';
+
+    $args = array(
+        'interaction_type' => $interaction_type,
+        'direction' => $direction,
+        'date_from' => $date_from,
+        'date_to' => $date_to,
+        'customer_id' => $customer_id,
+        'limit' => 10000,
+    );
+
+    $result = Sakwood_CRM_Interaction::get_interactions($args);
+
+    if (!$result['success']) {
+        wp_die('No interactions to export');
+    }
+
+    $interactions = $result['data'];
+
+    // Set headers for CSV download
+    header('Content-Type: text/csv');
+    header('Content-Disposition: attachment; filename="interactions-export-' . date('Y-m-d') . '.csv"');
+
+    // Open output stream
+    $output = fopen('php://output', 'w');
+
+    // Add CSV headers
+    fputcsv($output, array(
+        'ID',
+        'Date',
+        'Customer',
+        'Type',
+        'Direction',
+        'Subject',
+        'Message',
+        'Created By',
+    ));
+
+    // Add data rows
+    foreach ($interactions as $interaction) {
+        fputcsv($output, array(
+            $interaction->id,
+            $interaction->created_at,
+            isset($interaction->customer_name) ? $interaction->customer_name : '',
+            $interaction->interaction_type,
+            $interaction->direction,
+            $interaction->subject,
+            $interaction->message,
+            $interaction->created_by_name,
+        ));
+    }
+
+    fclose($output);
+    exit;
 });

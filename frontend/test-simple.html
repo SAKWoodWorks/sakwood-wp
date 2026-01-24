@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Videos Test</title>
+</head>
+<body>
+    <h1>Test Videos API</h1>
+    <div id="results"></div>
+
+    <script>
+        async function testVideosAPI() {
+            try {
+                const response = await fetch('http://localhost:8006/wp-json/sakwood/v1/videos?language=th');
+                console.log('Response status:', response.status);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('API Response:', data);
+
+                const resultsDiv = document.getElementById('results');
+                if (data && data.length > 0) {
+                    resultsDiv.innerHTML = `<p>✅ Found ${data.length} videos!</p>`;
+                    resultsDiv.innerHTML += `<h2>First Video:</h2>`;
+                    resultsDiv.innerHTML += `<p>Title: ${data[0].title}</p>`;
+                    resultsDiv.innerHTML += `<p>Category: ${data[0].videoCategory}</p>`;
+                    resultsDiv.innerHTML += `<p>Duration: ${data[0].videoDuration}</p>`;
+                    resultsDiv.innerHTML += `<p><img src="${data[0].thumbnailUrl}" alt="${data[0].title}" style="max-width: 300px;"></p>`;
+                } else {
+                    resultsDiv.innerHTML = '<p>❌ No videos found</p>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('results').innerHTML = `<p>❌ Error: ${error.message}</p>`;
+            }
+        }
+
+        testVideosAPI();
+    </script>
+</body>
+</html>

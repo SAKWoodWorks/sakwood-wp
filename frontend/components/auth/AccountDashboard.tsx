@@ -9,9 +9,9 @@ import type { Locale } from '@/i18n-config';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import { Button } from '@/components/ui';
 import { getCustomerAddresses, createCustomerAddress, updateCustomerAddress, deleteCustomerAddress } from '@/lib/services/customerAddressService';
-import { getCRMProfile, getInteractions, getTasks } from '@/lib/services/crmService';
-import { CRMProfile, CRMInteractionsList, CRMTasksList, CRMStats } from '@/components/crm';
-import type { CRMCustomer, Interaction, Task } from '@/lib/types';
+import { getCRMProfile } from '@/lib/services/crmService';
+import { CRMProfile, CRMStats } from '@/components/crm';
+import type { CRMCustomer } from '@/lib/types';
 
 interface AccountDashboardProps {
   lang: Locale;
@@ -28,7 +28,7 @@ export function AccountDashboard({ lang, dictionary }: AccountDashboardProps) {
   const { user, isLoading, logout, changePassword, refreshUser } = useAuth();
   const { getCartCount } = useCart();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'overview' | 'orders' | 'details' | 'addresses' | 'crm'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'orders' | 'details' | 'addresses'>('overview');
 
   // Password form state
   const [passwordData, setPasswordData] = useState({
@@ -64,8 +64,6 @@ export function AccountDashboard({ lang, dictionary }: AccountDashboardProps) {
 
   // CRM state
   const [crmProfile, setCrmProfile] = useState<CRMCustomer | null>(null);
-  const [crmInteractions, setCrmInteractions] = useState<Interaction[]>([]);
-  const [crmTasks, setCrmTasks] = useState<Task[]>([]);
   const [crmLoading, setCrmLoading] = useState(false);
 
   // Load addresses
@@ -93,20 +91,10 @@ export function AccountDashboard({ lang, dictionary }: AccountDashboardProps) {
 
     setCrmLoading(true);
 
-    const [profileResult, interactionsResult, tasksResult] = await Promise.all([
-      getCRMProfile(user.id),
-      getInteractions(user.id),
-      getTasks(user.id),
-    ]);
+    const profileResult = await getCRMProfile(user.id);
 
     if (profileResult.success && profileResult.data) {
       setCrmProfile(profileResult.data);
-    }
-    if (interactionsResult.success && interactionsResult.data?.interactions) {
-      setCrmInteractions(interactionsResult.data.interactions);
-    }
-    if (tasksResult.success && tasksResult.data?.tasks) {
-      setCrmTasks(tasksResult.data.tasks);
     }
 
     setCrmLoading(false);
@@ -128,9 +116,9 @@ export function AccountDashboard({ lang, dictionary }: AccountDashboardProps) {
     }
   }, [activeTab, user?.id]);
 
-  // Load CRM data when switching to CRM tab
+  // Load CRM data when switching to Details tab
   useEffect(() => {
-    if (activeTab === 'crm' && !crmLoading && user?.id) {
+    if (activeTab === 'details' && !crmLoading && user?.id) {
       loadCRMData();
     }
   }, [activeTab, user?.id]);
@@ -370,16 +358,6 @@ export function AccountDashboard({ lang, dictionary }: AccountDashboardProps) {
                   >
                     {account.addresses}
                   </button>
-                  <button
-                    onClick={() => setActiveTab('crm')}
-                    className={`w-full text-left px-4 py-2 rounded-md transition-colors ${
-                      activeTab === 'crm'
-                        ? 'bg-blue-600 text-white'
-                        : 'text-gray-700 hover:bg-gray-100'
-                    }`}
-                  >
-                    {crm.title}
-                  </button>
                   <hr className="my-2" />
                   <button
                     onClick={() => logout()}
@@ -464,112 +442,189 @@ export function AccountDashboard({ lang, dictionary }: AccountDashboardProps) {
                 {activeTab === 'details' && (
                   <div>
                     <h2 className="text-2xl font-bold text-gray-900 mb-6">{account.account_details}</h2>
-                    <form className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            {auth.first_name}
-                          </label>
-                          <input
-                            type="text"
-                            defaultValue={user?.firstName}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+
+                    {crmLoading ? (
+                      <div className="text-center py-12">
+                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                        <p className="mt-4 text-gray-600">Loading...</p>
+                      </div>
+                    ) : (
+                      <>
+                        {/* Customer Type Badge */}
+                        {crmProfile && (
+                          <div className="mb-6">
+                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                              crmProfile.customerType === 'vip' ? 'bg-purple-100 text-purple-800' :
+                              crmProfile.customerType === 'wholesale' ? 'bg-blue-100 text-blue-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {crmProfile.customerType === 'vip' ? (crm.vip || 'VIP') :
+                               crmProfile.customerType === 'wholesale' ? (crm.wholesale || 'Wholesale') :
+                               (crm.retail || 'Retail')}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Order Statistics */}
+                        {crmProfile && (
+                          <CRMStats
+                            stats={{
+                              total_orders: crmProfile.totalOrders,
+                              total_spent: crmProfile.totalSpent,
+                              avg_order_value: crmProfile.avgOrderValue,
+                              member_since: crmProfile.memberSince,
+                            }}
+                            labels={{
+                              total_orders: crm.total_orders,
+                              total_spent: crm.total_spent,
+                              avg_order_value: crm.avg_order_value,
+                              member_since: crm.member_since,
+                            }}
                           />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            {auth.last_name}
-                          </label>
-                          <input
-                            type="text"
-                            defaultValue={user?.lastName}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        )}
+
+                        <hr className="my-8" />
+
+                        {/* Basic Profile */}
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">{account.personal_info}</h3>
+                        <form className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                {auth.first_name}
+                              </label>
+                              <input
+                                type="text"
+                                defaultValue={user?.firstName}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                {auth.last_name}
+                              </label>
+                              <input
+                                type="text"
+                                defaultValue={user?.lastName}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              {auth.email}
+                            </label>
+                            <input
+                              type="email"
+                              defaultValue={user?.email}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
+                              disabled
+                              title="Email cannot be changed"
+                            />
+                            <p className="text-sm text-gray-500 mt-1">Contact support to change email</p>
+                          </div>
+                        </form>
+
+                        {/* Extended Profile */}
+                        {crmProfile && (
+                          <CRMProfile
+                            profile={crmProfile}
+                            userId={user?.id}
+                            labels={{
+                              customer_type: crm.customer_type,
+                              phone: crm.phone,
+                              line_id: crm.line_id,
+                              company: crm.company,
+                              tax_id: crm.tax_id,
+                              edit: crm.edit,
+                              save: crm.save,
+                              cancel: crm.cancel,
+                              retail: crm.retail,
+                              wholesale: crm.wholesale,
+                              vip: crm.vip,
+                              profile_title: crm.profile_title,
+                            }}
+                            onUpdate={loadCRMData}
                           />
-                        </div>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          {auth.email}
-                        </label>
-                        <input
-                          type="email"
-                          defaultValue={user?.email}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                        />
-                      </div>
-                      <div className="flex gap-4">
-                        <Button variant="primary" size="md">
-                          {account.save}
-                        </Button>
-                        <Button variant="secondary" size="md">
-                          {account.cancel}
-                        </Button>
-                      </div>
-                    </form>
+                        )}
 
-                    <hr className="my-8" />
+                        {/* Tax ID Display */}
+                        {crmProfile?.taxId && (
+                          <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              {crm.tax_id || 'Tax ID'}
+                            </label>
+                            <p className="text-gray-900 font-mono">{crmProfile.taxId}</p>
+                            <p className="text-sm text-gray-500 mt-1">Tax ID is read-only. Contact support to update.</p>
+                          </div>
+                        )}
 
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">{account.change_password}</h3>
-                    <form onSubmit={handlePasswordChange} className="space-y-4">
-                      {passwordError && (
-                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-                          {passwordError}
-                        </div>
-                      )}
-                      {passwordSuccess && (
-                        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
-                          {passwordSuccess}
-                        </div>
-                      )}
+                        <hr className="my-8" />
 
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          {account.current_password}
-                        </label>
-                        <input
-                          type="password"
-                          value={passwordData.currentPassword}
-                          onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          {account.new_password}
-                        </label>
-                        <input
-                          type="password"
-                          value={passwordData.newPassword}
-                          onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                          required
-                          minLength={8}
-                        />
-                        <p className="text-sm text-gray-500 mt-1">Minimum 8 characters</p>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          {account.confirm_password || 'Confirm New Password'}
-                        </label>
-                        <input
-                          type="password"
-                          value={passwordData.confirmPassword}
-                          onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                          required
-                          minLength={8}
-                        />
-                      </div>
-                      <Button
-                        variant="primary"
-                        size="md"
-                        type="submit"
-                        disabled={isSubmittingPassword}
-                      >
-                        {isSubmittingPassword ? (account.changing || 'Changing...') : (account.save || 'Save')}
-                      </Button>
-                    </form>
+                        {/* Password Change */}
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">{account.change_password}</h3>
+                        <form onSubmit={handlePasswordChange} className="space-y-4">
+                          {passwordError && (
+                            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                              {passwordError}
+                            </div>
+                          )}
+                          {passwordSuccess && (
+                            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
+                              {passwordSuccess}
+                            </div>
+                          )}
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              {account.current_password}
+                            </label>
+                            <input
+                              type="password"
+                              value={passwordData.currentPassword}
+                              onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              {account.new_password}
+                            </label>
+                            <input
+                              type="password"
+                              value={passwordData.newPassword}
+                              onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                              required
+                              minLength={8}
+                            />
+                            <p className="text-sm text-gray-500 mt-1">Minimum 8 characters</p>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              {account.confirm_password || 'Confirm New Password'}
+                            </label>
+                            <input
+                              type="password"
+                              value={passwordData.confirmPassword}
+                              onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                              required
+                              minLength={8}
+                            />
+                          </div>
+                          <Button
+                            variant="primary"
+                            size="md"
+                            type="submit"
+                            disabled={isSubmittingPassword}
+                          >
+                            {isSubmittingPassword ? (account.changing || 'Changing...') : (account.save || 'Save')}
+                          </Button>
+                        </form>
+                      </>
+                    )}
                   </div>
                 )}
 
@@ -787,110 +842,6 @@ export function AccountDashboard({ lang, dictionary }: AccountDashboardProps) {
                           </div>
                         ))}
                       </div>
-                    )}
-                  </div>
-                )}
-
-                {activeTab === 'crm' && (
-                  <div className="space-y-8">
-                    {crmLoading ? (
-                      <div className="text-center py-12">
-                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                        <p className="mt-4 text-gray-600">Loading CRM data...</p>
-                      </div>
-                    ) : (
-                      <>
-                        {/* CRM Stats */}
-                        {crmProfile && (
-                          <CRMStats
-                            stats={{
-                              total_orders: crmProfile.totalOrders,
-                              total_spent: crmProfile.totalSpent,
-                              avg_order_value: crmProfile.avgOrderValue,
-                              member_since: crmProfile.memberSince,
-                            }}
-                            labels={{
-                              total_orders: crm.total_orders,
-                              total_spent: crm.total_spent,
-                              avg_order_value: crm.avg_order_value,
-                              member_since: crm.member_since,
-                            }}
-                          />
-                        )}
-
-                        {/* CRM Profile */}
-                        {crmProfile && (
-                          <CRMProfile
-                            profile={crmProfile}
-                            userId={user?.id}
-                            labels={{
-                              customer_type: crm.customer_type,
-                              phone: crm.phone,
-                              line_id: crm.line_id,
-                              company: crm.company,
-                              tax_id: crm.tax_id,
-                              edit: crm.edit,
-                              save: crm.save,
-                              cancel: crm.cancel,
-                              retail: crm.retail,
-                              wholesale: crm.wholesale,
-                              vip: crm.vip,
-                              profile_title: crm.profile_title,
-                            }}
-                            onUpdate={loadCRMData}
-                          />
-                        )}
-
-                        {/* Grid for Interactions and Tasks */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                          {/* Interactions */}
-                          <CRMInteractionsList
-                            interactions={crmInteractions}
-                            userId={user?.id}
-                            labels={{
-                              title: crm.interactions_title,
-                              no_results: crm.no_interactions,
-                              add_note: crm.add_note,
-                              note_placeholder: crm.note_placeholder,
-                              send: account.save,
-                              call: crm.call,
-                              email: crm.email,
-                              line: crm.line,
-                              visit: crm.visit,
-                              note: crm.note,
-                              inbound: crm.inbound,
-                              outbound: crm.outbound,
-                            }}
-                            onUpdate={loadCRMData}
-                            locale={lang}
-                          />
-
-                          {/* Tasks */}
-                          <CRMTasksList
-                            tasks={crmTasks}
-                            labels={{
-                              title: crm.tasks_title,
-                              no_results: crm.no_tasks,
-                              pending_tasks: crm.pending_tasks,
-                              completed_tasks: crm.completed_tasks,
-                              priority: crm.priority,
-                              status: crm.status,
-                              due_date: crm.due_date,
-                              call: crm.call,
-                              email: crm.email,
-                              line: crm.line,
-                              visit: crm.visit,
-                              note: crm.note,
-                              follow_up: crm.follow_up,
-                              payment_reminder: crm.payment_reminder,
-                              send_quote: crm.send_quote,
-                              order_confirmation: crm.order_confirmation,
-                              shipping_update: crm.shipping_update,
-                            }}
-                            locale={lang}
-                          />
-                        </div>
-                      </>
                     )}
                   </div>
                 )}

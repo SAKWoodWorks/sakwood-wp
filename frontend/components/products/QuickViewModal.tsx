@@ -179,7 +179,7 @@ export function QuickViewModal({ product, isOpen, onClose, lang = 'th', dictiona
         </button>
 
         {/* Header */}
-        <div className="bg-gradient-to-r from-green-600 to-green-700 text-white p-4 sm:p-6 rounded-t-2xl sm:rounded-t-3xl">
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 sm:p-6 rounded-t-2xl sm:rounded-t-3xl">
           <h2 id="quick-view-title" className="text-xl sm:text-2xl font-bold">{dict.title}</h2>
         </div>
 
@@ -239,8 +239,8 @@ export function QuickViewModal({ product, isOpen, onClose, lang = 'th', dictiona
 
               {/* Price */}
               {product.price && (
-                <div className="text-2xl sm:text-3xl font-bold text-green-600">
-                  {product.price}
+                <div className="text-2xl sm:text-3xl font-bold text-blue-600">
+                  {product.price} บาท
                 </div>
               )}
 
@@ -323,9 +323,9 @@ export function QuickViewModal({ product, isOpen, onClose, lang = 'th', dictiona
 
                   <a
                     href={`/${lang}/products/${product.slug}`}
-                    className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg font-semibold border-2 border-gray-300 hover:border-gray-400 text-gray-700 transition-all text-xs sm:text-sm"
+                    className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg font-semibold border-2 border-gray-800 hover:border-gray-900 text-gray-800 hover:text-gray-900 hover:bg-gray-50 transition-all text-xs sm:text-sm"
                   >
-                    <span className="hidden xs:inline">{dict.view_full_details}</span>
+                    {dict.view_full_details}
                   </a>
                 </div>
               </div>

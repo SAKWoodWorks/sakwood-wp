@@ -154,12 +154,27 @@ class Sakwood_Hero_Slides_CPT {
                 return current_user_can('edit_posts');
             },
         ));
+
+        // Global slider autoplay duration option
+        add_option('sakwood_slider_autoplay_delay', 6000); // Default 6 seconds
     }
 
     /**
      * Register Meta Fields for REST API
      */
     public function register_meta_fields_rest() {
+        // Register global slider settings endpoint
+        register_rest_route('sakwood/v1', '/slider-settings', array(
+            'methods' => 'GET',
+            'callback' => function() {
+                $autoplay_delay = get_option('sakwood_slider_autoplay_delay', 6000);
+                return rest_ensure_response(array(
+                    'autoplay_delay' => intval($autoplay_delay),
+                ));
+            },
+            'permission_callback' => '__return_true',
+        ));
+
         register_rest_field('hero_slide', 'slide_subtitle', array(
             'get_callback' => function($post) {
                 return get_post_meta($post['id'], '_slide_subtitle', true);
@@ -253,6 +268,7 @@ class Sakwood_Hero_Slides_CPT {
     public function render_meta_box($post) {
         wp_nonce_field('hero_slide_meta_box', 'hero_slide_meta_box_nonce');
 
+        $autoplay_delay = get_option('sakwood_slider_autoplay_delay', 6000);
         $subtitle = get_post_meta($post->ID, '_slide_subtitle', true);
         $description = get_post_meta($post->ID, '_slide_description', true);
         $cta_text = get_post_meta($post->ID, '_slide_cta_text', true);
@@ -265,6 +281,19 @@ class Sakwood_Hero_Slides_CPT {
         ?>
         <div class="sakwood-slide-meta">
             <table class="form-table">
+                <tr>
+                    <th><label for="slider_autoplay_delay"><?php _e('Slider Duration (ms)', 'sakwood'); ?></label></th>
+                    <td>
+                        <input type="number" id="slider_autoplay_delay" name="slider_autoplay_delay" value="<?php echo esc_attr($autoplay_delay); ?>" class="small-text" min="1000" max="60000" step="500" />
+                        <p class="description">
+                            <?php _e('Autoplay delay for all slides in milliseconds (1000-60000).', 'sakwood'); ?><br>
+                            <?php _e('Common values: 3000 (3s), 5000 (5s), 6000 (6s), 10000 (10s)', 'sakwood'); ?>
+                        </p>
+                        <p class="description" style="color: #d63638;">
+                            <strong><?php _e('Note: This is a global setting that applies to all slides.', 'sakwood'); ?></strong>
+                        </p>
+                    </td>
+                </tr>
                 <tr>
                     <th><label for="slide_position"><?php _e('Position', 'sakwood'); ?></label></th>
                     <td>
@@ -372,6 +401,15 @@ class Sakwood_Hero_Slides_CPT {
         // Check permissions
         if (!current_user_can('edit_post', $post_id)) {
             return;
+        }
+
+        // Save global slider autoplay delay
+        if (isset($_POST['slider_autoplay_delay'])) {
+            $delay = intval($_POST['slider_autoplay_delay']);
+            // Validate: must be between 1000 and 60000
+            if ($delay >= 1000 && $delay <= 60000) {
+                update_option('sakwood_slider_autoplay_delay', $delay);
+            }
         }
 
         // Save fields

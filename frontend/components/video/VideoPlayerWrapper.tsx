@@ -13,7 +13,11 @@ interface VideoPlayerContextType {
 
 const VideoPlayerContext = createContext<VideoPlayerContextType | null>(null);
 
-export function VideoPlayerWrapper() {
+interface VideoPlayerWrapperProps {
+  children: React.ReactNode;
+}
+
+export function VideoPlayerWrapper({ children }: VideoPlayerWrapperProps) {
   const [state, setState] = useState({
     selectedVideo: null as VideoGalleryItem | null,
     isOpen: false,
@@ -29,6 +33,7 @@ export function VideoPlayerWrapper() {
 
   return (
     <VideoPlayerContext.Provider value={{ ...state, openModal, closeModal }}>
+      {children}
       <VideoPlayerModal
         video={state.selectedVideo}
         isOpen={state.isOpen}

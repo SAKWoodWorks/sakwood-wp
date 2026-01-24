@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { APP_CONFIG } from '@/lib/config/constants';
 import { SocialLinks } from './SocialLinks';
+import { FooterPartners } from './FooterPartners';
 import { getDictionary } from '@/lib/get-dictionary';
 import type { Locale } from '@/i18n-config';
 
@@ -98,6 +99,9 @@ export async function Footer({ lang }: FooterProps) {
             </ul>
           </div>
         </div>
+
+        {/* Partners Section */}
+        <FooterPartners lang={lang} />
 
         {/* Bottom Bar */}
         <div className="border-t border-blue-700/50 mt-6 sm:mt-8 lg:mt-12 pt-6 sm:pt-8 flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4">

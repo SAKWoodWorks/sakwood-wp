@@ -17,6 +17,7 @@ interface HeroSliderProps {
   dictionary: Dictionary;
   slidesFromWP?: HeroSlide[];
   useDefaultSlides?: boolean;
+  autoplayDelay?: number;
 }
 
 interface Slide {
@@ -37,7 +38,8 @@ export function ImprovedHeroSlider({
   lang,
   dictionary,
   slidesFromWP = [],
-  useDefaultSlides = false
+  useDefaultSlides = false,
+  autoplayDelay = 6000
 }: HeroSliderProps) {
   const [isPlaying, setIsPlaying] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -76,32 +78,34 @@ export function ImprovedHeroSlider({
     {
       id: 1,
       image: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1920&q=80',
-      title: dictionary.home?.title_start || 'Crafted from',
-      subtitle: dictionary.home?.title_end || "Nature's Best",
-      description: dictionary.home?.subtitle || 'Imported Grade-A Pine, Plywood, and Construction Timber',
-      cta: dictionary.home?.btn_catalog || 'Browse Catalog',
-      link: `/${lang}/shop`,
-      badge: '#1 Pine Wood Supplier'
+      title: dictionary.home?.title_start || 'Premium Thai Pine & Teak',
+      subtitle: dictionary.home?.title_end || "Wholesale Prices Direct to You",
+      description: dictionary.home?.subtitle || 'Grade-A structural pine and premium teak. Factory-direct pricing. No middleman.',
+      cta: dictionary.home?.btn_catalog || 'Get Free Quote',
+      link: `/${lang}/quote`,
+      badge: lang === 'th' ? 'ผู้ผลิตไม้ยอดนิยม' : 'Premium Quality'
     },
     {
       id: 2,
       image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=80',
-      title: dictionary.hero?.title || 'BUILD WITH',
-      subtitle: dictionary.hero?.title_highlight || 'INTEGRITY',
-      description: dictionary.hero?.description || 'Thailand\'s trusted partner for structural pine and marine plywood',
-      cta: dictionary.home?.btn_quote || 'Get a Quote',
-      link: `/${lang}/quote`,
-      badge: 'Premium Quality'
+      title: dictionary.hero?.title || 'Building Thailand Since 1999',
+      subtitle: dictionary.hero?.title_highlight || '25+ Years of Excellence',
+      description: dictionary.hero?.description || 'Trusted by contractors, furniture makers, and developers across Thailand. ISO certified quality.',
+      cta: dictionary.home?.btn_quote || 'View Products',
+      link: `/${lang}/shop`,
+      badge: lang === 'th' ? 'มาตรฐาน 25 ปี' : 'Since 1999'
     },
     {
       id: 3,
       image: 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=1920&q=80',
-      title: 'Fast Delivery',
-      subtitle: 'Nationwide Shipping',
-      description: 'We own our logistics fleet. Same-day delivery available for Bangkok & Perimeter areas.',
-      cta: 'Contact Sales',
-      link: `/${lang}/contact`,
-      badge: 'Quick Delivery'
+      title: lang === 'th' ? 'จัดส่งภายในวันเดียว' : 'Same-Day Delivery',
+      subtitle: lang === 'th' ? 'กรุงเทพฯ และปริมณเมือง' : 'Bangkok & Perimeter Areas',
+      description: lang === 'th'
+        ? 'ขนส่งด้วยรถบรรทุกของเรา กรุงเทพฯและปริมณเมือง ส่งฟรีภายในวันเดียว'
+        : 'We own our logistics fleet. Same-day delivery available for Bangkok and perimeter areas.',
+      cta: lang === 'th' ? 'โทร.02-123-4567' : 'Call 02-123-4567',
+      link: 'tel:02-123-4567',
+      badge: '🚚'
     }
   ];
 
@@ -137,7 +141,7 @@ export function ImprovedHeroSlider({
         ref={swiperRef}
         modules={[Autoplay, Pagination, EffectFade]}
         autoplay={{
-          delay: 6000,
+          delay: autoplayDelay,
           disableOnInteraction: false,
         }}
         effect="fade"
@@ -258,8 +262,24 @@ export function ImprovedHeroSlider({
                       href={`/${lang}/contact`}
                       className="group inline-flex items-center gap-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white px-8 py-4 rounded-lg font-semibold transition-all duration-300 border border-white/30 hover:border-white/50"
                     >
-                      Contact Us
+                      {lang === 'th' ? 'ติดต่อเรา' : 'Contact Us'}
                     </a>
+                  </div>
+
+                  {/* Trust Badges */}
+                  <div className="flex flex-wrap gap-3 mt-4 animate-slideUp" style={{ animationDelay: '0.8s' }}>
+                    <div className="inline-flex items-center gap-1.5 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-medium text-white border border-white/20">
+                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zm0 18l-10-5 10 5-10-5 10 5z"/></svg>
+                      <span>{lang === 'th' ? 'ISO 9001' : 'ISO Certified'}</span>
+                    </div>
+                    <div className="inline-flex items-center gap-1.5 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-medium text-white border border-white/20">
+                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                      <span>{lang === 'th' ? 'รับประกัน 15 ปี' : '15-Year Warranty'}</span>
+                    </div>
+                    <div className="inline-flex items-center gap-1.5 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-medium text-white border border-white/20">
+                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                      <span>{lang === 'th' ? 'ผู้เชี่ยวชาญ #1' : '#1 Supplier'}</span>
+                    </div>
                   </div>
                 </div>
               </div>

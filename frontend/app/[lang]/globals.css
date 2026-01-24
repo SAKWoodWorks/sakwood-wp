@@ -26,6 +26,16 @@
   --input: 214.3 31.8% 91.4%;
   --ring: 222.2 84% 4.9%;
   --radius: 0.5rem;
+
+  /* Wood tones for premium feel */
+  --wood-light: #D4A574;
+  --wood-medium: #B8956E;
+  --wood-dark: #8B6914;
+  --wood-accent: #C4A484;
+
+  /* Earth tones for backgrounds */
+  --earth-beige: #F5F1E8;
+  --earth-warm: #FDF8F0;
 }
 
 * {
@@ -168,4 +178,14 @@ html, body {
   .stagger-4 { animation-delay: 0.4s; }
   .stagger-5 { animation-delay: 0.5s; }
   .stagger-6 { animation-delay: 0.6s; }
+
+  /* Hide scrollbar utilities */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari and Opera */
+  }
 }

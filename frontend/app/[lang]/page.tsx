@@ -5,11 +5,12 @@ import { ServicesSection } from "@/components/home/ServicesSection";
 import { ProductSection } from "@/components/home/ProductSection";
 import { TestimonialsSection } from "@/components/home/TestimonialsSection";
 import { TestimonialsCarousel } from "@/components/home/TestimonialsCarousel";
-import { BlogSection } from "@/components/home/BlogSection";
-import { PartnersSection } from "@/components/home/PartnersSection";
 import { CTABanner } from "@/components/home/CTABanner";
 import { CategoriesSection } from "@/components/home/CategoriesSection";
 import { BenefitsSection } from "@/components/home/BenefitsSection";
+import { QualityShowcase } from "@/components/home/QualityShowcase";
+import { WhyChooseSection } from "@/components/home/WhyChooseSection";
+import { ProjectsGallery } from "@/components/home/ProjectsGallery";
 import { StructuredData } from "@/components/home/StructuredData";
 import { BackToTop } from "@/components/ui/BackToTop";
 import { PromotionalPopup } from "@/components/ui/PromotionalPopup";
@@ -30,14 +31,15 @@ export default async function Home({ params }: PageProps) {
     <>
       <StructuredData />
       <HeroSliderWrapper lang={lang as Locale} dictionary={dictionary} />
+      <QualityShowcase lang={lang as Locale} dictionary={dictionary} />
       <StatsSection lang={lang as Locale} dictionary={dictionary} />
       <BenefitsSection lang={lang as Locale} dictionary={dictionary} />
       <ServicesSection lang={lang as Locale} dictionary={dictionary} />
       <CategoriesSection lang={lang as Locale} dictionary={dictionary} />
+      <WhyChooseSection lang={lang as Locale} dictionary={dictionary} />
       <ProductSection lang={lang as Locale} dictionary={dictionary} />
+      <ProjectsGallery lang={lang as Locale} dictionary={dictionary} />
       <TestimonialsCarousel lang={lang as Locale} dictionary={dictionary} />
-      <PartnersSection lang={lang as Locale} dictionary={dictionary} />
-      <BlogSection lang={lang as Locale} dictionary={dictionary} />
       <CTABanner lang={lang as Locale} dictionary={dictionary} />
       <BackToTop backToTopLabel={dictionary.back_to_top || 'Back to top'} />
       <PromotionalPopup />

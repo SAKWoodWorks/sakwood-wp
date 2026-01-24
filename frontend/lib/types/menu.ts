@@ -8,6 +8,7 @@ export interface MenuItem {
   parentId?: string | null;
   order?: number;
   children?: MenuItem[];
+  icon?: React.ReactNode;
 }
 
 export interface MenuResponse {

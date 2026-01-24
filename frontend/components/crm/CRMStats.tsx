@@ -50,13 +50,13 @@ export function CRMStats({ stats, labels, className }: CRMStatsProps) {
       icon: CreditCard,
       label: labels.avg_order_value,
       value: stats.avg_order_value ? formatCurrency(stats.avg_order_value) : '-',
-      color: 'purple',
+      color: 'yellow',
     },
     {
       icon: TrendingUp,
       label: labels.member_since,
       value: stats.member_since ? formatDate(stats.member_since) : '-',
-      color: 'orange',
+      color: 'red',
     },
   ];
 
@@ -67,8 +67,8 @@ export function CRMStats({ stats, labels, className }: CRMStatsProps) {
           const colorClasses = {
             blue: 'bg-blue-50 text-blue-600 border-blue-200',
             green: 'bg-green-50 text-green-600 border-green-200',
-            purple: 'bg-purple-50 text-purple-600 border-purple-200',
-            orange: 'bg-orange-50 text-orange-600 border-orange-200',
+            yellow: 'bg-yellow-50 text-yellow-600 border-yellow-200',
+            red: 'bg-red-50 text-red-600 border-red-200',
           };
 
           return (

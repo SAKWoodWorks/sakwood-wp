@@ -4,7 +4,7 @@ import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import { ProductImageGallery } from '@/components/products/ProductImageGallery';
 import { ProductInfo } from '@/components/products/ProductInfo';
 import { ProductSpecifications } from '@/components/products/ProductSpecifications';
-import { RelatedProducts } from '@/components/products/RelatedProducts';
+import { RelatedProductsCarousel } from '@/components/products/RelatedProductsCarousel';
 import { PromotionalPopup } from '@/components/ui/PromotionalPopup';
 import { ProductStructuredData } from '@/components/products/ProductStructuredData';
 import { getProductBySlug, getProducts } from '@/lib/services/productService';
@@ -125,8 +125,8 @@ export default async function ProductPage({ params }: PageProps) {
         />
 
         {/* Related Products */}
-        <RelatedProducts
-          products={relatedProducts.filter(p => p.id !== productData.id).slice(0, 4)}
+        <RelatedProductsCarousel
+          products={relatedProducts.filter(p => p.id !== productData.id).slice(0, 8)}
           lang={lang as Locale}
           dictionary={dictionary}
         />

@@ -56,7 +56,10 @@
     "contact": "ติดต่อเรา",
     "about": "เกี่ยวกับเรา",
     "read_more": "อ่านเพิ่มเติม",
-    "view_all": "ดูทั้งหมด"
+    "view_all": "ดูทั้งหมด",
+    "error_title": "เกิดข้อผิดพลาด",
+    "error_message": "เราขออภัยในความไม่สะดวก เกิดข้อผิดพลาดที่ไม่คาดคิด",
+    "try_again": "ลองอีกครั้ง"
   },
   "blog": {
     "title": "ข่าวสารล่าสุด",
@@ -600,19 +603,21 @@
   "videos": {
     "title": "วิดีโอ",
     "subtitle": "รับชมวิดีโอสอนการใช้งาน ข่าวสารบริษัท และเรื่องราวน่าสนใจจากแซ็ควู้ด",
-    "search_placeholder": "ค้นหาวิดีโอ...",
-    "categories_title": "หมวดหมู่",
     "all_categories": "ทั้งหมด",
-    "no_results": "ไม่พบวิดีโอที่ตรงกัน",
-    "watch_now": "รับชมเลย",
-    "views": "การรับชม",
-    "duration": "ระยะเวลา",
+    "all_videos": "วิดีโอทั้งหมด",
     "product_tutorials": "วิดีโอสอนการใช้งาน",
     "company_news": "ข่าวสารบริษัท",
     "installation_guides": "คู่มือการติดตั้ง",
     "customer_stories": "เรื่องราวลูกค้า",
     "other": "อื่นๆ",
-    "related_videos": "วิดีโอที่เกี่ยวข้อง"
+    "watch_now": "รับชมเลย",
+    "duration": "ระยะเวลา",
+    "views": "การรับชม",
+    "no_videos": "ไม่พบวิดีโอ",
+    "no_videos_desc": "ไม่มีวิดีโอในหมวดหมู่นี้",
+    "no_results": "ไม่พบวิดีโอ",
+    "related_videos": "วิดีโอที่เกี่ยวข้อง",
+    "video_gallery": "ห้องวิดีโอ"
   },
   "knowledge": {
     "title": "ฐานความรู้",

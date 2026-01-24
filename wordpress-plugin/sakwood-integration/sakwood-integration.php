@@ -103,6 +103,9 @@ class Sakwood_Integration {
         // Load Product API
         require_once SAKWOOD_PLUGIN_DIR . 'product-api.php';
 
+        // Load Product Bulk Import
+        require_once SAKWOOD_PLUGIN_DIR . 'product-bulk-import.php';
+
         // Load Customer Orders API
         require_once SAKWOOD_PLUGIN_DIR . 'customer-orders-api.php';
 
@@ -131,6 +134,9 @@ class Sakwood_Integration {
         require_once SAKWOOD_PLUGIN_DIR . 'crm-customer-api.php';
         require_once SAKWOOD_PLUGIN_DIR . 'crm-interactions-api.php';
         require_once SAKWOOD_PLUGIN_DIR . 'crm-tasks-api.php';
+
+        // Load Demo Data Generator
+        require_once SAKWOOD_PLUGIN_DIR . 'demo-data.php';
 
         // Initialize CRM database
         $crm_db = new Sakwood_CRM_Database();

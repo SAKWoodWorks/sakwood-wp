@@ -65,6 +65,9 @@ export interface Dictionary {
     about: string;
     read_more: string;
     view_all: string;
+    error_title?: string;
+    error_message?: string;
+    try_again?: string;
   };
   auth: {
     login: string;

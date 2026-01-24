@@ -18,8 +18,6 @@ export async function getPopupSettings(): Promise<PopupSettings | null> {
   try {
     // Use Next.js API route as proxy to WordPress
     // This avoids CORS issues and works in both dev and production
-    console.log('[PopupService] Fetching popup settings from /api/popup');
-
     const response = await fetch('/api/popup', {
       method: 'GET',
       headers: {
@@ -28,15 +26,12 @@ export async function getPopupSettings(): Promise<PopupSettings | null> {
       cache: 'no-store',
     });
 
-    console.log('[PopupService] Response status:', response.status, response.statusText);
-
     if (!response.ok) {
       console.error('[PopupService] Failed to fetch popup settings:', response.status, response.statusText);
       return null;
     }
 
     const data = await response.json();
-    console.log('[PopupService] Popup settings loaded:', data);
     return data;
   } catch (error) {
     console.error('[PopupService] Error fetching popup settings:', error);

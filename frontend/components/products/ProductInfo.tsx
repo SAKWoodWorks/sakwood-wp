@@ -69,7 +69,7 @@ export function ProductInfo({ product, lang, dictionary }: ProductInfoProps) {
           {product.name || product.slug || 'Product'}
         </h2>
         <div className="flex items-center gap-4 text-sm text-gray-500">
-          <span className="font-medium">SKU: {product.id}</span>
+          <span className="font-medium">SKU: {product.sku || product.id}</span>
         </div>
       </div>
 

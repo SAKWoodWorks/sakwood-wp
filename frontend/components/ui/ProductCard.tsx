@@ -72,7 +72,7 @@ export function ProductCard({ product, lang = 'th', dictionary }: ProductCardPro
             <div className="absolute inset-0 bg-blue-900/0 group-hover:bg-blue-900/40 transition-colors duration-300 flex items-center justify-center">
               <button
                 onClick={handleQuickView}
-                className="opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 bg-white hover:bg-green-50 text-green-700 border-0 shadow-lg px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-lg flex items-center gap-1.5 sm:gap-2 hover:scale-105 active:scale-95"
+                className="opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 bg-white hover:bg-blue-50 text-blue-700 border-0 shadow-lg px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-lg flex items-center gap-1.5 sm:gap-2 hover:scale-105 active:scale-95"
               >
                 <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 <span className="hidden sm:inline">{dictionary?.quick_view?.quick_view || (lang === 'th' ? 'ดูสินค้า' : 'Quick View')}</span>

@@ -31,6 +31,13 @@ export interface Video {
   language: string;
 }
 
+// Type for the video components (alias for compatibility with component expectations)
+export interface VideoGalleryItem extends Video {
+  // Add any additional fields needed by components
+  duration?: string;
+  category?: string;
+}
+
 export interface VideoListResponse {
   videos: Video[];
   pagination?: {

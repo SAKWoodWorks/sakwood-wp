@@ -1,4 +1,4 @@
-import { ProductsResponse, ProductResponse, MenuResponse, BlogPostsResponse, BlogPostResponse } from '@/lib/types';
+import { ProductsResponse, ProductResponse, MenuResponse, BlogPostsResponse, BlogPostResponse, PromoBannersResponse } from '@/lib/types';
 
 export const GET_HERO_SLIDES_QUERY = `
   query GetHeroSlides {
@@ -168,6 +168,44 @@ export const GET_BLOG_POST_QUERY = `
           name
           slug
         }
+      }
+    }
+  }
+`;
+
+export const GET_PROMO_BANNERS_QUERY = `
+  query GetPromoBanners {
+    promoBanners(first: 20, where: {status: PUBLISH, orderby: {field: DATE, order: DESC}}) {
+      nodes {
+        id
+        databaseId
+        title
+        slug
+        date
+        bannerType
+        bannerContentTh
+        bannerContentEn
+        bannerLink
+        buttonTextTh
+        buttonTextEn
+        backgroundColor
+        textColor
+        bannerImage {
+          sourceUrl
+          altText
+          mediaItemId
+        }
+        scheduleStart
+        scheduleEnd
+        targeting {
+          deviceTypes
+          showOnPages
+          visitorType
+          maxImpressions
+          displayDelay
+        }
+        abTestGroup
+        isActive
       }
     }
   }

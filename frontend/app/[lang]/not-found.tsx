@@ -2,19 +2,16 @@ import Link from 'next/link';
 import { getDictionary } from '@/lib/get-dictionary';
 import type { Locale } from '@/i18n-config';
 
-interface LocaleNotFoundProps {
-  params: Promise<{
-    lang: string;
-  }>;
-}
-
 /**
  * Locale Not Found Page
  * Displayed when a route doesn't exist within a locale
+ *
+ * Note: not-found.tsx files do NOT receive params in Next.js App Router.
+ * They are rendered when no route matches, so there's no lang parameter available.
+ * We use a default locale (th) and provide links to both locales.
  */
-export default async function LocaleNotFound({ params }: LocaleNotFoundProps) {
-  const { lang } = await params;
-  const dictionary = await getDictionary(lang as Locale);
+export default async function LocaleNotFound() {
+  const dictionary = await getDictionary('th');
   const { common } = dictionary;
 
   return (
@@ -35,7 +32,7 @@ export default async function LocaleNotFound({ params }: LocaleNotFoundProps) {
 
         {/* Action Button */}
         <Link
-          href={`/${lang}`}
+          href="/th"
           className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors"
         >
           {common.home || 'Go to homepage'}

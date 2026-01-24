@@ -56,7 +56,10 @@
     "contact": "Contact",
     "about": "About",
     "read_more": "Read More",
-    "view_all": "View All"
+    "view_all": "View All",
+    "error_title": "Something went wrong",
+    "error_message": "We apologize for the inconvenience. An unexpected error has occurred.",
+    "try_again": "Try again"
   },
   "blog": {
     "title": "Latest News",
@@ -600,6 +603,7 @@
   "videos": {
     "title": "Video Gallery",
     "subtitle": "Tutorials, news, and stories about wood and construction materials",
+    "all_categories": "All Videos",
     "all_videos": "All Videos",
     "product_tutorials": "Product Tutorials",
     "company_news": "Company News",
@@ -611,6 +615,7 @@
     "views": "Views",
     "no_videos": "No Videos Found",
     "no_videos_desc": "No videos available in this category",
+    "no_results": "No videos found",
     "related_videos": "Related Videos",
     "video_gallery": "Video Gallery"
   },

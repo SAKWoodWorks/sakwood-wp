@@ -19,6 +19,7 @@ export interface Product {
   databaseId: number;
   name: string;
   slug: string;
+  sku?: string;
   language?: string;
   image?: ProductImage;
   galleryImages?: {

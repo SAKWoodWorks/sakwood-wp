@@ -1,0 +1,531 @@
+/**
+ * Sakwood CRM Admin Styles
+ * WordPress admin interface styling for CRM system
+ */
+
+/* === Base Styles === */
+.sakwood-crm-customers,
+.sakwood-customer-details,
+.sakwood-crm-tasks,
+.sakwood-crm-interactions,
+.sakwood-crm-reports {
+    margin: 20px 0;
+}
+
+/* === Customer Type Badges === */
+.crm-badge-retail {
+    background: #f0f0f1 !important;
+    color: #1d2327 !important;
+}
+
+.crm-badge-wholesale {
+    background: #dbe5ff !important;
+    color: #1855b3 !important;
+}
+
+.crm-badge-vip {
+    background: #f6eced !important;
+    color: #8a2487 !important;
+}
+
+/* === Task Priority Badges === */
+.crm-priority-low {
+    background: #f0f0f1 !important;
+    color: #1d2327 !important;
+}
+
+.crm-priority-medium {
+    background: #dbe5ff !important;
+    color: #1855b3 !important;
+}
+
+.crm-priority-high {
+    background: #fcf3e5 !important;
+    color: #d47b0a !important;
+}
+
+.crm-priority-urgent {
+    background: #fcaba0 !important;
+    color: #8a2487 !important;
+}
+
+/* === Task Status Badges === */
+.crm-status-pending {
+    background: #fcf3e5 !important;
+    color: #d47b0a !important;
+}
+
+.crm-status-in_progress {
+    background: #dbe5ff !important;
+    color: #1855b3 !important;
+}
+
+.crm-status-completed {
+    background: #d7edc9 !important;
+    color: #1c5c1f !important;
+}
+
+.crm-status-active {
+    background: #d7edc9 !important;
+    color: #1c5c1f !important;
+}
+
+.crm-status-inactive {
+    background: #f6eded !important;
+    color: #8a2487 !important;
+}
+
+/* === Direction Badges === */
+.crm-direction-inbound {
+    background: #d7edc9 !important;
+    color: #1c5c1f !important;
+}
+
+.crm-direction-outbound {
+    background: #dbe5ff !important;
+    color: #1855b3 !important;
+}
+
+/* === Overdue Task Highlighting === */
+.crm-task-overdue {
+    background: #fff6f6 !important;
+    border-left: 4px solid #d63638 !important;
+}
+
+.crm-task-overdue td {
+    background: transparent !important;
+}
+
+/* === Modal Styles === */
+.crm-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 100000;
+    align-items: center;
+    justify-content: center;
+}
+
+.crm-modal.active {
+    display: flex !important;
+}
+
+.crm-modal-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* === Stats Cards === */
+.crm-stats > div {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.crm-stats > div:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* === Tables === */
+.crm-card {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.wp-list-table widefat fixed striped tbody tr:hover {
+    background: #f6f7f7;
+}
+
+/* === Tab Navigation === */
+.crm-tabs-nav {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+}
+
+.crm-tab-content {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 0 0 4px 4px;
+}
+
+/* === Timeline === */
+.crm-timeline > div {
+    transition: background-color 0.2s ease;
+}
+
+.crm-timeline > div:hover {
+    background-color: #f9f9f9;
+}
+
+/* === Filter Section === */
+.crm-filters {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.crm-filters label {
+    color: #1d2327;
+}
+
+/* === Required Field Indicator === */
+.required {
+    color: #d63638;
+}
+
+/* === Row Actions === */
+.row-actions {
+    visibility: hidden;
+}
+
+.wp-list-table tr:hover .row-actions {
+    visibility: visible;
+}
+
+.row-actions a {
+    text-decoration: none;
+    color: #2271b1;
+}
+
+.row-actions a:hover {
+    color: #135e96;
+}
+
+.row-actions .divider {
+    color: #dcdcde;
+    margin: 0 6px;
+}
+
+/* === Count Badges === */
+.count {
+    background: #d63638;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    margin-left: 5px;
+}
+
+/* === Responsive Design === */
+@media (max-width: 1200px) {
+    .sakwood-customer-details > div {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+@media (max-width: 782px) {
+    .crm-filters > form > div {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .crm-filters > form > div > div {
+        width: 100%;
+    }
+
+    .wp-list-table {
+        display: block;
+        overflow-x: auto;
+    }
+}
+
+@media (max-width: 600px) {
+    .crm-modal-content {
+        width: 95%;
+        padding: 15px;
+    }
+
+    .crm-stats {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* === Loading States === */
+.crm-loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.crm-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #2271b1;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* === Pulse Animation for Overdue Tasks === */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.9;
+    }
+}
+
+/* === Empty States === */
+.crm-empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #646970;
+}
+
+.crm-empty-state-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+    opacity: 0.3;
+}
+
+.crm-empty-state-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #1d2327;
+}
+
+.crm-empty-state-description {
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+/* === Charts === */
+#customerTypeChart,
+#taskStatusChart {
+    max-width: 100%;
+    height: auto !important;
+}
+
+/* === Quick Action Buttons === */
+.crm-quick-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 8px;
+    margin-right: 5px;
+    border: 1px solid #c3c4c7;
+    border-radius: 3px;
+    background: #fff;
+    color: #1d2327;
+    text-decoration: none;
+    font-size: 12px;
+    transition: all 0.2s ease;
+}
+
+.crm-quick-action:hover {
+    border-color: #2271b1;
+    color: #2271b1;
+    background: #f0f6fc;
+}
+
+/* === Status Indicators === */
+.crm-status-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.crm-status-indicator.online {
+    background: #00a32a;
+}
+
+.crm-status-indicator.offline {
+    background: #d63638;
+}
+
+.crm-status-indicator.away {
+    background: #d47b0a;
+}
+
+/* === Form Enhancements === */
+.crm-modal-content input[type="text"],
+.crm-modal-content input[type="email"],
+.crm-modal-content input[type="date"],
+.crm-modal-content select,
+.crm-modal-content textarea {
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.crm-modal-content input[type="text"]:focus,
+.crm-modal-content input[type="email"]:focus,
+.crm-modal-content input[type="date"]:focus,
+.crm-modal-content select:focus,
+.crm-modal-content textarea:focus {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+    outline: none;
+}
+
+/* === Print Styles === */
+@media print {
+    .wrap > h1,
+    .page-title-action,
+    .crm-filters,
+    .tablenav,
+    .row-actions,
+    .crm-add-interaction-btn,
+    .crm-add-task-btn {
+        display: none !important;
+    }
+
+    .crm-modal {
+        display: none !important;
+    }
+
+    .wp-list-table {
+        border: 1px solid #000;
+    }
+
+    .wp-list-table th,
+    .wp-list-table td {
+        border: 1px solid #000;
+    }
+}
+
+/* === Accessibility Enhancements === */
+.crm-modal:focus {
+    outline: 3px solid #2271b1;
+    outline-offset: 2px;
+}
+
+.crm-quick-action:focus,
+a:focus {
+    outline: 2px solid #2271b1;
+    outline-offset: 1px;
+}
+
+/* === Dashboard Widgets === */
+.crm-dashboard-widget {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+}
+
+.crm-dashboard-widget h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+/* === Date Filter Styles === */
+.crm-date-filter {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+#crm-custom-date-container {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* === Summary Boxes === */
+.crm-summary-box {
+    padding: 15px;
+    background: #f0f6fc;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    margin-top: 20px;
+}
+
+.crm-summary-box strong {
+    color: #1d2327;
+}
+
+/* === Export Button === */
+#crm-export-interactions,
+.crm-export-btn {
+    position: relative;
+    padding-left: 28px;
+}
+
+#crm-export-interactions::before,
+.crm-export-btn::before {
+    content: '⬇';
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+}
+
+/* === Tooltip === */
+.crm-tooltip {
+    position: relative;
+    display: inline-block;
+    cursor: help;
+}
+
+.crm-tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 5px 10px;
+    background: #1d2327;
+    color: #fff;
+    font-size: 12px;
+    white-space: nowrap;
+    border-radius: 4px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.crm-tooltip:hover::after {
+    opacity: 1;
+}
+
+/* === Animation Classes === */
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.slide-in {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}

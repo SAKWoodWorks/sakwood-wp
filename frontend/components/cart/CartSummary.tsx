@@ -210,14 +210,14 @@ export function CartSummary({ lang, dictionary }: CartSummaryProps) {
 
             <div className="flex justify-between items-center text-sm">
               <span className="text-gray-600">Truck Type ({shippingBreakdown.truckType}):</span>
-              <span className={`font-medium ${shippingBreakdown.truckSurcharge > 0 ? 'text-orange-600' : 'text-green-600'}`}>
+              <span className={`font-medium ${shippingBreakdown.truckSurcharge > 0 ? 'text-yellow-600' : 'text-green-600'}`}>
                 {shippingBreakdown.truckSurcharge > 0 ? `+${shippingBreakdown.truckSurcharge.toFixed(2)}` : 'No surcharge'}
               </span>
             </div>
 
             <div className="flex justify-between items-center text-sm">
               <span className="text-gray-600">Price Tier ({shippingBreakdown.priceTierLabel}):</span>
-              <span className={`font-medium ${shippingBreakdown.priceTierMultiplier < 1 ? 'text-green-600' : shippingBreakdown.priceTierMultiplier > 1 ? 'text-orange-600' : 'text-gray-700'}`}>
+              <span className={`font-medium ${shippingBreakdown.priceTierMultiplier < 1 ? 'text-green-600' : shippingBreakdown.priceTierMultiplier > 1 ? 'text-yellow-600' : 'text-gray-700'}`}>
                 {shippingBreakdown.priceTierMultiplier < 0.95 ? '(-10%)' :
                  shippingBreakdown.priceTierMultiplier < 1 ? '(-5%)' :
                  shippingBreakdown.priceTierMultiplier > 1.2 ? '(+25%)' :

@@ -20,10 +20,17 @@ add_action('graphql_register_types', function() {
     // Add language field to Post type
     register_graphql_field('Post', 'language', [
         'type' => 'LanguageEnum',
-        'description' => __('The language of this post (defaults to Thai)', 'sakwood-integration'),
+        'description' => __('The language of this post', 'sakwood-integration'),
         'resolve' => function($post) {
-            // Since we now use a single post with both languages, default to 'th'
-            // The REST API handles the language-specific content
+            $post_id = $post->ID;
+
+            // Check if English translations exist
+            $has_english_title = get_post_meta($post_id, '_post_title_en', true);
+            $has_english_content = get_post_meta($post_id, '_post_content_en', true);
+
+            // If both TH (default fields) and EN (meta fields) exist, return 'th' as primary
+            // The 'language' field indicates the primary/default language of the post
+            // Since Thai content is in default fields, 'th' is always the primary language
             return 'th';
         },
     ]);

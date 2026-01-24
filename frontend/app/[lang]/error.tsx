@@ -1,9 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getDictionary } from '@/lib/get-dictionary';
-import type { Locale } from '@/i18n-config';
 
 interface LocaleErrorProps {
   error: Error & { digest?: string };
@@ -14,27 +12,60 @@ interface LocaleErrorProps {
 }
 
 /**
- * Locale Error Boundary
- * Catches errors in locale-specific routes and displays a bilingual error page
+ * Locale Error Boundary - Client Component
+ *
+ * Note: This component uses inline translations instead of importing
+ * getDictionary() because error.tsx must be a Client Component ('use client'),
+ * and getDictionary imports 'server-only' which cannot be used in Client Components.
+ *
+ * The translations below match the keys in dictionaries/{en,th}.json:
+ * - common.error_title
+ * - common.error_message
+ * - common.try_again
  */
-export default async function LocaleError({
+export default function LocaleError({
   error,
   reset,
   params,
 }: LocaleErrorProps) {
-  const { lang } = await params;
-  const dictionary = await getDictionary(lang as Locale);
-  const { common } = dictionary;
+  const [lang, setLang] = useState<string>('th');
+
+  // Resolve params asynchronously
+  useEffect(() => {
+    params.then((resolved) => setLang(resolved.lang));
+  }, [params]);
 
   useEffect(() => {
-    console.error('Locale error boundary caught an error:', error);
+    // Focus management for screen readers
+    const errorTitle = document.getElementById('error-title');
+    errorTitle?.focus();
+
+    // Development-only error logging
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Locale error boundary caught an error:', error);
+    }
   }, [error]);
 
+  // Dictionary translations with fallbacks
+  const common = {
+    error_title: lang === 'th' ? 'เกิดข้อผิดพลาด' : 'Something went wrong',
+    error_message:
+      lang === 'th'
+        ? 'เราขออภัยในความไม่สะดวก เกิดข้อผิดพลาดที่ไม่คาดคิด'
+        : 'We apologize for the inconvenience. An unexpected error has occurred.',
+    try_again: lang === 'th' ? 'ลองอีกครั้ง' : 'Try again',
+    home: lang === 'th' ? 'หน้าแรก' : 'Go to homepage',
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-white px-6">
+    <main
+      role="main"
+      aria-label="Error page"
+      className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-white px-6"
+    >
       <div className="max-w-md w-full bg-white rounded-xl shadow-lg border border-gray-200 p-8 text-center">
         {/* Error Icon */}
-        <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-6">
+        <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-6" aria-hidden="true">
           <svg
             className="w-8 h-8 text-red-600"
             fill="none"
@@ -50,27 +81,33 @@ export default async function LocaleError({
           </svg>
         </div>
 
-        {/* Error Message */}
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          {common.error_title || 'Something went wrong'}
-        </h1>
-        <p className="text-gray-600 mb-6">
-          {common.error_message || 'We apologize for the inconvenience. An unexpected error has occurred.'}
-        </p>
+        {/* Error Message with ARIA live region */}
+        <div role="alert" aria-live="assertive">
+          <h1
+            id="error-title"
+            className="text-2xl font-bold text-gray-900 mb-2"
+            tabIndex={-1}
+          >
+            {common.error_title}
+          </h1>
+          <p className="text-gray-600 mb-6">{common.error_message}</p>
+        </div>
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
             onClick={reset}
+            aria-label={common.try_again}
             className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors"
           >
-            {common.try_again || 'Try again'}
+            {common.try_again}
           </button>
           <Link
             href={`/${lang}`}
+            aria-label={common.home}
             className="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-base font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors"
           >
-            {common.home || 'Go to homepage'}
+            {common.home}
           </Link>
         </div>
 
@@ -87,6 +124,6 @@ export default async function LocaleError({
           </details>
         )}
       </div>
-    </div>
+    </main>
   );
 }
