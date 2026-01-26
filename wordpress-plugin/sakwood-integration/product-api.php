@@ -181,7 +181,7 @@ class Sakwood_Product_API {
             $short_description = $product->get_short_description() ?: '';
         }
 
-        return array(
+        $formatted_product = array(
             'id' => $product->get_id(),
             'databaseId' => $product->get_id(),
             'name' => $name,
@@ -204,6 +204,9 @@ class Sakwood_Product_API {
             'thickness' => $thickness,
             'categories' => $categories,
         );
+
+        // Apply filter to allow other plugins to modify product data (e.g., price types)
+        return apply_filters('sakwood_product_api_format', $formatted_product, $product);
     }
 }
 

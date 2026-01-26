@@ -109,6 +109,9 @@ class Sakwood_Integration {
         // Load Product API
         require_once SAKWOOD_PLUGIN_DIR . 'product-api.php';
 
+        // Load Product Price Types
+        require_once SAKWOOD_PLUGIN_DIR . 'product-price-types.php';
+
         // Load Product Bulk Import
         require_once SAKWOOD_PLUGIN_DIR . 'product-bulk-import.php';
 

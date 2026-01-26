@@ -14,6 +14,8 @@ export interface SimpleProduct {
   regularPrice?: string;
 }
 
+export type PriceType = 'piece' | 'meter' | 'sqm' | 'cubic_foot' | 'cubic_meter' | 'board_foot';
+
 export interface Product {
   id: string;
   databaseId: number;
@@ -27,6 +29,8 @@ export interface Product {
   };
   price?: string;
   regularPrice?: string;
+  priceTypes?: PriceType[];  // Array of enabled price types for this product
+  prices?: Record<PriceType, string>;  // Map of price type to amount
   description?: string;
   thickness?: string; // Thickness in cm
   width?: string; // Width in cm

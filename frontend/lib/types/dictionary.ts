@@ -317,6 +317,34 @@ export interface Dictionary {
     social_title: string;
     follow_us: string;
   };
+  price_table?: {
+    title: string;
+    subtitle: string;
+    search_placeholder: string;
+    filter_by: string;
+    all_categories: string;
+    sort_by: string;
+    product_name: string;
+    price: string;
+    dimensions: string;
+    grade: string;
+    stock: string;
+    actions: string;
+    no_results: string;
+    sort_name_asc: string;
+    sort_name_desc: string;
+    sort_price_asc: string;
+    sort_price_desc: string;
+    export_pdf: string;
+    price_per_piece: string;
+    price_per_meter: string;
+    price_per_sqm: string;
+    price_per_cubic_foot: string;
+    price_per_cubic_meter: string;
+    price_per_board_foot: string;
+    price_types: string;
+    view_all_prices: string;
+  };
   checkout: {
     page_title: string;
     contact_info: string;

@@ -46,6 +46,11 @@ export async function Footer({ lang }: FooterProps) {
                 </Link>
               </li>
               <li>
+                <Link href={`/${lang}/price-list`} className="text-blue-200 hover:text-white transition-colors text-sm sm:text-base">
+                  {lang === 'th' ? 'ราคาสินค้า' : 'Price List'}
+                </Link>
+              </li>
+              <li>
                 <Link href={`/${lang}/calculator`} className="text-blue-200 hover:text-white transition-colors text-sm sm:text-base">
                   {lang === 'th' ? 'เครื่องคำนวณ' : 'Calculator'}
                 </Link>
