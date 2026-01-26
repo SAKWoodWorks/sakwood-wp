@@ -4,12 +4,12 @@ const WORDPRESS_API_URL = process.env.WORDPRESS_API_URL || 'http://localhost:800
 
 export async function GET(
   request: Request,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     const { searchParams } = new URL(request.url);
     const language = searchParams.get('language') || 'th';
-    const { slug } = params;
+    const { slug } = await params;
 
     const response = await fetch(
       `${WORDPRESS_API_URL}/sakwood/v1/faqs/${slug}?language=${language}`,

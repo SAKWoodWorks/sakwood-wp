@@ -31,6 +31,8 @@ export interface Product {
   thickness?: string; // Thickness in cm
   width?: string; // Width in cm
   length?: string; // Length in meters
+  volume?: number; // Calculated volume in cubic meters
+  surfaceArea?: string | number; // Surface area in square meters
   categories?: ProductCategory[];
 }
 

@@ -1,4 +1,5 @@
 export interface Dictionary {
+  site_name: string;
   home: {
     badge: string;
     title_start: string;
@@ -24,6 +25,24 @@ export interface Dictionary {
     cta_line: string;
     partners_title: string;
     partners_subtitle: string;
+    projects: {
+      title: string;
+      subtitle: string;
+      description: string;
+      filter_all: string;
+      filter_construction: string;
+      filter_furniture: string;
+      filter_marine: string;
+      filter_interior: string;
+      view_details: string;
+      have_project: string;
+      have_project_desc: string;
+      get_quote: string;
+      contact_us: string;
+      close: string;
+      wood_type: string;
+      customer: string;
+    };
     benefits_title?: string;
     benefits_subtitle?: string;
     categories_title?: string;
@@ -68,6 +87,8 @@ export interface Dictionary {
     error_title?: string;
     error_message?: string;
     try_again?: string;
+    not_found_title?: string;
+    not_found_message?: string;
   };
   auth: {
     login: string;
@@ -104,6 +125,8 @@ export interface Dictionary {
     overview: string;
     my_orders: string;
     order_history: string;
+    orders: string;
+    orders_description: string;
     no_orders: string;
     no_orders_desc: string;
     start_shopping: string;
@@ -127,6 +150,16 @@ export interface Dictionary {
     password_too_short: string;
     changing: string;
     saving: string;
+    error_loading_orders: string;
+    loading_orders: string;
+    total_orders: string;
+    order: string;
+    items: string;
+    total: string;
+    previous: string;
+    page: string;
+    of: string;
+    next: string;
   };
   back_to_top?: string;
   compare: {
@@ -238,6 +271,51 @@ export interface Dictionary {
     select_province: string;
     estimated_delivery: string;
     free_shipping: string;
+  };
+  contact: {
+    page_title: string;
+    page_subtitle: string;
+    form_title: string;
+    name: string;
+    name_placeholder: string;
+    email: string;
+    email_placeholder: string;
+    phone: string;
+    phone_placeholder: string;
+    company: string;
+    company_placeholder: string;
+    subject: string;
+    subject_placeholder: string;
+    message: string;
+    message_placeholder: string;
+    submit: string;
+    submitting: string;
+    success_title: string;
+    success_message: string;
+    error_title: string;
+    error_message: string;
+    back_to_home: string;
+    required_fields: string;
+    contact_info_title: string;
+    address_title: string;
+    address?: string;
+    chanthaburi_branch: string;
+    chanthaburi_address: string;
+    pathumthani_branch: string;
+    pathumthani_address: string;
+    chiangmai_branch: string;
+    chiangmai_address: string;
+    email_label: string;
+    email_value: string;
+    phone_label: string;
+    phone_value: string;
+    line_label: string;
+    line_value: string;
+    hours_title: string;
+    hours_weekday: string;
+    hours_weekend: string;
+    social_title: string;
+    follow_us: string;
   };
   checkout: {
     page_title: string;
@@ -612,7 +690,9 @@ export interface Dictionary {
     line_id: string;
     company: string;
     tax_id: string;
+    edit: string;
     edit_profile: string;
+    save: string;
     save_changes: string;
     cancel: string;
     interactions: string;

@@ -19,7 +19,8 @@ export default async function VideosPage({ params, searchParams }: VideosPagePro
   const { category: categorySlug } = await searchParams;
 
   const dictionary = await getDictionary(lang as Locale);
-  const { videos: videosDict = {}, common } = dictionary;
+  const videosDict = dictionary.videos;
+  const common = dictionary.common;
 
   // Fetch videos and categories
   const videosResult = await getVideos(lang);

@@ -2,8 +2,10 @@ export interface KBCategory {
   id: number;
   name: string;
   slug: string;
+  description?: string;
   count?: number;
   parent?: number;
+  children?: KBCategory[];
 }
 
 export interface KBAuthor {
@@ -34,6 +36,7 @@ export interface KBArticle {
   order: number;
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   viewsCount: number;
+  views?: number;
   isFeatured: boolean;
   relatedArticles: RelatedArticle[];
   language: string;

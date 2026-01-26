@@ -14,9 +14,11 @@ interface CompareButtonProps {
       items: string;
     };
   };
+  textColor?: string;
+  hoverColor?: string;
 }
 
-export function CompareButton({ lang, dictionary }: CompareButtonProps) {
+export function CompareButton({ lang, dictionary, textColor = 'text-gray-700', hoverColor = 'hover:text-blue-900' }: CompareButtonProps) {
   const { compareItems, removeFromCompare } = useCompare();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -33,7 +35,7 @@ export function CompareButton({ lang, dictionary }: CompareButtonProps) {
     <>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-gray-700 hover:text-blue-900 transition-colors"
+        className={`relative p-2 ${textColor} ${hoverColor} transition-colors`}
         title={`${compareItems.length} ${compare.items}`}
       >
         <Scale className="w-5 h-5" />

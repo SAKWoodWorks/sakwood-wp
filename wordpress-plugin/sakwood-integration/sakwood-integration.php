@@ -79,6 +79,12 @@ class Sakwood_Integration {
         // Load Chat Settings
         require_once SAKWOOD_PLUGIN_DIR . 'chat-settings.php';
 
+        // Load Contact Form API
+        require_once SAKWOOD_PLUGIN_DIR . 'contact-form-api.php';
+
+        // Load Contact Form CPT
+        require_once SAKWOOD_PLUGIN_DIR . 'contact-form-cpt.php';
+
         // Load Product Dimensions
         require_once SAKWOOD_PLUGIN_DIR . 'product-dimensions.php';
 

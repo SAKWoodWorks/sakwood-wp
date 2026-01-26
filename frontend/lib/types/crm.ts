@@ -14,7 +14,9 @@ export interface CRMCustomer {
   status: 'active' | 'inactive' | 'blocked';
   totalOrders: number;
   totalSpent: number;
+  avgOrderValue?: number;
   lastOrderDate?: string;
+  memberSince?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -32,7 +34,7 @@ export type InteractionDirection = 'inbound' | 'outbound';
 
 export interface Interaction {
   id: number;
-  type: InteractionType;
+  interactionType: InteractionType;
   subject?: string;
   message?: string;
   direction: InteractionDirection;
@@ -52,19 +54,15 @@ export interface InteractionListResponse {
 }
 
 export interface InteractionSummary {
-  summary: {
+  total: number;
+  byType: {
     call: number;
     email: number;
     line: number;
     visit: number;
     note: number;
   };
-  recent: Array<{
-    id: number;
-    type: InteractionType;
-    subject?: string;
-    createdAt: string;
-  }>;
+  recent: Interaction[];
 }
 
 // Task Types
@@ -97,13 +95,16 @@ export interface TaskListResponse {
 }
 
 export interface TaskSummary {
-  summary: {
-    pending: number;
-    in_progress: number;
-    completed: number;
-    cancelled: number;
-  };
+  total: number;
+  pending: number;
+  inProgress: number;
+  completed: number;
   overdue: number;
+  byPriority: {
+    low: number;
+    medium: number;
+    high: number;
+  };
   upcoming: Array<{
     id: number;
     title: string;

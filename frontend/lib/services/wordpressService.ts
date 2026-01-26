@@ -1,6 +1,15 @@
 // WordPress API Service for Sakwood
 
+import { graphqlRequest } from '@/lib/graphql/client';
+
 const WORDPRESS_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_REST_URL || 'http://localhost:8006/wp-json/sakwood/v1';
+
+// GraphQL service wrapper
+export const wordpressService = {
+  async query<T>(query: string, variables?: Record<string, unknown>): Promise<T | null> {
+    return graphqlRequest<T>(query, variables);
+  }
+};
 
 export interface QuoteData {
   id: string;

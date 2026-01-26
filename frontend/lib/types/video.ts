@@ -23,9 +23,12 @@ export interface Video {
   videoType: 'youtube' | 'vimeo';
   videoId?: string;
   videoDuration?: string;
+  duration?: string;
   videoCategory: string;
+  category?: string;
   videoPosition: number;
   thumbnailUrl?: string;
+  thumbnail?: string;
   featuredImage?: VideoImage;
   views: number;
   language: string;

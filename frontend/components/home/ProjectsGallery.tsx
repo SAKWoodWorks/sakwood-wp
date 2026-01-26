@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { Locale } from '@/i18n-config';
 import { Filter, Building2, Armchair, Ship, Home, Warehouse, ChevronRight, Quote } from 'lucide-react';
+import Image from 'next/image';
 
 interface ProjectsGalleryProps {
   lang: Locale;
@@ -32,10 +33,37 @@ export function ProjectsGallery({ lang, dictionary }: ProjectsGalleryProps) {
   const [mounted, setMounted] = useState(false);
   const [activeFilter, setActiveFilter] = useState<ProjectCategory>('all');
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // ESC key handler to close modal
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && selectedProject) {
+        closeProjectModal();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [selectedProject]);
+
+  // Focus trap in modal
+  useEffect(() => {
+    if (selectedProject && modalRef.current) {
+      const focusableElements = modalRef.current.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      const firstElement = focusableElements[0] as HTMLElement;
+      if (firstElement) {
+        firstElement.focus();
+      }
+    }
+  }, [selectedProject]);
 
   const projects: Project[] = [
     {
@@ -64,11 +92,11 @@ export function ProjectsGallery({ lang, dictionary }: ProjectsGalleryProps) {
       descriptionTh: 'เฟอร์นิเจอร์สั่งทำพิเศษสำหรับโรงแรม 5 ดาวในกรุงเทพฯ',
       image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&q=80',
       woodType: 'Premium Teak',
-      woodTypeTh: 'ไม้แก้สบเกรดพรีเมียม',
+      woodTypeTh: 'ไม้สักเกรดพรีเมียม',
       customer: 'Hotel Chain',
       customerTh: 'เครือโรงแรม',
       testimonial: 'The teak quality is outstanding. Our guests love the furniture.',
-      testimonialTh: 'คุณภาพไม้แก้สบยอดเยี่ยม แขกผู้เข้าพักชื่นชอบเฟอร์นิเจอร์มาก'
+      testimonialTh: 'คุณภาพไม้สักยอดเยี่ยม แขกผู้เข้าพักชื่นชอบเฟอร์นิเจอร์มาก'
     },
     {
       id: 3,
@@ -77,14 +105,14 @@ export function ProjectsGallery({ lang, dictionary }: ProjectsGalleryProps) {
       category: 'marine',
       categoryTh: 'ทางเรือ',
       description: 'Marine-grade teak for boat restoration project',
-      descriptionTh: 'ไม้แก้สบเกรดทางเรือสำหรับโครงการบูรณะเรือ',
+      descriptionTh: 'ไม้สักเกรดทางเรือสำหรับโครงการบูรณะเรือ',
       image: 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=800&q=80',
       woodType: 'Marine Teak',
-      woodTypeTh: 'ไม้แก้สบเกรดทางเรือ',
+      woodTypeTh: 'ไม้สักเกรดทางเรือ',
       customer: 'Boat Builder',
       customerTh: 'ช่างต่อเรือ',
       testimonial: 'Best marine teak we have ever used. Highly recommend Sakwood.',
-      testimonialTh: 'ไม้แก้สบเกรดทางเรือที่ดีที่สุดที่เคยใช้ แนะนำ Sakwood'
+      testimonialTh: 'ไม้สักเกรดทางเรือที่ดีที่สุดที่เคยใช้ แนะนำ Sakwood'
     },
     {
       id: 4,
@@ -96,7 +124,7 @@ export function ProjectsGallery({ lang, dictionary }: ProjectsGalleryProps) {
       descriptionTh: 'ไม้ผนังและไม้พื้นสำหรับสำนักงานใหญ่',
       image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80',
       woodType: 'Pine & Teak Mix',
-      woodTypeTh: 'ไม้สนและแก้สบผสม',
+      woodTypeTh: 'ไม้สนและไม้สักผสม',
       customer: 'Corporate Client',
       customerTh: 'ลูกค้าองค์กร',
       testimonial: 'Professional team, quality products, on-time delivery.',
@@ -125,10 +153,10 @@ export function ProjectsGallery({ lang, dictionary }: ProjectsGalleryProps) {
       category: 'furniture',
       categoryTh: 'เฟอร์นิเจอร์',
       description: 'Premium teak cabinets for luxury residence',
-      descriptionTh: 'ตู้ไม้แก้สบเกรดพรีเมียมสำหรับที่อยู่อาศัยหรู',
+      descriptionTh: 'ตู้ไม้สักเกรดพรีเมียมสำหรับที่อยู่อาศัยหรู',
       image: 'https://images.unsplash.com/photo-1556912172-45b7abe8b7e1?w=800&q=80',
       woodType: 'Premium Teak',
-      woodTypeTh: 'ไม้แก้สบเกรดพรีเมียม',
+      woodTypeTh: 'ไม้สักเกรดพรีเมียม',
       customer: 'Interior Designer',
       customerTh: 'นักออกแบบตกแต่งภายใน',
       testimonial: 'Beautiful grain patterns, excellent workability.',
@@ -136,24 +164,48 @@ export function ProjectsGallery({ lang, dictionary }: ProjectsGalleryProps) {
     }
   ];
 
+  const projectsDict = dictionary?.home?.projects || {
+    title: lang === 'th' ? 'ผลงานของเรา' : 'Our Projects',
+    subtitle: lang === 'th' ? 'โครงการที่ไว้วางใจ' : 'Trusted by Projects',
+    description: lang === 'th' ? 'ดูผลงานโครงการที่เลือกใช้ไม้คุณภาพจาก Sakwood' : 'See projects that trust Sakwood for quality wood materials',
+    filter_all: lang === 'th' ? 'ทั้งหมด' : 'All Projects',
+    filter_construction: lang === 'th' ? 'ก่อสร้าง' : 'Construction',
+    filter_furniture: lang === 'th' ? 'เฟอร์นิเจอร์' : 'Furniture',
+    filter_marine: lang === 'th' ? 'ทางเรือ' : 'Marine',
+    filter_interior: lang === 'th' ? 'ตกแต่งภายใน' : 'Interior',
+    view_details: lang === 'th' ? 'ดูรายละเอียด' : 'View Details',
+    have_project: lang === 'th' ? 'มีโครงการที่ต้องการไม้?' : 'Have a Project?',
+    have_project_desc: lang === 'th' ? 'ติดต่อเราเพื่อรับคำปรึกษาและราคาสำหรับโครงการของคุณ' : 'Contact us for a free consultation and quote for your project',
+    get_quote: lang === 'th' ? 'ขอราคาตอนนี้' : 'Get Free Quote',
+    contact_us: lang === 'th' ? 'ติดต่อเรา' : 'Contact Us',
+    close: lang === 'th' ? 'ปิด' : 'Close',
+    wood_type: lang === 'th' ? 'ประเภทไม้' : 'Wood Type',
+    customer: lang === 'th' ? 'ลูกค้า' : 'Customer',
+  };
+
   const filters = [
-    { id: 'all', label: lang === 'th' ? 'ทั้งหมด' : 'All Projects', icon: <Filter className="w-4 h-4" /> },
-    { id: 'construction', label: lang === 'th' ? 'ก่อสร้าง' : 'Construction', icon: <Building2 className="w-4 h-4" /> },
-    { id: 'furniture', label: lang === 'th' ? 'เฟอร์นิเจอร์' : 'Furniture', icon: <Armchair className="w-4 h-4" /> },
-    { id: 'marine', label: lang === 'th' ? 'ทางเรือ' : 'Marine', icon: <Ship className="w-4 h-4" /> },
-    { id: 'interior', label: lang === 'th' ? 'ตกแต่งภายใน' : 'Interior', icon: <Home className="w-4 h-4" /> }
+    { id: 'all', label: projectsDict.filter_all, icon: <Filter className="w-4 h-4" /> },
+    { id: 'construction', label: projectsDict.filter_construction, icon: <Building2 className="w-4 h-4" /> },
+    { id: 'furniture', label: projectsDict.filter_furniture, icon: <Armchair className="w-4 h-4" /> },
+    { id: 'marine', label: projectsDict.filter_marine, icon: <Ship className="w-4 h-4" /> },
+    { id: 'interior', label: projectsDict.filter_interior, icon: <Home className="w-4 h-4" /> }
   ];
 
   const filteredProjects = activeFilter === 'all'
     ? projects
     : projects.filter(p => p.category === activeFilter);
 
-  const openProjectModal = (project: Project) => {
+  const openProjectModal = (project: Project, event: React.MouseEvent<HTMLDivElement>) => {
+    triggerRef.current = event.currentTarget as HTMLDivElement;
     setSelectedProject(project);
   };
 
   const closeProjectModal = () => {
     setSelectedProject(null);
+    // Return focus to triggering element
+    if (triggerRef.current) {
+      triggerRef.current.focus();
+    }
   };
 
   return (
@@ -173,15 +225,13 @@ export function ProjectsGallery({ lang, dictionary }: ProjectsGalleryProps) {
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wide mb-4">
             <Warehouse className="w-4 h-4" />
-            {lang === 'th' ? 'ผลงานของเรา' : 'Our Projects'}
+            {projectsDict.title}
           </div>
           <h2 id="projects-gallery-heading" className="text-4xl lg:text-5xl font-extrabold text-gray-900 mb-4">
-            {lang === 'th' ? 'โครงการที่ไว้วางใจ' : 'Trusted by Projects'}
+            {projectsDict.subtitle}
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            {lang === 'th'
-              ? 'ดูผลงานโครงการที่เลือกใช้ไม้คุณภาพจาก Sakwood'
-              : 'See projects that trust Sakwood for quality wood materials'}
+            {projectsDict.description}
           </p>
         </div>
 
@@ -211,15 +261,23 @@ export function ProjectsGallery({ lang, dictionary }: ProjectsGalleryProps) {
               className={`group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 cursor-pointer ${
                 mounted ? 'animate-in' : 'opacity-0'
               }`}
-              onClick={() => openProjectModal(project)}
+              onClick={(e) => openProjectModal(project, e)}
               style={{ animationDelay: `${index * 100}ms` }}
             >
               {/* Image */}
               <div className="aspect-[4/3] overflow-hidden relative">
-                <img
+                <Image
                   src={project.image}
                   alt={lang === 'th' ? project.titleTh : project.title}
+                  width={800}
+                  height={600}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                  placeholder="blur"
+                  blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCwABAxX7//Z"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="600"%3E%3Crect fill="%23e5e7eb" width="800" height="600"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="24" fill="%236b7280"%3EImage Not Available%3C/text%3E%3C/svg%3E';
+                  }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
@@ -257,7 +315,7 @@ export function ProjectsGallery({ lang, dictionary }: ProjectsGalleryProps) {
 
                 {/* View Details */}
                 <div className="mt-4 flex items-center text-blue-600 font-semibold text-sm group-hover:text-blue-700">
-                  {lang === 'th' ? 'ดูรายละเอียด' : 'View Details'}
+                  {projectsDict.view_details}
                   <ChevronRight className="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
@@ -269,26 +327,24 @@ export function ProjectsGallery({ lang, dictionary }: ProjectsGalleryProps) {
         <div className="mt-16 text-center">
           <div className="bg-white rounded-3xl p-10 lg:p-12 shadow-xl border border-gray-100">
             <h3 className="text-3xl font-bold text-gray-900 mb-4">
-              {lang === 'th' ? 'มีโครงการที่ต้องการไม้?' : 'Have a Project?'}
+              {projectsDict.have_project}
             </h3>
             <p className="text-gray-600 text-lg mb-8 max-w-2xl mx-auto">
-              {lang === 'th'
-                ? 'ติดต่อเราเพื่อรับคำปรึกษาและราคาสำหรับโครงการของคุณ'
-                : 'Contact us for a free consultation and quote for your project'}
+              {projectsDict.have_project_desc}
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <a
                 href={`/${lang}/quote`}
                 className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-xl font-bold hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
               >
-                {lang === 'th' ? 'ขอราคาตอนนี้' : 'Get Free Quote'}
+                {projectsDict.get_quote}
                 <ChevronRight className="w-5 h-5" />
               </a>
               <a
                 href={`/${lang}/contact`}
                 className="inline-flex items-center gap-2 bg-white text-gray-700 px-8 py-4 rounded-xl font-bold hover:bg-gray-50 transition-all duration-300 border border-gray-200"
               >
-                {lang === 'th' ? 'ติดต่อเรา' : 'Contact Us'}
+                {projectsDict.contact_us}
               </a>
             </div>
           </div>
@@ -300,16 +356,28 @@ export function ProjectsGallery({ lang, dictionary }: ProjectsGalleryProps) {
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
           onClick={closeProjectModal}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
         >
           <div
+            ref={modalRef}
             className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="relative">
-              <img
+              <Image
                 src={selectedProject.image}
                 alt={lang === 'th' ? selectedProject.titleTh : selectedProject.title}
+                width={800}
+                height={600}
                 className="w-full h-64 sm:h-96 object-cover"
+                placeholder="blur"
+                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCwABAxX7//Z"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="600"%3E%3Crect fill="%23e5e7eb" width="800" height="600"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="24" fill="%236b7280"%3EImage Not Available%3C/text%3E%3C/svg%3E';
+                }}
               />
               <button
                 onClick={closeProjectModal}
@@ -332,7 +400,7 @@ export function ProjectsGallery({ lang, dictionary }: ProjectsGalleryProps) {
                 </div>
               </div>
 
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              <h2 id="modal-title" className="text-3xl font-bold text-gray-900 mb-4">
                 {lang === 'th' ? selectedProject.titleTh : selectedProject.title}
               </h2>
 
@@ -365,7 +433,7 @@ export function ProjectsGallery({ lang, dictionary }: ProjectsGalleryProps) {
                   onClick={closeProjectModal}
                   className="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition-colors"
                 >
-                  {lang === 'th' ? 'ปิด' : 'Close'}
+                  {projectsDict.close}
                 </button>
               </div>
             </div>

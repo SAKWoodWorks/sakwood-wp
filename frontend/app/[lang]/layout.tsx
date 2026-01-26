@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Sarabun } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -16,7 +16,12 @@ import { GoogleAnalytics } from "@/components/seo/GoogleAnalytics";
 import { ChatButtons } from "@/components/chat";
 import { PromotionalPopup } from "@/components/ui/PromotionalPopup";
 
-const inter = Inter({ subsets: ["latin"] });
+const sarabun = Sarabun({
+  subsets: ["thai", "latin"],
+  weight: ['300', '400', '500', '600', '700'],
+  display: 'swap',
+  variable: '--font-sarabun',
+});
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -143,7 +148,7 @@ export default async function RootLayout({ children, params }: LayoutProps) {
         <GoogleAnalytics />
         <OrganizationStructuredData siteUrl={siteUrl} />
       </head>
-      <body className={inter.className}>
+      <body className={`${sarabun.variable} font-sans`}>
         <SkipLink />
         <AuthProvider>
           <CartProvider>

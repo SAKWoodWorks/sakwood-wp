@@ -73,7 +73,7 @@ export default async function KnowledgeCategoryPage({
           }
           return false;
         };
-        return a.category && isInSubcategory(categoriesResult.data);
+        return a.category && categoriesResult.data && isInSubcategory(categoriesResult.data);
       })
     : [];
 

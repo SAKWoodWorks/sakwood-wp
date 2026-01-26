@@ -158,7 +158,7 @@ export async function getCustomerOrderDetails(orderId: string | number): Promise
 /**
  * Get order status label
  */
-export function getOrderStatusLabel(status: string, lang: string): string {
+export function getOrderStatusLabel(status: string, lang: 'th' | 'en'): string {
   const labels: Record<string, { th: string; en: string }> = {
     'pending': { th: 'รอดำเนินการ', en: 'Pending' },
     'processing': { th: 'กำลังดำเนินการ', en: 'Processing' },
@@ -175,7 +175,7 @@ export function getOrderStatusLabel(status: string, lang: string): string {
 /**
  * Get payment status label
  */
-export function getPaymentStatusLabel(paymentStatus: string, lang: string): string {
+export function getPaymentStatusLabel(paymentStatus: string, lang: 'th' | 'en'): string {
   const labels: Record<string, { th: string; en: string }> = {
     'paid': { th: 'ชำระแล้ว', en: 'Paid' },
     'pending': { th: 'รอชำระเงิน', en: 'Pending' },

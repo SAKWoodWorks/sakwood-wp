@@ -86,8 +86,10 @@ export function ProductCardWithCompare({ product, lang, index, dictionary }: Pro
             <AddToCompareButton product={product} variant="icon" dictionary={dictionary} />
           </div>
           <div className="flex justify-between items-center mt-4">
-            <span className="text-slate-500 text-sm">Starting at</span>
-            <span className="text-xl font-bold text-blue-900">{product.price || 'Contact'}</span>
+            <span className="text-slate-500 text-sm">{lang === 'th' ? 'เริ่มต้นที่' : 'Starting at'}</span>
+            <span className="text-xl font-bold text-blue-900">
+              {product.price ? `${product.price}${lang === 'th' ? ' บาท' : ' THB'}` : (lang === 'th' ? 'ติดต่อ' : 'Contact')}
+            </span>
           </div>
         </div>
       </div>

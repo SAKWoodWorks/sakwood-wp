@@ -11,6 +11,7 @@ interface CRMProfileProps {
   profile: CRMCustomer;
   userId?: number;
   labels: {
+    profile_title: string;
     customer_type: string;
     phone: string;
     line_id: string;

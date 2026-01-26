@@ -10,6 +10,7 @@ import {
   KBRelatedArticles,
 } from '@/components/knowledge';
 import type { Locale } from '@/i18n-config';
+import type { KBArticle } from '@/lib/types/knowledge-base';
 import Link from 'next/link';
 
 interface KnowledgeArticlePageProps {
@@ -38,7 +39,7 @@ export default async function KnowledgeArticlePage({
 
   // Fetch related articles (same category, same difficulty, excluding current)
   const relatedResult = await getKBArticles(lang);
-  const relatedArticles = relatedResult.success && relatedResult.data
+  const relatedArticles: KBArticle[] = relatedResult.success && relatedResult.data
     ? relatedResult.data
         .filter((a) =>
           a.id !== article.id &&
@@ -46,7 +47,7 @@ export default async function KnowledgeArticlePage({
           a.difficulty === article.difficulty
         )
         .slice(0, 5)
-    : article.relatedArticles || [];
+    : [];
 
   // Increment view count
   if (typeof window === 'undefined') {

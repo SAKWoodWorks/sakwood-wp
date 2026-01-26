@@ -3,15 +3,7 @@
 import Link from 'next/link';
 import { ChevronRight, FolderOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-interface KBCategory {
-  id: string;
-  name: string;
-  slug: string;
-  parent?: string;
-  children?: KBCategory[];
-  count?: number;
-}
+import type { KBCategory } from '@/lib/types/knowledge-base';
 
 interface KBCategorySidebarProps {
   categories: KBCategory[];

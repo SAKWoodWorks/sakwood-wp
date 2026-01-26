@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getCustomerOrders, getOrderStatusLabel, getOrderStatusColor, getPaymentStatusLabel } from '@/lib/services/customerOrderService';
-import type { CustomerOrder, Locale, Dictionary } from '@/lib/types/dictionary';
+import { getCustomerOrders, getOrderStatusLabel, getOrderStatusColor, getPaymentStatusLabel, type CustomerOrder } from '@/lib/services/customerOrderService';
+import type { Locale } from '@/i18n-config';
+import type { Dictionary } from '@/lib/types/dictionary';
 import { Package, Calendar, CreditCard, ChevronRight, AlertCircle } from 'lucide-react';
 
 interface OrdersListProps {

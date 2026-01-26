@@ -43,10 +43,16 @@ export function PromotionalPopup({
           }
           setSettings(data);
 
-          // Check if user has dismissed the popup before
-          const hasDismissed = localStorage.getItem('promo-popup-dismissed');
-          if (hasDismissed) {
-            return;
+          // Check if user has dismissed the popup today
+          const dismissedDate = localStorage.getItem('promo-popup-dismissed');
+          if (dismissedDate) {
+            const today = new Date().toDateString();
+            if (dismissedDate === today) {
+              // Already dismissed today, don't show
+              return;
+            }
+            // Different day, clear the old dismissal
+            localStorage.removeItem('promo-popup-dismissed');
           }
 
           // Show popup after delay (convert seconds to milliseconds)
@@ -67,7 +73,9 @@ export function PromotionalPopup({
 
   const handleClose = () => {
     if (dontShowAgain) {
-      localStorage.setItem('promo-popup-dismissed', 'true');
+      // Store today's date instead of just 'true'
+      const today = new Date().toDateString();
+      localStorage.setItem('promo-popup-dismissed', today);
     }
     setIsVisible(false);
   };
@@ -137,7 +145,7 @@ export function PromotionalPopup({
                   className="w-5 h-5 rounded border-white/50 text-white focus:ring-white/50 cursor-pointer bg-white/20"
                 />
                 <span className="text-sm text-white/90 group-hover:text-white transition-colors">
-                  Don&apos;t show this again
+                  Don&apos;t show this again today
                 </span>
               </label>
             </div>
@@ -169,7 +177,7 @@ export function PromotionalPopup({
                   className="w-5 h-5 rounded border-white/50 text-white focus:ring-white/50 cursor-pointer bg-white/20"
                 />
                 <span className="text-sm text-white/90 group-hover:text-white transition-colors">
-                  Don&apos;t show this again
+                  Don&apos;t show this again today
                 </span>
               </label>
             </div>

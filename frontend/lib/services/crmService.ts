@@ -288,9 +288,10 @@ export async function getTasksSummary(
         high: tasks.filter((t) => t.priority === 'high').length,
       },
       upcoming: tasks
-        .filter((t) => t.status !== 'completed' && t.dueDate)
-        .sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime())
-        .slice(0, 5),
+        .filter((t): t is Task & { dueDate: string } => t.status !== 'completed' && !!t.dueDate)
+        .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+        .slice(0, 5)
+        .map(({ id, title, type, priority, dueDate }) => ({ id, title, type, priority, dueDate })),
     };
 
     return { success: true, data: summary };

@@ -48,10 +48,10 @@ export function QualityShowcase({ lang, dictionary }: QualityShowcaseProps) {
     },
     {
       name: 'Premium Burmese Teak',
-      nameTh: 'ไม้แก้สบพม่าเกรดพรีเมียม',
+      nameTh: 'ไม้สักพม่าเกรดพรีเมียม',
       type: 'teak',
       description: 'Premium Grade-A Burmese teak with natural oil content. Ideal for furniture, marine applications, and outdoor use.',
-      descriptionTh: 'ไม้แก้สบเกรด A พม่า มีน้ำมันธรรมชาติ เหมาะสำหรับเฟอร์นิเจอร์ งานทางเรือ และกลางแจ้ง',
+      descriptionTh: 'ไม้สักเกรด A พม่า มีน้ำมันธรรมชาติ เหมาะสำหรับเฟอร์นิเจอร์ งานทางเรือ และกลางแจ้ง',
       image: 'https://images.unsplash.com/photo-1566633806327-68e152aaf26d?w=1200&q=80',
       grade: 'Grade A / FEQ',
       moisture: '10-12% (KD)',
@@ -137,7 +137,7 @@ export function QualityShowcase({ lang, dictionary }: QualityShowcaseProps) {
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
               }`}
             >
-              {lang === 'th' ? 'ไม้แก้สบ' : 'Teak Wood'}
+              {lang === 'th' ? 'ไม้สัก' : 'Teak Wood'}
             </button>
           </div>
         </div>

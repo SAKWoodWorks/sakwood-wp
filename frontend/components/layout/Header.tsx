@@ -331,7 +331,12 @@ export function Header({ menuItems, lang, dictionary }: HeaderProps) {
             </Link>
 
             {/* Compare Button */}
-            <CompareButton lang={lang} dictionary={dictionary} />
+            <CompareButton
+              lang={lang}
+              dictionary={dictionary}
+              textColor={!isTransparentHeader ? 'text-gray-700' : 'text-white'}
+              hoverColor={!isTransparentHeader ? 'hover:text-blue-600' : 'hover:text-blue-200'}
+            />
 
             {/* User Menu */}
             <div className="relative">
