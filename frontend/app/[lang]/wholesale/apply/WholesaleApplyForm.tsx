@@ -184,7 +184,7 @@ export function WholesaleApplyForm({ lang, dictionary }: WholesaleApplyPageProps
                     required
                     value={formData.companyName}
                     onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-400"
                     placeholder={wholesale.company_name_placeholder}
                   />
                 </div>
@@ -201,7 +201,7 @@ export function WholesaleApplyForm({ lang, dictionary }: WholesaleApplyPageProps
                     maxLength={13}
                     value={formData.taxId}
                     onChange={(e) => setFormData({ ...formData, taxId: e.target.value.replace(/\D/g, '') })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-400"
                     placeholder={wholesale.tax_id_placeholder}
                   />
                   <p className="mt-1 text-xs text-gray-500">13 digits</p>
@@ -217,7 +217,7 @@ export function WholesaleApplyForm({ lang, dictionary }: WholesaleApplyPageProps
                     required
                     value={formData.businessType}
                     onChange={(e) => setFormData({ ...formData, businessType: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-400"
                   >
                     <option value="">Select business type</option>
                     <option value="retailer">{wholesale.business_type_retailer}</option>
@@ -239,7 +239,7 @@ export function WholesaleApplyForm({ lang, dictionary }: WholesaleApplyPageProps
                     required
                     value={formData.businessAddress}
                     onChange={(e) => setFormData({ ...formData, businessAddress: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-400"
                     placeholder={wholesale.business_address_placeholder}
                   />
                 </div>
@@ -256,7 +256,7 @@ export function WholesaleApplyForm({ lang, dictionary }: WholesaleApplyPageProps
                       required
                       value={formData.businessCity}
                       onChange={(e) => setFormData({ ...formData, businessCity: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-400"
                       placeholder={wholesale.business_city_placeholder}
                     />
                   </div>
@@ -272,7 +272,7 @@ export function WholesaleApplyForm({ lang, dictionary }: WholesaleApplyPageProps
                       required
                       value={formData.businessProvince}
                       onChange={(e) => setFormData({ ...formData, businessProvince: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-400"
                       placeholder={wholesale.business_province_placeholder}
                     />
                   </div>
@@ -289,7 +289,7 @@ export function WholesaleApplyForm({ lang, dictionary }: WholesaleApplyPageProps
                       maxLength={5}
                       value={formData.businessPostalCode}
                       onChange={(e) => setFormData({ ...formData, businessPostalCode: e.target.value.replace(/\D/g, '') })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-400"
                       placeholder={wholesale.business_postal_code_placeholder}
                     />
                   </div>
@@ -306,7 +306,7 @@ export function WholesaleApplyForm({ lang, dictionary }: WholesaleApplyPageProps
                     required
                     value={formData.businessPhone}
                     onChange={(e) => setFormData({ ...formData, businessPhone: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-400"
                     placeholder={wholesale.business_phone_placeholder}
                   />
                 </div>
@@ -321,7 +321,7 @@ export function WholesaleApplyForm({ lang, dictionary }: WholesaleApplyPageProps
                     required
                     value={formData.estimatedMonthlyVolume}
                     onChange={(e) => setFormData({ ...formData, estimatedMonthlyVolume: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-400"
                   >
                     <option value="">{wholesale.estimated_volume_placeholder}</option>
                     <option value="10k">{wholesale.estimated_volume_10k}</option>
@@ -342,7 +342,7 @@ export function WholesaleApplyForm({ lang, dictionary }: WholesaleApplyPageProps
                     rows={3}
                     value={formData.references}
                     onChange={(e) => setFormData({ ...formData, references: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-400"
                     placeholder={wholesale.references_placeholder}
                   />
                   <p className="mt-1 text-xs text-gray-500">{wholesale.references_optional}</p>

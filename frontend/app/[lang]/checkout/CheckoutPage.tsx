@@ -459,7 +459,7 @@ export function CheckoutPage({ lang, dictionary }: CheckoutPageProps) {
                       name="lineId"
                       value={formData.lineId}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-gray-900 placeholder:text-gray-400"
                       placeholder="your_line_id"
                     />
                   </div>
@@ -627,7 +627,7 @@ export function CheckoutPage({ lang, dictionary }: CheckoutPageProps) {
                       rows={3}
                       value={formData.notes}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none text-gray-900 placeholder:text-gray-400"
                       placeholder="Special instructions for delivery..."
                     />
                   </div>

@@ -496,7 +496,7 @@ export function AccountDashboard({ lang, dictionary }: AccountDashboardProps) {
                               <input
                                 type="text"
                                 defaultValue={user?.firstName}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder:text-gray-400"
                               />
                             </div>
                             <div>
@@ -506,7 +506,7 @@ export function AccountDashboard({ lang, dictionary }: AccountDashboardProps) {
                               <input
                                 type="text"
                                 defaultValue={user?.lastName}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder:text-gray-400"
                               />
                             </div>
                           </div>
@@ -517,7 +517,7 @@ export function AccountDashboard({ lang, dictionary }: AccountDashboardProps) {
                             <input
                               type="email"
                               defaultValue={user?.email}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-900"
                               disabled
                               title="Email cannot be changed"
                             />
@@ -671,7 +671,7 @@ export function AccountDashboard({ lang, dictionary }: AccountDashboardProps) {
                                 type="text"
                                 value={addressForm.first_name}
                                 onChange={(e) => setAddressForm({ ...addressForm, first_name: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder:text-gray-400"
                                 required
                               />
                             </div>
@@ -683,7 +683,7 @@ export function AccountDashboard({ lang, dictionary }: AccountDashboardProps) {
                                 type="text"
                                 value={addressForm.last_name}
                                 onChange={(e) => setAddressForm({ ...addressForm, last_name: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder:text-gray-400"
                                 required
                               />
                             </div>
@@ -731,7 +731,7 @@ export function AccountDashboard({ lang, dictionary }: AccountDashboardProps) {
                                 type="text"
                                 value={addressForm.city}
                                 onChange={(e) => setAddressForm({ ...addressForm, city: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder:text-gray-400"
                                 required
                               />
                             </div>
@@ -743,7 +743,7 @@ export function AccountDashboard({ lang, dictionary }: AccountDashboardProps) {
                                 type="text"
                                 value={addressForm.state}
                                 onChange={(e) => setAddressForm({ ...addressForm, state: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder:text-gray-400"
                                 required
                               />
                             </div>
@@ -755,7 +755,7 @@ export function AccountDashboard({ lang, dictionary }: AccountDashboardProps) {
                                 type="text"
                                 value={addressForm.postcode}
                                 onChange={(e) => setAddressForm({ ...addressForm, postcode: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder:text-gray-400"
                                 required
                               />
                             </div>
