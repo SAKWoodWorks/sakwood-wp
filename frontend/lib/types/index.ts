@@ -7,3 +7,6 @@ export * from './faq';
 export * from './video';
 export * from './knowledge-base';
 export * from './crm';
+
+// Re-export ProductSortBy from productService for convenience
+export type { ProductSortBy } from '../services/productService';

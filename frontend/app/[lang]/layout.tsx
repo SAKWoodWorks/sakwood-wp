@@ -138,8 +138,8 @@ export default async function RootLayout({ children, params }: LayoutProps) {
   const { lang } = await params;
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://sakwood.com";
 
-  // Fetch primary menu from WordPress and dictionary
-  const menuItems = await getMenu('PRIMARY');
+  // Fetch primary menu from WordPress based on current language and dictionary
+  const menuItems = await getMenu(lang);
   const dictionary = await getDictionary(lang as Locale);
 
   return (

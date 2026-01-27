@@ -7,6 +7,14 @@ export interface ProductCategory {
   id: number;
   name: string;
   slug: string;
+  count?: number;
+  description?: string;
+}
+
+export interface ProductCategoriesResponse {
+  productCategories: {
+    nodes: ProductCategory[];
+  };
 }
 
 export interface SimpleProduct {

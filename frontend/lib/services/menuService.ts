@@ -1,15 +1,50 @@
-import { graphqlRequest } from '@/lib/graphql/client';
-import { GET_MENU_QUERY } from '@/lib/graphql/queries';
 import { MenuItem } from '@/lib/types';
 
-interface MenuData {
-  menuItems: {
-    nodes: MenuItem[];
-  };
-}
+// WordPress REST API base URL
+const WORDPRESS_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'http://localhost:8006/wp-json/sakwood/v1';
 
-// Fallback menu items when WordPress API is not available
-const FALLBACK_MENU: MenuItem[] = [
+// Fallback menu items for Thai language
+const FALLBACK_MENU_TH: MenuItem[] = [
+  {
+    id: '1',
+    label: 'หน้าแรก',
+    path: '/',
+    order: 1,
+  },
+  {
+    id: '2',
+    label: 'ร้านค้า',
+    path: '/products',
+    order: 2,
+  },
+  {
+    id: '3',
+    label: 'ขอใบเสนอราคา',
+    path: '/quote-request',
+    order: 3,
+  },
+  {
+    id: '4',
+    label: 'บล็อก',
+    path: '/blog',
+    order: 4,
+  },
+  {
+    id: '5',
+    label: 'เกี่ยวกับเรา',
+    path: '/about',
+    order: 5,
+  },
+  {
+    id: '6',
+    label: 'ติดต่อเรา',
+    path: '/contact',
+    order: 6,
+  },
+];
+
+// Fallback menu items for English language
+const FALLBACK_MENU_EN: MenuItem[] = [
   {
     id: '1',
     label: 'Home',
@@ -19,13 +54,13 @@ const FALLBACK_MENU: MenuItem[] = [
   {
     id: '2',
     label: 'Shop',
-    path: '/shop',
+    path: '/products',
     order: 2,
   },
   {
     id: '3',
     label: 'Request Quote',
-    path: '/quote',
+    path: '/quote-request',
     order: 3,
   },
   {
@@ -48,37 +83,43 @@ const FALLBACK_MENU: MenuItem[] = [
   },
 ];
 
-export async function getMenu(location: string = 'PRIMARY'): Promise<MenuItem[]> {
+/**
+ * Get menu items based on locale
+ *
+ * @param locale - Locale code ('th' or 'en')
+ * @returns Promise<MenuItem[]> - Hierarchical menu structure
+ */
+export async function getMenu(locale: string = 'th'): Promise<MenuItem[]> {
   try {
-    const data = await graphqlRequest<MenuData>(GET_MENU_QUERY, { location });
-    
-    if (!data || !data.menuItems || !data.menuItems.nodes) {
-      return FALLBACK_MENU;
+    // Validate locale
+    if (locale !== 'th' && locale !== 'en') {
+      locale = 'th';
     }
 
-    const nodes = data.menuItems.nodes;
-    
-    // Build hierarchical menu structure
-    const buildMenuTree = (items: MenuItem[], parentId: string | null = null): MenuItem[] => {
-      return items
-        .filter((item) => item.parentId === parentId)
-        .map((item) => ({
-          ...item,
-          children: buildMenuTree(items, item.id),
-        }))
-        .sort((a, b) => (a.order || 0) - (b.order || 0));
-    };
-    
-    const menuTree = buildMenuTree(nodes);
-    
-    // If menu is empty, use fallback
-    if (menuTree.length === 0) {
-      return FALLBACK_MENU;
+    // Fetch menu from WordPress REST API
+    const response = await fetch(`${WORDPRESS_API_URL}/menu?lang=${locale}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch menu: ${response.statusText}`);
     }
-    
-    return menuTree;
+
+    const data: MenuItem[] = await response.json();
+
+    // If menu is empty, use fallback
+    if (!data || data.length === 0) {
+      return locale === 'th' ? FALLBACK_MENU_TH : FALLBACK_MENU_EN;
+    }
+
+    return data;
   } catch (error) {
     console.error('Failed to fetch menu:', error);
-    return FALLBACK_MENU;
+    // Return fallback menu based on locale
+    return locale === 'th' ? FALLBACK_MENU_TH : FALLBACK_MENU_EN;
   }
 }

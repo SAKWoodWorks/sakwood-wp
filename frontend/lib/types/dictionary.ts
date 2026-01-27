@@ -76,6 +76,20 @@ export interface Dictionary {
     delivery_title: string;
     delivery_desc: string;
   };
+  shop: {
+    title: string;
+    subtitle: string;
+    no_products: string;
+    no_products_desc: string;
+    view_other_lang: string;
+    filter_by: string;
+    all_categories: string;
+    loading: string;
+    sort_by?: string;
+    sort_name?: string;
+    sort_price?: string;
+    sort_newest?: string;
+  };
   common: {
     home: string;
     products: string;

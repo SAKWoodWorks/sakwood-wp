@@ -147,6 +147,9 @@ class Sakwood_Integration {
         // Load Demo Data Generator
         require_once SAKWOOD_PLUGIN_DIR . 'demo-data.php';
 
+        // Load Menu REST API
+        require_once SAKWOOD_PLUGIN_DIR . 'menu-rest-api.php';
+
         // Initialize CRM database
         $crm_db = new Sakwood_CRM_Database();
 
@@ -160,6 +163,17 @@ class Sakwood_Integration {
     private function init_hooks() {
         add_action('plugins_loaded', array($this, 'load_textdomain'));
         add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
+        add_action('after_setup_theme', array($this, 'register_menu_locations'));
+    }
+
+    /**
+     * Register menu locations for multilingual support
+     */
+    public function register_menu_locations() {
+        register_nav_menus(array(
+            'PRIMARY_TH' => __('Primary Menu Thai', 'sakwood-integration'),
+            'PRIMARY_EN' => __('Primary Menu English', 'sakwood-integration'),
+        ));
     }
 
     /**

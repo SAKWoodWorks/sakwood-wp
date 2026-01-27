@@ -1,67 +1,37 @@
-import { getProducts } from '@/lib/services/productService';
-import { ProductCard } from '@/components/ui';
+import { getProducts, getProductCategories } from '@/lib/services/productService';
 import { getDictionary } from '@/lib/get-dictionary';
 import type { Locale } from '@/i18n-config';
+import { ShopPage as ShopPageComponent } from './ShopPage';
 
 interface ShopPageProps {
   params: Promise<{
     lang: Locale;
   }>;
+  searchParams: Promise<{
+    category?: string;
+    sort?: string;
+  }>;
 }
 
-export default async function ShopPage({ params }: ShopPageProps) {
+// Revalidate this page every 3 minutes (180 seconds)
+export const revalidate = 180;
+
+export default async function ShopPage({ params, searchParams }: ShopPageProps) {
   const { lang } = await params;
-  const [products, dictionary] = await Promise.all([
-    getProducts(lang),
+  const { category: categorySlug, sort: sortParam } = await searchParams;
+
+  const [products, categories, dictionary] = await Promise.all([
+    getProducts(lang, categorySlug, sortParam as any),
+    getProductCategories(),
     getDictionary(lang),
   ]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-16">
-      <div className="max-w-7xl mx-auto px-6">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold text-gray-900 mb-4">
-            {lang === 'th' ? 'ร้านค้า' : 'Shop'}
-          </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            {lang === 'th'
-              ? 'ค้นหาสินค้าไม้คุณภาพสูงสำหรับโครงการของคุณ'
-              : 'Find high-quality wood products for your projects'}
-          </p>
-        </div>
-
-        {/* Products Grid */}
-        {products.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} lang={lang} dictionary={dictionary} />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-16">
-            <div className="text-gray-400 text-6xl mb-4">
-              <svg className="w-24 h-24 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-              </svg>
-            </div>
-            <h3 className="text-2xl font-bold text-gray-700 mb-2">
-              {lang === 'th' ? 'ไม่พบสินค้า' : 'No products found'}
-            </h3>
-            <p className="text-gray-500 mb-6">
-              {lang === 'th'
-                ? 'ไม่มีสินค้าภาษาอังกฤษในขณะนี้'
-                : 'No English products available at the moment'}
-            </p>
-            <a
-              href={`/${lang === 'th' ? 'en' : 'th'}/shop`}
-              className="inline-block px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              {lang === 'th' ? 'ดูสินค้าภาษาไทย' : 'View Thai Products'}
-            </a>
-          </div>
-        )}
-      </div>
-    </div>
+    <ShopPageComponent
+      lang={lang}
+      dictionary={dictionary}
+      initialProducts={products}
+      initialCategories={categories}
+    />
   );
 }

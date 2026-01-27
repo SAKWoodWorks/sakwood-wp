@@ -11,6 +11,9 @@ interface BlogPageProps {
   }>;
 }
 
+// Revalidate this page every 3 minutes (180 seconds)
+export const revalidate = 180;
+
 export default async function BlogPage({ params }: BlogPageProps) {
   const { lang } = await params;
   const dictionary = await getDictionary(lang as Locale);

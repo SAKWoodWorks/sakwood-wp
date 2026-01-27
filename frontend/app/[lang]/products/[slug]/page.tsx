@@ -72,6 +72,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
+// Revalidate this page every 5 minutes (300 seconds)
+export const revalidate = 300;
+
 export default async function ProductPage({ params }: PageProps) {
   const { lang, slug } = await params;
   const dictionary = await getDictionary(lang as Locale);

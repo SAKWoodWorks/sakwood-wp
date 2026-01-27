@@ -1,6 +1,6 @@
 import { graphqlRequest } from '@/lib/graphql/client';
-import { GET_PRODUCTS_QUERY, GET_PRODUCT_QUERY } from '@/lib/graphql/queries';
-import { Product, ProductResponse, ProductImage } from '@/lib/types';
+import { GET_PRODUCTS_QUERY, GET_PRODUCT_QUERY, GET_PRODUCT_CATEGORIES_QUERY } from '@/lib/graphql/queries';
+import { Product, ProductResponse, ProductImage, ProductCategory, ProductCategoriesResponse } from '@/lib/types';
 import { APP_CONFIG } from '@/lib/config/constants';
 
 /**
@@ -26,13 +26,80 @@ function transformProductImage(image?: ProductImage): ProductImage | undefined {
 }
 
 /**
+ * Get product categories
+ * Returns list of categories with product counts
+ */
+export async function getProductCategories(): Promise<ProductCategory[]> {
+  try {
+    const data = await graphqlRequest<ProductCategoriesResponse>(GET_PRODUCT_CATEGORIES_QUERY);
+    return data?.productCategories?.nodes || [];
+  } catch (error) {
+    console.error('Error fetching product categories:', error);
+    return [];
+  }
+}
+
+export type ProductSortBy = 'name' | 'price' | 'date';
+
+/**
+ * Helper function to parse price string to number
+ * Handles Thai currency format (฿) and commas
+ */
+function parsePrice(priceStr?: string): number {
+  if (!priceStr) return 0;
+  // Remove currency symbol, commas, and whitespace
+  const numericStr = priceStr.replace(/[฿$,,\s]/g, '');
+  const parsed = parseFloat(numericStr);
+  return isNaN(parsed) ? 0 : parsed;
+}
+
+/**
+ * Sort products by specified field
+ */
+function sortProducts(products: Product[], sortBy: ProductSortBy): Product[] {
+  const sorted = [...products];
+
+  switch (sortBy) {
+    case 'name':
+      return sorted.sort((a, b) => a.name.localeCompare(b.name, 'th'));
+
+    case 'price':
+      return sorted.sort((a, b) => {
+        const priceA = parsePrice(a.price);
+        const priceB = parsePrice(b.price);
+        return priceA - priceB;
+      });
+
+    case 'date':
+      // For now, sort by database ID as a proxy for date
+      // You may want to add a date field to the Product type in the future
+      return sorted.sort((a, b) => b.databaseId - a.databaseId);
+
+    default:
+      return sorted;
+  }
+}
+
+/**
  * Get products via REST API with language filtering
  * Uses custom endpoint: /wp-json/sakwood/v1/products?language=th
+ * @param language - Language code ('th' or 'en')
+ * @param categorySlug - Optional category slug to filter by
+ * @param sortBy - Optional sort field ('name', 'price', 'date')
  */
-export async function getProducts(language: string = 'th'): Promise<Product[]> {
+export async function getProducts(
+  language: string = 'th',
+  categorySlug?: string,
+  sortBy?: ProductSortBy
+): Promise<Product[]> {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL?.replace('/graphql', '') || 'http://localhost:8006';
-    const url = `${baseUrl}/wp-json/sakwood/v1/products?language=${language}&per_page=${APP_CONFIG.productsPerPage}`;
+    let url = `${baseUrl}/wp-json/sakwood/v1/products?language=${language}&per_page=${APP_CONFIG.productsPerPage}`;
+
+    // Add category filter if provided
+    if (categorySlug) {
+      url += `&category=${encodeURIComponent(categorySlug)}`;
+    }
 
     const response = await fetch(url);
     if (!response.ok) {
@@ -49,7 +116,7 @@ export async function getProducts(language: string = 'th'): Promise<Product[]> {
     }
 
     // Transform data to match Product interface
-    return data.map((product: any) => ({
+    const products = data.map((product: any) => ({
       id: String(product.id),
       databaseId: product.databaseId,
       name: product.name,
@@ -67,7 +134,20 @@ export async function getProducts(language: string = 'th'): Promise<Product[]> {
       thickness: product.thickness || undefined,
       width: product.width || undefined,
       length: product.length || undefined,
+      // Include categories if available
+      categories: product.categories ? product.categories.map((cat: any) => ({
+        id: cat.id,
+        name: cat.name,
+        slug: cat.slug,
+      })) : undefined,
     }));
+
+    // Sort products if sortBy is provided
+    if (sortBy) {
+      return sortProducts(products, sortBy);
+    }
+
+    return products;
   } catch (error) {
     console.error('Error fetching products via REST API:', error);
     // Fall back to GraphQL
@@ -80,7 +160,18 @@ export async function getProducts(language: string = 'th'): Promise<Product[]> {
  */
 async function getProductsViaGraphQL(language: string = 'th'): Promise<Product[]> {
   const data = await graphqlRequest<any>(GET_PRODUCTS_QUERY, { first: 10 });
-  return data?.products?.nodes || [];
+  const products = data?.products?.nodes || [];
+
+  // Transform image URLs
+  return products.map((product: any) => ({
+    ...product,
+    image: product.image ? transformProductImage(product.image) : undefined,
+    categories: product.productCategories?.nodes?.map((cat: any) => ({
+      id: cat.id,
+      name: cat.name,
+      slug: cat.slug,
+    })) || [],
+  }));
 }
 
 /**

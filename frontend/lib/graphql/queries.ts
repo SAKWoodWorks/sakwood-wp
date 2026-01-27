@@ -1,5 +1,19 @@
 import { ProductsResponse, ProductResponse, MenuResponse, BlogPostsResponse, BlogPostResponse, PromoBannersResponse } from '@/lib/types';
 
+export const GET_PRODUCT_CATEGORIES_QUERY = `
+  query GetProductCategories {
+    productCategories(first: 100, where: { hideEmpty: true }) {
+      nodes {
+        id
+        name
+        slug
+        count
+        description
+      }
+    }
+  }
+`;
+
 export const GET_HERO_SLIDES_QUERY = `
   query GetHeroSlides {
     heroSlides(first: 10, where: {status: PUBLISH}) {
@@ -42,6 +56,13 @@ export const GET_PRODUCTS_QUERY = `
         length
         thickness
         volume
+        productCategories {
+          nodes {
+            id
+            name
+            slug
+          }
+        }
         ... on SimpleProduct {
           price
           regularPrice
