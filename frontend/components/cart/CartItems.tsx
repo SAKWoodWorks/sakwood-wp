@@ -96,7 +96,7 @@ export function CartItems({ lang, dictionary }: CartItemsProps) {
                       >
                         -
                       </button>
-                      <span className="w-6 sm:w-8 text-center font-semibold text-sm sm:text-base">{item.quantity}</span>
+                      <span className="w-6 sm:w-8 text-center font-semibold text-gray-900 text-sm sm:text-base">{item.quantity}</span>
                       <button
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
                         className="w-7 h-7 sm:w-8 sm:h-8 rounded bg-gray-200 hover:bg-gray-300 flex items-center justify-center font-bold text-gray-700 transition-colors text-sm"
@@ -167,7 +167,7 @@ export function CartItems({ lang, dictionary }: CartItemsProps) {
                   >
                     -
                   </button>
-                  <span className="w-8 text-center font-semibold text-base">{item.quantity}</span>
+                  <span className="w-8 text-center font-semibold text-gray-900 text-base">{item.quantity}</span>
                   <button
                     onClick={() => updateQuantity(item.id, item.quantity + 1)}
                     className="w-9 h-9 rounded bg-gray-200 hover:bg-gray-300 flex items-center justify-center font-bold text-gray-700 transition-colors"
