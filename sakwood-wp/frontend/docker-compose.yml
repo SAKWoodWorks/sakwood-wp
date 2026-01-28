@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sakwood-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+    restart: unless-stopped
+    networks:
+      - sakwood-network
+
+  # WordPress service
+  wordpress:
+    image: wordpress:latest
+    container_name: sak_wp
+    ports:
+      - "8006:80"
+    environment:
+      - WORDPRESS_DB_HOST=sakwood-db:3306
+      - WORDPRESS_DB_USER=wordpress
+      - WORDPRESS_DB_PASSWORD=wordpress
+      - WORDPRESS_DB_NAME=sakwood
+    volumes:
+      - wordpress_data:/var/www/html
+      - db_data:/var/lib/mysql
+      - ./wordpress-plugin:/var/www/html/wp-content/plugins/sakwood-integration
+      - ./wordpress-plugin/README.md:/var/www/html/wp-content/plugins/sakwood-integration/README.md
+    depends_on:
+      - sakwood-db
+    networks:
+      - sakwood-network
+
+  sakwood-db:
+    image: mysql:8.0
+    container_name: sakwood-db
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootpassword
+      - MYSQL_DATABASE=sakwood
+      - MYSQL_USER=wordpress
+      - MYSQL_PASSWORD=wordpress
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - sakwood-network

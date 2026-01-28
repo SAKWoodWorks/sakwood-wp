@@ -1,0 +1,3 @@
+module.exports=[99987,(a,b,c)=>{let{createClientModuleProxy:d}=a.r(30733);a.n(d("[project]/sakwood-wp/frontend/node_modules/next/dist/client/components/builtin/global-error.js <module evaluation>"))},59473,(a,b,c)=>{let{createClientModuleProxy:d}=a.r(30733);a.n(d("[project]/sakwood-wp/frontend/node_modules/next/dist/client/components/builtin/global-error.js"))},89365,a=>{"use strict";a.i(99987);var b=a.i(59473);a.n(b)}];
+
+//# sourceMappingURL=29863_next_dist_client_components_builtin_global-error_f22ddf07.js.map

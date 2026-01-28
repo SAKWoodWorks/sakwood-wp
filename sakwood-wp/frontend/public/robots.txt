@@ -1,0 +1,17 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Disallow admin and private areas
+Disallow: /wp-admin/
+Disallow: /wp-includes/
+Disallow: /wp-content/plugins/
+Disallow: /wp-content/themes/
+Disallow: /wp-login.php
+Disallow: /wp-signup.php
+Disallow: /cart/
+Disallow: /checkout/
+Disallow: /my-account/
+
+# Allow sitemap
+Sitemap: https://sakwood.com/sitemap.xml

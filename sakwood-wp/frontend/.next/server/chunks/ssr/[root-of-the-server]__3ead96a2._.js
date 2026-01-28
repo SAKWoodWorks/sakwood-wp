@@ -1,0 +1,3 @@
+module.exports=[14747,(a,b,c)=>{b.exports=a.x("path",()=>require("path"))},96350,a=>{"use strict";let b=(0,a.i(89384).default)("download",[["path",{d:"M12 15V3",key:"m9g1x1"}],["path",{d:"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4",key:"ih7n3h"}],["path",{d:"m7 10 5 5 5-5",key:"brsn70"}]]);a.s(["Download",()=>b],96350)},22734,(a,b,c)=>{b.exports=a.x("fs",()=>require("fs"))}];
+
+//# sourceMappingURL=%5Broot-of-the-server%5D__3ead96a2._.js.map

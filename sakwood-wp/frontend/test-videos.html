@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Videos API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .video { border: 1px solid #ccc; margin: 10px 0; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Videos from WordPress API</h1>
+    <div id="videos">Loading...</div>
+
+    <script>
+        fetch('http://localhost:8006/wp-json/sakwood/v1/videos?language=th')
+            .then(r => r.json())
+            .then(videos => {
+                const html = videos.map(v => `
+                    <div class="video">
+                        <h3>${v.title}</h3>
+                        <p><strong>Category:</strong> ${v.videoCategory}</p>
+                        <p><strong>Duration:</strong> ${v.videoDuration}</p>
+                        <img src="${v.thumbnailUrl}" alt="${v.title}" style="max-width: 200px;">
+                    </div>
+                `).join('');
+                document.getElementById('videos').innerHTML = html;
+            })
+            .catch(err => {
+                document.getElementById('videos').innerHTML = '<p style="color: red;">Error: ' + err.message + '</p>';
+            });
+    </script>
+</body>
+</html>
