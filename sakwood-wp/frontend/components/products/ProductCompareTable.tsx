@@ -1,6 +1,7 @@
 'use client';
 
 import { useCompare } from '@/lib/context/CompareContext';
+import { type Product } from '@/lib/types/product';
 import Link from 'next/link';
 import Image from 'next/image';
 import { X, Check, ArrowRight } from 'lucide-react';
@@ -15,7 +16,8 @@ interface ProductCompareTableProps {
       specifications: string;
       price: string;
       dimensions: string;
-      volume: string;
+      price_per_sqm: string;
+      price_per_sqft: string;
       image: string;
       product: string;
       view_product: string;
@@ -47,7 +49,8 @@ export function ProductCompareTable({ lang, dictionary }: ProductCompareTablePro
     specifications: 'Specifications',
     price: 'Price',
     dimensions: 'Dimensions',
-    volume: 'Volume',
+    price_per_sqm: 'Price per m²',
+    price_per_sqft: 'Price per ft²',
     image: 'Image',
     product: 'Product',
     view_product: 'View Product',
@@ -127,6 +130,18 @@ export function ProductCompareTable({ lang, dictionary }: ProductCompareTablePro
     if (!priceStr) return 0;
     const numStr = priceStr.replace(/[฿,\s]/g, '');
     return parseFloat(numStr) || 0;
+  };
+
+  // Calculate surface area from dimensions
+  // length is in meters, width is in cm
+  // surfaceArea = length (m) × (width (cm) / 100)
+  const getSurfaceArea = (product: Product) => {
+    const length = parseFloat(String(product.length || '0'));
+    const width = parseFloat(String(product.width || '0'));
+    if (length > 0 && width > 0) {
+      return length * (width / 100); // Convert width from cm to meters
+    }
+    return null;
   };
 
   return (
@@ -273,21 +288,70 @@ export function ProductCompareTable({ lang, dictionary }: ProductCompareTablePro
           </div>
         </div>
 
-        {/* Volume Row */}
+        {/* Price per Square Meter Row */}
         <div className="border-b border-gray-200">
           <div className="flex">
             <div className="w-48 md:w-56 p-4 bg-gray-50 font-semibold text-gray-700 flex items-center">
-              {compare.volume}
+              {compare.price_per_sqm}
             </div>
             <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 divide-x divide-gray-200">
               {compareItems.map((product) => {
-                const volume = (product as any).volume;
+                const price = parsePrice(product.price || '');
+                const surfaceArea = getSurfaceArea(product);
+                const pricePerSqm = surfaceArea !== null && surfaceArea > 0 ? price / surfaceArea : null;
+                const pricesPerSqm = compareItems
+                  .map((p) => {
+                    const pPrice = parsePrice(p.price || '');
+                    const pSurfaceArea = getSurfaceArea(p);
+                    return pSurfaceArea !== null && pSurfaceArea > 0 ? pPrice / pSurfaceArea : null;
+                  })
+                  .filter((v): v is number => v !== null);
+                const isLowest = pricePerSqm !== null && pricesPerSqm.every((v) => v >= pricePerSqm);
+
                 return (
                   <div
                     key={product.id}
-                    className={`p-4 ${isUniqueValue('volume', volume) ? 'bg-blue-50' : ''}`}
+                    className={`p-4 ${isLowest ? 'bg-green-50' : ''}`}
                   >
-                    {volume ? `${volume} m³` : 'N/A'}
+                    <div className={`text-lg font-bold ${isLowest ? 'text-green-600' : 'text-gray-900'}`}>
+                      {pricePerSqm !== null ? `฿${pricePerSqm.toFixed(2)} /m²` : 'N/A'}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Price per Square Foot Row */}
+        <div className="border-b border-gray-200">
+          <div className="flex">
+            <div className="w-48 md:w-56 p-4 bg-gray-50 font-semibold text-gray-700 flex items-center">
+              {compare.price_per_sqft}
+            </div>
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 divide-x divide-gray-200">
+              {compareItems.map((product) => {
+                const price = parsePrice(product.price || '');
+                const surfaceArea = getSurfaceArea(product);
+                // 1 square meter = 10.7639 square feet
+                const pricePerSqft = surfaceArea !== null && surfaceArea > 0 ? (price / surfaceArea) / 10.7639 : null;
+                const pricesPerSqft = compareItems
+                  .map((p) => {
+                    const pPrice = parsePrice(p.price || '');
+                    const pSurfaceArea = getSurfaceArea(p);
+                    return pSurfaceArea !== null && pSurfaceArea > 0 ? (pPrice / pSurfaceArea) / 10.7639 : null;
+                  })
+                  .filter((v): v is number => v !== null);
+                const isLowest = pricePerSqft !== null && pricesPerSqft.every((v) => v >= pricePerSqft);
+
+                return (
+                  <div
+                    key={product.id}
+                    className={`p-4 ${isLowest ? 'bg-green-50' : ''}`}
+                  >
+                    <div className={`text-lg font-bold ${isLowest ? 'text-green-600' : 'text-gray-900'}`}>
+                      {pricePerSqft !== null ? `฿${pricePerSqft.toFixed(2)} /ft²` : 'N/A'}
+                    </div>
                   </div>
                 );
               })}

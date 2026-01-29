@@ -186,7 +186,8 @@ export interface Dictionary {
     clear_all: string;
     price: string;
     dimensions: string;
-    volume: string;
+    price_per_sqm: string;
+    price_per_sqft: string;
     image: string;
     product: string;
     view_product: string;
