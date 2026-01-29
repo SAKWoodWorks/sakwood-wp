@@ -27,6 +27,7 @@ interface CheckoutPageProps {
       shipping: string;
       total: string;
       continue_shopping: string;
+      order_via_line?: string;
     };
     checkout: {
       page_title: string;
@@ -72,9 +73,6 @@ interface CheckoutPageProps {
       line_notice_desc?: string;
       prices_may_vary?: string;
       checkout_disabled_message?: string;
-    };
-    cart: {
-      order_via_line?: string;
     };
   };
 }

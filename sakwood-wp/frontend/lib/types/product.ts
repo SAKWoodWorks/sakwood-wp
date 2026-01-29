@@ -1,5 +1,5 @@
 export interface ProductImage {
-  sourceUrl: string;
+  sourceUrl?: string;
   altText?: string;
 }
 
@@ -31,6 +31,8 @@ export interface Product {
   slug: string;
   sku?: string;
   language?: string;
+  stockStatus?: string;
+  shortDescription?: string;
   image?: ProductImage;
   galleryImages?: {
     nodes: ProductImage[];

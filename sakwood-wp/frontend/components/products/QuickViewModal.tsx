@@ -200,7 +200,7 @@ export function QuickViewModal({ product, isOpen, onClose, lang = 'th', dictiona
                     </div>
                   ) : (
                     <Image
-                      src={product.image.sourceUrl}
+                      src={product.image?.sourceUrl || ''}
                       alt={product.name}
                       fill
                       className="object-cover"

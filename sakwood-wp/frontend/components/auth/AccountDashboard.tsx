@@ -71,10 +71,7 @@ export function AccountDashboard({ lang, dictionary }: AccountDashboardProps) {
     setAddressLoading(true);
     setAddressError('');
 
-    console.log('[AccountDashboard] Loading addresses for user:', user?.id, user);
-
     const result = await getCustomerAddresses(user?.id);
-    console.log('[AccountDashboard] Addresses result:', result);
 
     if (result.addresses) {
       setAddresses(result.addresses);
@@ -111,7 +108,6 @@ export function AccountDashboard({ lang, dictionary }: AccountDashboardProps) {
   // Load addresses when switching to addresses tab
   useEffect(() => {
     if (activeTab === 'addresses' && !addressLoading && user?.id) {
-      console.log('[AccountDashboard] Switching to addresses tab, user ID:', user.id);
       loadAddresses();
     }
   }, [activeTab, user?.id]);
@@ -203,9 +199,6 @@ export function AccountDashboard({ lang, dictionary }: AccountDashboardProps) {
     setAddressSuccess('');
     setIsSubmittingAddress(true);
 
-    console.log('[AccountDashboard] Saving address. User ID:', user?.id, 'User:', user);
-    console.log('[AccountDashboard] Address form:', addressForm);
-
     try {
       let result;
 
@@ -216,8 +209,6 @@ export function AccountDashboard({ lang, dictionary }: AccountDashboardProps) {
         // Create new address
         result = await createCustomerAddress(addressForm, user?.id);
       }
-
-      console.log('[AccountDashboard] Save result:', result);
 
       if (result.success) {
         setAddressSuccess(editingAddress ? 'Address updated successfully' : 'Address added successfully');

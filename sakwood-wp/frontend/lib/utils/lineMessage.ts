@@ -9,7 +9,7 @@ import { defaultChatConfig } from '@/lib/config/chatConfig';
 export interface CartItem {
   id: string | number;
   name: string;
-  price: string;
+  price?: string;
   quantity: number;
 }
 
@@ -39,7 +39,7 @@ function buildCartItemsList(items: CartItem[], maxItems: number = 10): string {
   const visibleItems = items.slice(0, maxItems);
 
   const itemList = visibleItems.map(item => {
-    const price = formatPrice(item.price, 'th'); // Use TH format for both
+    const price = item.price ? formatPrice(item.price, 'th') : 'ราคาพิเศษ (Price on request)';
     return `- ${item.name} (x${item.quantity}) - ${price}`;
   });
 

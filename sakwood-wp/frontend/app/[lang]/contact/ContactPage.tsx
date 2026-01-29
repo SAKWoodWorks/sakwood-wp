@@ -6,50 +6,7 @@ import type { Locale } from '@/i18n-config';
 
 interface ContactPageProps {
   lang: Locale;
-  dictionary: {
-    common: {
-      home: string;
-    };
-    contact: {
-      page_title: string;
-      page_subtitle: string;
-      form_title: string;
-      name: string;
-      name_placeholder: string;
-      email: string;
-      email_placeholder: string;
-      phone: string;
-      phone_placeholder: string;
-      company: string;
-      company_placeholder: string;
-      subject: string;
-      subject_placeholder: string;
-      message: string;
-      message_placeholder: string;
-      submit: string;
-      submitting: string;
-      success_title: string;
-      success_message: string;
-      error_title: string;
-      error_message: string;
-      back_to_home: string;
-      required_fields: string;
-      contact_info_title: string;
-      address_title: string;
-      address: string;
-      email_label: string;
-      email_value: string;
-      phone_label: string;
-      phone_value: string;
-      line_label: string;
-      line_value: string;
-      hours_title: string;
-      hours_weekday: string;
-      hours_weekend: string;
-      social_title: string;
-      follow_us: string;
-    };
-  };
+  dictionary: any;
 }
 
 export default function ContactPage({ lang, dictionary }: ContactPageProps) {

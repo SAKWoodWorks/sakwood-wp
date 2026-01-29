@@ -276,12 +276,12 @@ export function PriceTable({ products, lang, dictionary }: PriceTableProps) {
     const stock = product.stockStatus || 'instock';
     if (stock === 'instock') {
       return {
-        text: dict.in_stock || (lang === 'th' ? 'มีสินค้า' : 'In Stock'),
+        text: dictionary?.product?.in_stock || (lang === 'th' ? 'มีสินค้า' : 'In Stock'),
         className: 'bg-green-100 text-green-700'
       };
     }
     return {
-      text: dict.out_of_stock || (lang === 'th' ? 'หมด' : 'Out of Stock'),
+      text: dictionary?.product?.out_of_stock || (lang === 'th' ? 'หมด' : 'Out of Stock'),
       className: 'bg-red-100 text-red-700'
     };
   };

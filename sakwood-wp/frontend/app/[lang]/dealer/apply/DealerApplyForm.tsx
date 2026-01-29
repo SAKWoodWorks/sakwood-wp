@@ -401,20 +401,16 @@ export function DealerApplyForm({ lang, dictionary }: DealerApplyPageProps) {
                           {dealer.requirements_list}:
                         </div>
                         <ul className="text-xs text-gray-600 mt-1 space-y-1">
-                          {(() => {
-                            try {
-                              const reqs = JSON.parse(tier.requirements || '[]');
-                              return reqs.map((req: string, idx: number) => (
-                                <li key={idx} className="flex items-start">
-                                  <span className="mr-1">•</span>
-                                  <span>{req}</span>
-                                </li>
-                              ));
-                            } catch (error) {
-                              console.error('Failed to parse requirements:', error);
-                              return <li className="text-red-600">Requirements unavailable</li>;
-                            }
-                          })()}
+                          {tier.requirements && tier.requirements.length > 0 ? (
+                            tier.requirements.map((req: string, idx: number) => (
+                              <li key={idx} className="flex items-start">
+                                <span className="mr-1">•</span>
+                                <span>{req}</span>
+                              </li>
+                            ))
+                          ) : (
+                            <li className="text-red-600">Requirements unavailable</li>
+                          )}
                         </ul>
                       </div>
                     </div>

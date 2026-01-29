@@ -75,7 +75,6 @@ export async function createWooCommerceOrder(orderData: WooCommerceOrderData): P
     }
 
     const data = await response.json();
-    console.log('Order created successfully:', data);
     return data;
   } catch (error) {
     console.error('Error creating WooCommerce order:', error);

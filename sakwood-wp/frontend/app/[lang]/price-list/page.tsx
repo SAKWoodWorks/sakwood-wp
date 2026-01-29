@@ -53,7 +53,7 @@ export default async function PriceListPage({ params }: PriceListPageProps) {
         <PriceTable
           products={products}
           lang={lang as Locale}
-          dictionary={dictionary}
+          dictionary={dictionary as any}
         />
 
         {/* CTA Section */}
