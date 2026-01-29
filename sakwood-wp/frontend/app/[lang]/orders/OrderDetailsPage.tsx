@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
+import { getCustomerOrderDetails, type CustomerOrderDetails } from '@/lib/services/customerOrderService';
 import type { Locale } from '@/i18n-config';
 
 interface OrderDetailsPageProps {
@@ -33,59 +35,33 @@ interface OrderDetailsPageProps {
   orderId: string;
 }
 
-interface OrderItem {
-  id: string;
-  name: string;
-  price: string;
-  quantity: number;
-  image?: string;
-}
-
-interface Order {
-  id: string;
-  date: string;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-  items: OrderItem[];
-  subtotal: number;
-  shipping: number;
-  total: number;
-  shippingAddress: {
-    firstName: string;
-    lastName: string;
-    address: string;
-    city: string;
-    province: string;
-    postalCode: string;
-    phone: string;
-    email: string;
-  };
-  paymentMethod: 'bank_transfer' | 'cash_on_delivery';
-}
-
 export function OrderDetailsPage({ lang, dictionary, orderId }: OrderDetailsPageProps) {
   const { common, order_details } = dictionary;
-  const [order, setOrder] = useState<Order | null>(null);
+  const router = useRouter();
+  const [order, setOrder] = useState<CustomerOrderDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Load order data from localStorage
-    if (typeof window !== 'undefined') {
+    // Fetch order data from API
+    const fetchOrder = async () => {
       try {
-        const orders = JSON.parse(localStorage.getItem('sakwood-orders') || '[]');
-        const foundOrder = orders.find((o: Order) => o.id === orderId);
-        
-        if (foundOrder) {
-          setOrder(foundOrder);
+        const orderData = await getCustomerOrderDetails(orderId);
+
+        if (orderData) {
+          setOrder(orderData);
         } else {
           setError('Order not found');
         }
       } catch (err) {
         console.error('Error loading order:', err);
         setError('Failed to load order');
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    }
+    };
+
+    fetchOrder();
   }, [orderId]);
 
   const getStatusColor = (status: string) => {
@@ -162,7 +138,7 @@ export function OrderDetailsPage({ lang, dictionary, orderId }: OrderDetailsPage
   const breadcrumbItems = [
     { name: common.home, href: `/${lang}` },
     { name: order_details.page_title, href: `/${lang}/orders` },
-    { name: order.id, href: `/${lang}/orders/${order.id}` }
+    { name: String(order.id), href: `/${lang}/orders/${order.id}` }
   ];
 
   return (
@@ -187,7 +163,7 @@ export function OrderDetailsPage({ lang, dictionary, orderId }: OrderDetailsPage
                 <div>
                   <p className="text-sm text-gray-600 mb-1">{order_details.order_date}</p>
                   <p className="text-lg font-bold text-blue-900">
-                    {new Date(order.date).toLocaleDateString('en-US', {
+                    {new Date(order.date_created).toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'long',
                       day: 'numeric'
@@ -219,10 +195,7 @@ export function OrderDetailsPage({ lang, dictionary, orderId }: OrderDetailsPage
                       <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-blue-900">{item.price}</p>
-                      <p className="text-sm text-gray-600">
-                        {(parseFloat(item.price) * item.quantity).toFixed(2)}
-                      </p>
+                      <p className="font-bold text-blue-900">{item.subtotal_formatted}</p>
                     </div>
                   </div>
                 ))}
@@ -237,13 +210,12 @@ export function OrderDetailsPage({ lang, dictionary, orderId }: OrderDetailsPage
                 </h2>
                 <div className="space-y-2 text-gray-700">
                   <p>
-                    {order.shippingAddress.firstName} {order.shippingAddress.lastName}
+                    {order.shipping.first_name} {order.shipping.last_name}
                   </p>
-                  <p>{order.shippingAddress.address}</p>
+                  <p>{order.shipping.address_1}</p>
                   <p>
-                    {order.shippingAddress.city}, {order.shippingAddress.province} {order.shippingAddress.postalCode}
+                    {order.shipping.city}, {order.shipping.state} {order.shipping.postcode}
                   </p>
-                  <p>{order.shippingAddress.phone}</p>
                 </div>
               </div>
 
@@ -253,14 +225,14 @@ export function OrderDetailsPage({ lang, dictionary, orderId }: OrderDetailsPage
                 </h2>
                 <div className="space-y-2 text-gray-700">
                   <p>
-                    {order.shippingAddress.firstName} {order.shippingAddress.lastName}
+                    {order.billing.first_name} {order.billing.last_name}
                   </p>
-                  <p>{order.shippingAddress.email}</p>
-                  <p>{order.shippingAddress.phone}</p>
+                  <p>{order.billing.email}</p>
+                  <p>{order.billing.phone}</p>
                   <div className="pt-2">
                     <p className="text-sm text-gray-600">{order_details.payment_method}</p>
                     <p className="font-semibold text-gray-900">
-                      {order.paymentMethod === 'bank_transfer' ? 'Bank Transfer' : 'Cash on Delivery'}
+                      {order.payment_method_title}
                     </p>
                   </div>
                 </div>
@@ -279,21 +251,21 @@ export function OrderDetailsPage({ lang, dictionary, orderId }: OrderDetailsPage
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">{order_details.subtotal}:</span>
                   <span className="font-semibold text-blue-900">
-                    {order.subtotal.toFixed(2)}
+                    {order.subtotal_formatted}
                   </span>
                 </div>
 
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">{order_details.shipping}:</span>
                   <span className="font-semibold text-blue-900">
-                    {order.shipping.toFixed(2)}
+                    {order.shipping_total_formatted}
                   </span>
                 </div>
 
                 <div className="border-t border-gray-200 pt-3 flex justify-between items-center">
                   <span className="text-lg font-bold text-blue-900">{order_details.total}:</span>
                   <span className="text-2xl font-bold text-blue-900">
-                    {order.total.toFixed(2)}
+                    {order.total_formatted}
                   </span>
                 </div>
               </div>
