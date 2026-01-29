@@ -47,7 +47,7 @@ export function OrdersList({ lang, dictionary }: OrdersListProps) {
   }, [page]);
 
   const handleOrderClick = (orderId: number) => {
-    router.push(`/${lang}/account/orders/${orderId}`);
+    router.push(`/${lang}/orders/${orderId}`);
   };
 
   if (loading && orders.length === 0) {
