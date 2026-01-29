@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import * as Sentry from '@sentry/nextjs';
 
 interface LocaleErrorProps {
   error: Error & { digest?: string };
@@ -22,6 +23,8 @@ interface LocaleErrorProps {
  * - common.error_title
  * - common.error_message
  * - common.try_again
+ *
+ * Integrates with Sentry for error tracking with locale context
  */
 export default function LocaleError({
   error,
@@ -40,11 +43,23 @@ export default function LocaleError({
     const errorTitle = document.getElementById('error-title');
     errorTitle?.focus();
 
-    // Development-only error logging
+    // Log the error to console
     if (process.env.NODE_ENV === 'development') {
       console.error('Locale error boundary caught an error:', error);
     }
-  }, [error]);
+
+    // Send error to Sentry with locale context
+    Sentry.captureException(error, {
+      level: 'fatal',
+      tags: {
+        errorBoundary: 'locale',
+        locale: lang,
+      },
+      extra: {
+        locale: lang,
+      },
+    });
+  }, [error, lang]);
 
   // Dictionary translations with fallbacks
   const common = {

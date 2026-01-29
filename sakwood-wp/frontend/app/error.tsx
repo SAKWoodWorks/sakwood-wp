@@ -2,10 +2,12 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
+import * as Sentry from '@sentry/nextjs';
 
 /**
  * Root Error Boundary
  * Catches errors in the root app and displays a user-friendly error page
+ * Integrates with Sentry for error tracking
  */
 export default function Error({
   error,
@@ -15,8 +17,16 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Log the error to an error reporting service
+    // Log the error to console
     console.error('Root error boundary caught an error:', error);
+
+    // Send error to Sentry
+    Sentry.captureException(error, {
+      level: 'fatal',
+      tags: {
+        errorBoundary: 'root',
+      },
+    });
   }, [error]);
 
   return (
