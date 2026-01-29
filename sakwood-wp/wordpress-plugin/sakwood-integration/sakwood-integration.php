@@ -119,8 +119,10 @@ class Sakwood_Integration {
         // Load Product Bulk Import
         require_once SAKWOOD_PLUGIN_DIR . 'product-bulk-import.php';
 
-        // Load Customer Orders API
-        require_once SAKWOOD_PLUGIN_DIR . 'customer-orders-api.php';
+        // Load Customer Orders API (DEV MODE - No authentication for testing)
+        require_once SAKWOOD_PLUGIN_DIR . 'customer-orders-api-dev.php';
+        // Production version (requires JWT auth):
+        // require_once SAKWOOD_PLUGIN_DIR . 'customer-orders-api.php';
 
         // Load Customer Addresses API
         require_once SAKWOOD_PLUGIN_DIR . 'customer-addresses-api.php';

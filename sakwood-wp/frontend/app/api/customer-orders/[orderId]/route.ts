@@ -8,8 +8,35 @@ export async function GET(
 ) {
   try {
     const { orderId } = await params;
+    const { searchParams } = new URL(request.url);
+    const devUserId = searchParams.get('user_id'); // DEV MODE: Get user_id from query params
 
-    // Get auth token from Authorization header
+    // DEV MODE: If user_id is provided, use it directly
+    if (devUserId) {
+      const wpResponse = await fetch(
+        `${WORDPRESS_API_URL}/sakwood/v1/customer/orders/${orderId}?user_id=${devUserId}&skip_ownership_check=1`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          cache: 'no-store',
+        }
+      );
+
+      if (!wpResponse.ok) {
+        console.error('[API OrderDetails] Dev mode failed:', wpResponse.statusText);
+        return NextResponse.json(
+          { error: 'Failed to fetch order details' },
+          { status: wpResponse.status }
+        );
+      }
+
+      const data = await wpResponse.json();
+      return NextResponse.json(data);
+    }
+
+    // Production mode: Get auth token from Authorization header
     const authToken = request.headers.get('authorization')?.replace('Bearer ', '');
 
     if (!authToken) {

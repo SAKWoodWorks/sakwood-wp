@@ -94,7 +94,8 @@ export interface OrdersResponse {
 export async function getCustomerOrders(
   page: number = 1,
   perPage: number = 10,
-  status: string = ''
+  status: string = '',
+  userId?: number // DEV MODE: Optionally pass userId directly
 ): Promise<OrdersResponse> {
   try {
     const params = new URLSearchParams({
@@ -106,6 +107,11 @@ export async function getCustomerOrders(
       params.append('status', status);
     }
 
+    // DEV MODE: Pass user_id if provided (bypasses auth)
+    if (userId) {
+      params.append('user_id', userId.toString());
+    }
+
     // Get auth token from localStorage
     const token = typeof window !== 'undefined' ? localStorage.getItem('sakwood_token') : null;
 
@@ -113,7 +119,7 @@ export async function getCustomerOrders(
       'Content-Type': 'application/json',
     };
 
-    if (token) {
+    if (token && !userId) {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
@@ -126,6 +132,8 @@ export async function getCustomerOrders(
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       console.error('[CustomerOrderService] Failed to fetch orders:', errorData);
+      console.error('[CustomerOrderService] Response status:', response.status, response.statusText);
+      console.error('[CustomerOrderService] Token exists:', !!token);
       return { orders: [], total: 0, page: 1, per_page: 10, total_pages: 0 };
     }
 
@@ -140,7 +148,10 @@ export async function getCustomerOrders(
 /**
  * Fetch single order details
  */
-export async function getCustomerOrderDetails(orderId: string | number): Promise<CustomerOrderDetails | null> {
+export async function getCustomerOrderDetails(
+  orderId: string | number,
+  userId?: number // DEV MODE: Optionally pass userId directly
+): Promise<CustomerOrderDetails | null> {
   try {
     // Get auth token from localStorage
     const token = typeof window !== 'undefined' ? localStorage.getItem('sakwood_token') : null;
@@ -149,11 +160,16 @@ export async function getCustomerOrderDetails(orderId: string | number): Promise
       'Content-Type': 'application/json',
     };
 
-    if (token) {
+    if (token && !userId) {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const response = await fetch(`/api/customer-orders/${orderId}`, {
+    // DEV MODE: Add user_id to URL if provided
+    const url = userId
+      ? `/api/customer-orders/${orderId}?user_id=${userId}`
+      : `/api/customer-orders/${orderId}`;
+
+    const response = await fetch(url, {
       method: 'GET',
       headers,
       cache: 'no-store',

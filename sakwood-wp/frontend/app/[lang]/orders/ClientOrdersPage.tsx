@@ -52,7 +52,7 @@ export function ClientOrdersPage({ lang, dictionary }: ClientOrdersPageProps) {
         </div>
 
         {/* Orders List */}
-        <OrdersList lang={lang} dictionary={dictionary} />
+        <OrdersList lang={lang} dictionary={dictionary} userId={user?.id} />
       </div>
     </div>
   );

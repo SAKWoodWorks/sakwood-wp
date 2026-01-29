@@ -10,9 +10,10 @@ import { Package, Calendar, CreditCard, ChevronRight, AlertCircle } from 'lucide
 interface OrdersListProps {
   lang: Locale;
   dictionary: Dictionary;
+  userId?: number; // DEV MODE: Optionally pass userId for dev mode
 }
 
-export function OrdersList({ lang, dictionary }: OrdersListProps) {
+export function OrdersList({ lang, dictionary, userId }: OrdersListProps) {
   const router = useRouter();
   const [orders, setOrders] = useState<CustomerOrder[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,7 +27,7 @@ export function OrdersList({ lang, dictionary }: OrdersListProps) {
     setError(null);
 
     try {
-      const response = await getCustomerOrders(currentPage, 10);
+      const response = await getCustomerOrders(currentPage, 10, '', userId);
       setOrders(response.orders);
       setTotalPages(response.total_pages);
       setTotal(response.total);
@@ -44,7 +45,7 @@ export function OrdersList({ lang, dictionary }: OrdersListProps) {
 
   useEffect(() => {
     fetchOrders(page);
-  }, [page]);
+  }, [page, userId]);
 
   const handleOrderClick = (orderId: number) => {
     router.push(`/${lang}/orders/${orderId}`);

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/context/AuthContext';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import { getCustomerOrderDetails, type CustomerOrderDetails } from '@/lib/services/customerOrderService';
 import type { Locale } from '@/i18n-config';
@@ -38,6 +39,7 @@ interface OrderDetailsPageProps {
 export function OrderDetailsPage({ lang, dictionary, orderId }: OrderDetailsPageProps) {
   const { common, order_details } = dictionary;
   const router = useRouter();
+  const { user } = useAuth();
   const [order, setOrder] = useState<CustomerOrderDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +48,7 @@ export function OrderDetailsPage({ lang, dictionary, orderId }: OrderDetailsPage
     // Fetch order data from API
     const fetchOrder = async () => {
       try {
-        const orderData = await getCustomerOrderDetails(orderId);
+        const orderData = await getCustomerOrderDetails(orderId, user?.id);
 
         if (orderData) {
           setOrder(orderData);
@@ -62,7 +64,7 @@ export function OrderDetailsPage({ lang, dictionary, orderId }: OrderDetailsPage
     };
 
     fetchOrder();
-  }, [orderId]);
+  }, [orderId, user?.id]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
