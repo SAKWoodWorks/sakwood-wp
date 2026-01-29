@@ -125,6 +125,12 @@ class Sakwood_Integration {
         // Load Customer Addresses API
         require_once SAKWOOD_PLUGIN_DIR . 'customer-addresses-api.php';
 
+        // Load Customer Profile API
+        require_once SAKWOOD_PLUGIN_DIR . 'customer-profile-api.php';
+
+        // Load Password Reset API
+        require_once SAKWOOD_PLUGIN_DIR . 'password-reset-api.php';
+
         // Load User Roles and Management
         require_once SAKWOOD_PLUGIN_DIR . 'user-roles.php';
         require_once SAKWOOD_PLUGIN_DIR . 'user-management.php';
