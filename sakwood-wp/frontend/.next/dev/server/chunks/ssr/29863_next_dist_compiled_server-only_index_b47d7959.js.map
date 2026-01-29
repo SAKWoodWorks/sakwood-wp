@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 3, "column": 0}, "map": {"version":3,"sources":["file:///D:/Works/Web/sakwood/sakwood-wp/frontend/node_modules/next/dist/compiled/server-only/index.js"],"sourcesContent":["throw new Error(\n  \"This module cannot be imported from a Client Component module. \" +\n    \"It should only be used from a Server Component.\"\n);\n"],"names":[],"mappings":"AAAA,MAAM,IAAI,MACR,oEACE","ignoreList":[0]}}]
-}

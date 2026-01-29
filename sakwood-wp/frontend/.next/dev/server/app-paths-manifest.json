@@ -1,5 +1,0 @@
-{
-  "/[lang]/page": "app/[lang]/page.js",
-  "/api/popup/route": "app/api/popup/route.js",
-  "/api/slider-settings/route": "app/api/slider-settings/route.js"
-}

@@ -1,3 +1,0 @@
-module.exports=[73660,(a,b,c)=>{}];
-
-//# sourceMappingURL=d88bc_frontend__next-internal_server_app_%5Blang%5D_account_orders_page_actions_08940afd.js.map
