@@ -106,11 +106,20 @@ export async function getCustomerOrders(
       params.append('status', status);
     }
 
+    // Get auth token from localStorage
+    const token = typeof window !== 'undefined' ? localStorage.getItem('sakwood_token') : null;
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`/api/customer-orders?${params.toString()}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       cache: 'no-store',
     });
 
@@ -133,11 +142,20 @@ export async function getCustomerOrders(
  */
 export async function getCustomerOrderDetails(orderId: string | number): Promise<CustomerOrderDetails | null> {
   try {
+    // Get auth token from localStorage
+    const token = typeof window !== 'undefined' ? localStorage.getItem('sakwood_token') : null;
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`/api/customer-orders/${orderId}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       cache: 'no-store',
     });
 

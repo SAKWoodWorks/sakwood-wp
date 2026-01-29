@@ -9,30 +9,38 @@ export async function GET(
   try {
     const { orderId } = await params;
 
-    // Get cookie from request
-    const cookieHeader = request.headers.get('cookie') || '';
+    // Get auth token from Authorization header
+    const authToken = request.headers.get('authorization')?.replace('Bearer ', '');
 
-    const response = await fetch(
+    if (!authToken) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    // Forward the request to WordPress with JWT token
+    const wpResponse = await fetch(
       `${WORDPRESS_API_URL}/sakwood/v1/customer/orders/${orderId}`,
       {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Cookie': cookieHeader,
+          'Authorization': `Bearer ${authToken}`,
         },
         cache: 'no-store',
       }
     );
 
-    if (!response.ok) {
-      console.error('[API OrderDetails] Failed to fetch from WordPress:', response.statusText);
+    if (!wpResponse.ok) {
+      console.error('[API OrderDetails] Failed to fetch from WordPress:', wpResponse.statusText);
       return NextResponse.json(
         { error: 'Failed to fetch order details' },
-        { status: response.status }
+        { status: wpResponse.status }
       );
     }
 
-    const data = await response.json();
+    const data = await wpResponse.json();
     return NextResponse.json(data);
   } catch (error) {
     console.error('[API OrderDetails] Error:', error);

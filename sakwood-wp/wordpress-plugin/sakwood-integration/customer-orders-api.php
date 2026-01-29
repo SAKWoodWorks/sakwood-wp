@@ -28,22 +28,58 @@ class Sakwood_Customer_Orders_API {
         register_rest_route('sakwood/v1', '/customer/orders', array(
             'methods' => 'GET',
             'callback' => array($this, 'get_customer_orders'),
-            'permission_callback' => 'is_user_logged_in',
+            'permission_callback' => array($this, 'check_jwt_auth'),
         ));
 
         // Get single order details
         register_rest_route('sakwood/v1', '/customer/orders/(?P<order_id>\d+)', array(
             'methods' => 'GET',
             'callback' => array($this, 'get_order_details'),
-            'permission_callback' => 'is_user_logged_in',
+            'permission_callback' => array($this, 'check_jwt_auth'),
         ));
+    }
+
+    /**
+     * Check JWT authentication from Authorization header
+     */
+    public function check_jwt_auth($request) {
+        // Get Authorization header
+        $auth_header = $request->get_header('authorization');
+
+        if (empty($auth_header)) {
+            // Fallback to checking if user is logged in via WordPress session
+            return is_user_logged_in();
+        }
+
+        // Extract token (remove "Bearer " prefix)
+        $token = str_replace('Bearer ', '', $auth_header);
+
+        // Validate token with JWT Auth plugin
+        $validate_url = rest_url('jwt-auth/v1/token/validate');
+
+        $response = wp_remote_get($validate_url, array(
+            'headers' => array(
+                'Authorization' => 'Bearer ' . $token,
+                'Content-Type' => 'application/json',
+            ),
+        ));
+
+        if (is_wp_error($response)) {
+            return false;
+        }
+
+        $body = wp_remote_retrieve_body($response);
+        $data = json_decode($body, true);
+
+        return isset($data['code']) && $data['code'] === 'jwt_auth_valid_token';
     }
 
     /**
      * Get customer orders
      */
     public function get_customer_orders($request) {
-        $user_id = get_current_user_id();
+        // Get user ID from JWT token
+        $user_id = $this->get_user_id_from_token($request);
 
         if (!$user_id) {
             return new WP_Error('not_authenticated', 'User not authenticated', array('status' => 401));
@@ -76,6 +112,7 @@ class Sakwood_Customer_Orders_API {
                 'total' => 0,
                 'page' => $page,
                 'per_page' => $per_page,
+                'total_pages' => 0,
             );
         }
 
@@ -104,7 +141,8 @@ class Sakwood_Customer_Orders_API {
      * Get order details
      */
     public function get_order_details($request) {
-        $user_id = get_current_user_id();
+        // Get user ID from JWT token
+        $user_id = $this->get_user_id_from_token($request);
         $order_id = intval($request['order_id']);
 
         if (!$user_id) {
@@ -124,6 +162,49 @@ class Sakwood_Customer_Orders_API {
         }
 
         return $this->format_order_details_for_response($order);
+    }
+
+    /**
+     * Get user ID from JWT token
+     */
+    private function get_user_id_from_token($request) {
+        // Try to get from WordPress session first
+        $user_id = get_current_user_id();
+        if ($user_id) {
+            return $user_id;
+        }
+
+        // Get Authorization header
+        $auth_header = $request->get_header('authorization');
+        if (empty($auth_header)) {
+            return false;
+        }
+
+        // Extract token
+        $token = str_replace('Bearer ', '', $auth_header);
+
+        // Get user from JWT token
+        $validate_url = rest_url('jwt-auth/v1/token/validate');
+
+        $response = wp_remote_get($validate_url, array(
+            'headers' => array(
+                'Authorization' => 'Bearer ' . $token,
+                'Content-Type' => 'application/json',
+            ),
+        ));
+
+        if (is_wp_error($response)) {
+            return false;
+        }
+
+        $body = wp_remote_retrieve_body($response);
+        $data = json_decode($body, true);
+
+        if (isset($data['code']) && $data['code'] === 'jwt_auth_valid_token' && isset($data['data']['user_id'])) {
+            return $data['data']['user_id'];
+        }
+
+        return false;
     }
 
     /**
