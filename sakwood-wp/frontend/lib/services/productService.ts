@@ -281,3 +281,65 @@ async function getProductBySlugViaGraphQL(slug: string): Promise<Product | null>
       : undefined,
   };
 }
+
+/**
+ * Get featured products via GraphQL
+ * Fetches products ordered by popularity (best sellers)
+ */
+export async function getFeaturedProducts(lang: string, limit: number = 6): Promise<any[]> {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL || 'http://localhost:8006/graphql';
+
+    const query = `
+      query GetFeaturedProducts($lang: LanguageCodeEnum!, $limit: Int) {
+        products(where: {
+          language: $lang,
+          orderby: { field: POPULARITY, order: DESC }
+        }, first: $limit) {
+          nodes {
+            id
+            databaseId
+            name
+            slug
+            price
+            regularPrice
+            shortDescription(format: RENDERED)
+            image {
+              sourceUrl
+              altText
+            }
+            ... on SimpleProduct {
+              price
+              regularPrice
+            }
+          }
+        }
+      }
+    `;
+
+    const response = await fetch(baseUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        query,
+        variables: { lang: lang.toUpperCase(), limit }
+      }),
+      next: { revalidate: 60 }
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch featured products');
+    }
+
+    const data = await response.json();
+
+    // Transform image URLs for each product
+    const products = data.data?.products?.nodes || [];
+    return products.map((product: any) => ({
+      ...product,
+      image: product.image ? transformProductImage(product.image) : undefined,
+    }));
+  } catch (error) {
+    return [];
+  }
+}
