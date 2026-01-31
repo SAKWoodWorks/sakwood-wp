@@ -29,12 +29,12 @@ export function QuickShopHero({ lang, dictionary }: QuickShopHeroProps) {
   const ctaSecondary = dict.hero_cta_secondary || (lang === 'th' ? 'ขอราคา' : 'Get Quote');
 
   return (
-    <section className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
+    <section className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white" aria-labelledby="quick-shop-hero-heading">
       {/* Background Image with Overlay */}
-      <div className="absolute inset-0">
+      <div className="absolute inset-0" aria-hidden="true">
         <Image
           src="https://images.unsplash.com/photo-1544571901-2656599c365c?w=1920&q=80"
-          alt="Wood background"
+          alt=""
           fill
           className="object-cover opacity-20"
           priority
@@ -45,7 +45,7 @@ export function QuickShopHero({ lang, dictionary }: QuickShopHeroProps) {
       {/* Content */}
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28 lg:py-36">
         <div className="text-center max-w-4xl mx-auto">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-6 leading-tight">
+          <h1 id="quick-shop-hero-heading" className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-6 leading-tight">
             {title}
           </h1>
           <p className="text-xl sm:text-2xl text-slate-300 mb-10 font-light">
