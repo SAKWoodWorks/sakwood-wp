@@ -11,7 +11,7 @@ export const revalidate = 60; // ISR every 60 seconds
 
 interface QuickShopPageProps {
   params: Promise<{
-    lang: string;
+    lang: Locale;
   }>;
 }
 
@@ -34,7 +34,7 @@ export default async function QuickShopPage({ params }: QuickShopPageProps) {
 
 export async function generateMetadata({ params }: QuickShopPageProps) {
   const { lang } = await params;
-  const dictionary = await getDictionary(lang as any);
+  const dictionary = await getDictionary(lang as Locale);
 
   return {
     title: lang === 'th' ? 'ช้อปปิ้ง - SAK WoodWorks' : 'Quick Shop - SAK WoodWorks',
