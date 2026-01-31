@@ -11,6 +11,7 @@ import { useCart } from '@/lib/context/CartContext';
 import { useAuth } from '@/lib/context/AuthContext';
 import { CompareButton } from '@/components/products/CompareButton';
 import { Search, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface HeaderProps {
   menuItems: MenuItem[];
@@ -95,11 +96,12 @@ export function Header({ menuItems, lang, dictionary }: HeaderProps) {
   }, [isMenuOpen]);
 
   const renderMenuItem = (item: MenuItem, isMobile: boolean = false) => {
-    const baseClasses = isMobile
-      ? 'text-gray-700 hover:text-blue-600 font-medium transition'
-      : `font-medium transition relative group ${
-          !isTransparentHeader ? 'text-gray-700 hover:text-blue-600' : 'text-white hover:text-blue-200'
-        }`;
+    const baseClasses = cn(
+      'font-medium transition relative group',
+      isMobile
+        ? 'text-gray-700 hover:text-blue-600'
+        : (!isTransparentHeader ? 'text-gray-700 hover:text-blue-600' : 'text-white hover:text-blue-200')
+    );
 
     const content = (
       <>
@@ -150,9 +152,10 @@ export function Header({ menuItems, lang, dictionary }: HeaderProps) {
       {/* Primary Navigation Bar */}
       <div className="fixed top-0 left-0 right-0 z-50">
         {/* Mini Top Bar - hidden on mobile */}
-        <div className={`hidden sm:block text-white py-1 transition-all duration-300 ${
+        <div className={cn(
+          'hidden sm:block text-white py-1 transition-all duration-300',
           !isHomePage || isScrolled ? 'bg-gray-900' : 'bg-transparent'
-        }`}>
+        )}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6"> 
             <div className="flex justify-between items-center">
               {/* Phone Number */}
@@ -172,22 +175,24 @@ export function Header({ menuItems, lang, dictionary }: HeaderProps) {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => toggleLanguage('en')}
-                    className={`px-1.5 sm:px-2 py-0.5 text-xs font-bold transition-colors rounded ${
+                    className={cn(
+                      'px-1.5 sm:px-2 py-0.5 text-xs font-bold transition-colors rounded',
                       lang === 'en'
                         ? 'text-blue-400 bg-white/10'
                         : 'text-gray-300 hover:text-blue-400 hover:bg-white/10'
-                    }`}
+                    )}
                   >
                     EN
                   </button>
                   <span className="text-gray-600">|</span>
                   <button
                     onClick={() => toggleLanguage('th')}
-                    className={`px-1.5 sm:px-2 py-0.5 text-xs font-bold transition-colors rounded ${
+                    className={cn(
+                      'px-1.5 sm:px-2 py-0.5 text-xs font-bold transition-colors rounded',
                       lang === 'th'
                         ? 'text-blue-400 bg-white/10'
                         : 'text-gray-300 hover:text-blue-400 hover:bg-white/10'
-                    }`}
+                    )}
                   >
                     ไทย
                   </button>
@@ -236,24 +241,26 @@ export function Header({ menuItems, lang, dictionary }: HeaderProps) {
 
         {/* Main Header */}
         <header
-          className={`transition-all duration-300 border-0 ${
+          className={cn(
+            'transition-all duration-300 border-0',
             !isHomePage || isScrolled ? 'bg-white/95 backdrop-blur-md shadow-lg py-2 sm:py-2' : 'bg-transparent py-2 sm:py-4'
-          }`}
+          )}
         >
         <div className="max-w-7xl mx-auto px-3 sm:px-6">
           <div className="flex justify-between items-center">
           {/* Logo */}
           <Link href={`/${lang}`} className="flex items-center gap-2 sm:gap-3 group">
-            <div className={`bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg ${
+            <div className={cn(
+              'bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg',
               isScrolled ? 'w-7 h-7 sm:w-8 sm:h-8' : 'w-8 h-8 sm:w-10 sm:h-10'
-            }`}>
-              <span className={`text-white font-bold transition-all ${
+            )}>
+              <span className={cn('text-white font-bold transition-all',
                 isScrolled ? 'text-base sm:text-lg' : 'text-lg sm:text-xl'
-              }`}>S</span>
+              )}>S</span>
             </div>
-            <span className={`font-bold bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent transition-all ${
+            <span className={cn('font-bold bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent transition-all',
               isScrolled ? 'text-lg sm:text-xl' : 'text-xl sm:text-2xl'
-            }`}>
+            )}>
               {APP_CONFIG.name}
             </span>
           </Link>
@@ -262,14 +269,23 @@ export function Header({ menuItems, lang, dictionary }: HeaderProps) {
           <nav className="hidden md:flex items-center gap-6">
             {menuItems.map((item) => renderMenuItem(item))}
 
+            {/* Quick Shop Link */}
+            <Link
+              href={`/${lang}/quick-shop`}
+              className="text-blue-600 font-semibold hover:text-blue-700 transition-colors"
+            >
+              {lang === 'th' ? 'ช้อปปิ้ง' : 'Quick Shop'}
+            </Link>
+
             {/* Search Icon */}
             <div className="relative">
               {!isSearchOpen ? (
                 <button
                   onClick={() => setIsSearchOpen(true)}
-                  className={`p-1.5 sm:p-2 transition-all ml-1 sm:ml-2 ${
+                  className={cn(
+                    'p-1.5 sm:p-2 transition-all ml-1 sm:ml-2',
                     !isTransparentHeader ? 'text-gray-700 hover:text-blue-600' : 'text-white hover:text-blue-200'
-                  }`}
+                  )}
                   aria-label="Search"
                 >
                   <Search className={`transition-all ${isScrolled ? 'w-4 h-4 sm:w-5 sm:h-5' : 'w-5 h-5 sm:w-6 sm:h-6'}`} />
@@ -309,22 +325,25 @@ export function Header({ menuItems, lang, dictionary }: HeaderProps) {
             {/* Cart Icon */}
             <Link
               href={`/${lang}/cart`}
-              className={`relative p-1.5 sm:p-2 transition-all ml-1 sm:ml-2 ${
-                cartAnimating ? 'animate-bounce' : ''
-              } ${
+              className={cn(
+                'relative p-1.5 sm:p-2 transition-all ml-1 sm:ml-2',
+                cartAnimating ? 'animate-bounce' : '',
                 !isTransparentHeader ? 'text-gray-700 hover:text-blue-600' : 'text-white hover:text-blue-200'
-              }`}
+              )}
               aria-label="Shopping cart"
             >
-              <svg className={`transition-all ${isScrolled ? 'w-4 h-4 sm:w-5 sm:h-5' : 'w-5 h-5 sm:w-6 sm:h-6'} ${
+              <svg className={cn(
+                'transition-all',
+                isScrolled ? 'w-4 h-4 sm:w-5 sm:h-5' : 'w-5 h-5 sm:w-6 sm:h-6',
                 cartAnimating ? 'animate-spin' : ''
-              }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              )} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
               {cartCount > 0 && (
-                <span className={`absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 bg-red-600 text-white text-xs font-bold rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center transition-all ${
+                <span className={cn(
+                  'absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 bg-red-600 text-white text-xs font-bold rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center transition-all',
                   cartAnimating ? 'animate-ping' : ''
-                }`}>
+                )}>
                   {cartCount}
                 </span>
               )}
@@ -342,9 +361,10 @@ export function Header({ menuItems, lang, dictionary }: HeaderProps) {
             <div className="relative">
               <button
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                className={`p-1.5 sm:p-2 transition-colors ml-1 sm:ml-2 ${
+                className={cn(
+                  'p-1.5 sm:p-2 transition-colors ml-1 sm:ml-2',
                   !isTransparentHeader ? 'text-gray-700 hover:text-blue-600' : 'text-white hover:text-blue-200'
-                }`}
+                )}
                 aria-label="User menu"
               >
                 <svg className={`transition-all ${isScrolled ? 'w-4 h-4 sm:w-5 sm:h-5' : 'w-5 h-5 sm:w-6 sm:h-6'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -416,9 +436,10 @@ export function Header({ menuItems, lang, dictionary }: HeaderProps) {
 
           {/* Mobile Menu Button */}
           <button
-            className={`md:hidden p-1.5 sm:p-2 transition rounded-lg ${
+            className={cn(
+              'md:hidden p-1.5 sm:p-2 transition rounded-lg',
               !isTransparentHeader ? 'text-gray-700 hover:text-blue-600 bg-white shadow-md' : 'text-gray-700 hover:text-blue-600 bg-white shadow-md'
-            }`}
+            )}
             onClick={(e) => {
               e.stopPropagation();
               setIsMenuOpen(!isMenuOpen);
@@ -483,22 +504,24 @@ export function Header({ menuItems, lang, dictionary }: HeaderProps) {
                   <button
                     onClick={() => toggleLanguage('en')}
                     aria-label="Switch to English"
-                    className={`px-3 py-1.5 text-xs font-bold transition-all rounded-md ${
+                    className={cn(
+                      'px-3 py-1.5 text-xs font-bold transition-all rounded-md',
                       lang === 'en'
                         ? 'text-white bg-blue-600 shadow-md'
                         : 'text-gray-600 hover:text-blue-600 hover:bg-gray-50'
-                    }`}
+                    )}
                   >
                     EN
                   </button>
                   <button
                     onClick={() => toggleLanguage('th')}
                     aria-label="Switch to Thai"
-                    className={`px-3 py-1.5 text-xs font-bold transition-all rounded-md ${
+                    className={cn(
+                      'px-3 py-1.5 text-xs font-bold transition-all rounded-md',
                       lang === 'th'
                         ? 'text-white bg-blue-600 shadow-md'
                         : 'text-gray-600 hover:text-blue-600 hover:bg-gray-50'
-                    }`}
+                    )}
                   >
                     ไทย
                   </button>
@@ -538,6 +561,18 @@ export function Header({ menuItems, lang, dictionary }: HeaderProps) {
                     </Link>
                   );
                 })}
+
+                {/* Quick Shop Link */}
+                <Link
+                  href={`/${lang}/quick-shop`}
+                  className="flex items-center gap-3 px-4 py-3 text-blue-600 font-semibold hover:text-blue-700 hover:bg-blue-50 rounded-xl transition-all group focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <svg className="w-5 h-5 text-blue-500 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                  </svg>
+                  <span className="text-sm">{lang === 'th' ? 'ช้อปปิ้ง' : 'Quick Shop'}</span>
+                </Link>
               </div>
 
               {/* Quick Actions Bar */}
@@ -546,12 +581,13 @@ export function Header({ menuItems, lang, dictionary }: HeaderProps) {
                 <div className="flex-1" />
                 <Link
                   href={`/${lang}/cart`}
-                  className={`flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-semibold text-sm shadow-md hover:shadow-lg ${
+                  className={cn(
+                    'flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-semibold text-sm shadow-md hover:shadow-lg',
                     cartAnimating ? 'animate-bounce' : ''
-                  }`}
+                  )}
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  <svg className={`w-5 h-5 ${cartAnimating ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className={cn('w-5 h-5', cartAnimating ? 'animate-spin' : '')} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
                   <span>Cart</span>
