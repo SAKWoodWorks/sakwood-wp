@@ -838,6 +838,15 @@
     "order_confirmation": "ยืนยันคำสั่งซื้อ",
     "shipping_update": "อัปเดตการจัดส่ง"
   },
+  "quick_shop": {
+    "hero_title": "ไม้คุณภาพสูงสำหรับโครงการของคุณ",
+    "hero_subtitle": "จัดส่งทั่วประเทศไทย • ราคาส่ง",
+    "hero_cta_primary": "ช้อปเลย",
+    "hero_cta_secondary": "ขอราคา",
+    "products_title": "สินค้าขายดี",
+    "products_subtitle": "ไม้คุณภาพสูงที่ลูกค้าชื่นชอบ",
+    "view_all": "ดูสินค้าทั้งหมด"
+  },
   "dealer": {
     "page_title": "สมัครเป็นดีลเลอร์",
     "page_subtitle": "อัปเกรดบัญชี wholesale ของคุณเป็นระดับดีลเลอร์เพื่อรับสิทธิประโยชน์เพิ่มเติม",

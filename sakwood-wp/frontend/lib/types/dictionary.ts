@@ -696,6 +696,15 @@ export interface Dictionary {
     discount_description: string;
     cta_button: string;
   };
+  quick_shop?: {
+    hero_title?: string;
+    hero_subtitle?: string;
+    hero_cta_primary?: string;
+    hero_cta_secondary?: string;
+    products_title?: string;
+    products_subtitle?: string;
+    view_all?: string;
+  };
   banner: {
     close: string;
     dismiss: string;

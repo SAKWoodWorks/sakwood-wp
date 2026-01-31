@@ -839,6 +839,15 @@
     "inactive": "Inactive",
     "blocked": "Blocked"
   },
+  "quick_shop": {
+    "hero_title": "Premium Wood for Your Projects",
+    "hero_subtitle": "Fast delivery across Thailand • Wholesale prices",
+    "hero_cta_primary": "Shop Now",
+    "hero_cta_secondary": "Get Quote",
+    "products_title": "Best Sellers",
+    "products_subtitle": "Premium wood products trusted by our customers",
+    "view_all": "View All Products"
+  },
   "dealer": {
     "page_title": "Become a Dealer",
     "page_subtitle": "Upgrade your wholesale account to dealer status for enhanced benefits",
