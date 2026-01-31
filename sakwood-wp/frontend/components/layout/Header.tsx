@@ -97,7 +97,7 @@ export function Header({ menuItems, lang, dictionary }: HeaderProps) {
 
   const renderMenuItem = (item: MenuItem, isMobile: boolean = false) => {
     const baseClasses = cn(
-      'font-medium transition relative group',
+      'text-sm font-medium transition relative group',
       isMobile
         ? 'text-gray-700 hover:text-blue-600'
         : (!isTransparentHeader ? 'text-gray-700 hover:text-blue-600' : 'text-white hover:text-blue-200')
@@ -272,7 +272,7 @@ export function Header({ menuItems, lang, dictionary }: HeaderProps) {
             {/* Quick Shop Link */}
             <Link
               href={`/${lang}/quick-shop`}
-              className="text-blue-600 font-semibold hover:text-blue-700 transition-colors"
+              className="text-sm text-blue-600 font-semibold hover:text-blue-700 transition-colors"
             >
               {lang === 'th' ? 'ช้อปปิ้ง' : 'Quick Shop'}
             </Link>
