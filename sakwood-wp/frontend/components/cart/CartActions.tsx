@@ -2,6 +2,7 @@
 
 import { useCart } from '@/lib/context/CartContext';
 import type { Locale } from '@/i18n-config';
+import { cn } from '@/lib/utils';
 
 interface CartActionsProps {
   lang: Locale;

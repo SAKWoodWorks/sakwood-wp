@@ -9,6 +9,7 @@ import type { Locale } from '@/i18n-config';
 import { useCart } from '@/lib/context/CartContext';
 import { AddToCompareButton } from '@/components/products/AddToCompareButton';
 import { Eye, ShoppingCart, Check } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface ProductCardProps {
   product: Product;
@@ -111,11 +112,12 @@ export function ProductCard({ product, lang = 'th', dictionary }: ProductCardPro
               <button
                 onClick={handleAddToCart}
                 disabled={isAddingToCart}
-                className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all duration-300 transform hover:scale-110 active:scale-90 ${
+                className={cn(
+                  'w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all duration-300 transform hover:scale-110 active:scale-90',
                   showCartSuccess
                     ? 'bg-green-600 hover:bg-green-700 shadow-lg shadow-green-200'
                     : 'bg-blue-900 hover:bg-blue-800 shadow-lg shadow-blue-200'
-                }`}
+                )}
                 aria-label="Add to cart"
               >
                 {isAddingToCart ? (

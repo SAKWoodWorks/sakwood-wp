@@ -1,4 +1,5 @@
 import { ButtonHTMLAttributes } from 'react';
+import { cn } from '@/lib/utils';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
@@ -6,16 +7,18 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   fullWidth?: boolean;
 }
 
-export function Button({ 
-  variant = 'primary', 
-  size = 'md',
-  fullWidth = false,
-  className = '',
-  children,
-  ...props 
-}: ButtonProps) {
+export function Button(
+  {
+    variant = 'primary',
+    size = 'md',
+    fullWidth = false,
+    className = '',
+    children,
+    ...props
+  }: ButtonProps
+) {
   const baseStyles = 'font-semibold rounded-xl transition-all duration-300 inline-flex items-center justify-center gap-2';
-  
+
   const sizes = {
     sm: 'px-4 py-2 text-sm',
     md: 'px-6 py-2.5 text-base',
@@ -28,12 +31,12 @@ export function Button({
     outline: 'bg-transparent text-blue-600 border-2 border-blue-600 hover:bg-blue-50',
     ghost: 'bg-transparent text-blue-600 hover:bg-blue-50',
   };
-  
+
   const widthClass = fullWidth ? 'w-full' : '';
 
   return (
     <button
-      className={`${baseStyles} ${sizes[size]} ${variants[variant]} ${widthClass} ${className}`}
+      className={cn(baseStyles, sizes[size], variants[variant], widthClass, className)}
       {...props}
     >
       {children}

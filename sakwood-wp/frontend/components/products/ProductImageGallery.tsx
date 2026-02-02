@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Product } from '@/lib/types';
+import { cn } from '@/lib/utils';
 
 interface ProductImageGalleryProps {
   product: Product;
@@ -54,19 +55,21 @@ export function ProductImageGallery({ product }: ProductImageGalleryProps) {
             <button
               key={index}
               onClick={() => setSelectedImage(index)}
-              className={`aspect-square bg-gray-100 rounded-md overflow-hidden cursor-pointer transition-all ${
-                selectedImage === index 
-                  ? 'ring-2 ring-blue-900 ring-offset-2' 
+              className={cn(
+                'aspect-square bg-gray-100 rounded-md overflow-hidden cursor-pointer transition-all',
+                selectedImage === index
+                  ? 'ring-2 ring-blue-900 ring-offset-2'
                   : 'hover:ring-2 hover:ring-blue-600'
-              }`}
+              )}
               aria-label={`View ${index + 1}`}
             >
               <img
                 src={img}
                 alt={`${product.name} - View ${index + 1}`}
-                className={`w-full h-full object-cover transition-opacity ${
+                className={cn(
+                  'w-full h-full object-cover transition-opacity',
                   selectedImage === index ? 'opacity-100' : 'opacity-70 hover:opacity-100'
-                }`}
+                )}
               />
             </button>
           ))}

@@ -154,7 +154,6 @@ export function CheckoutPage({ lang, dictionary }: CheckoutPageProps) {
   }, [selectedProvince, subtotal, items]);
 
   const shippingCost = shippingResult.cost;
-  const truckType = shippingResult.truckType;
   const truckTypeName = shippingResult.truckTypeName;
   const priceTier = shippingResult.priceTier;
 
@@ -738,7 +737,6 @@ export function CheckoutPage({ lang, dictionary }: CheckoutPageProps) {
                           amount={total}
                           size={280}
                           showMerchantInfo={true}
-                          orderRef={`ORDER-${Date.now()}`}
                         />
                       </div>
                     </div>
