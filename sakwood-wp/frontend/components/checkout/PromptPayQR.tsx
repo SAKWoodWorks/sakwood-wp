@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import { Download, Copy, Check, AlertCircle } from 'lucide-react';
 import { generatePromptPayPayload, formatPhoneNumber, formatTaxId, validatePromptPayId } from '@/lib/services/promptpayService';
+import { cn } from '@/lib/utils';
 
 interface PromptPayQRProps {
   /** Merchant ID (phone number or tax ID) */
@@ -183,7 +184,7 @@ export function PromptPayQR({
     : merchantId;
 
   return (
-    <div className={`flex flex-col items-center ${className}`}>
+    <div className={cn('flex flex-col items-center', className)}>
       {error ? (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg w-full">
           <div className="flex items-center gap-2">

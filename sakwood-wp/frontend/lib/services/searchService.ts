@@ -192,7 +192,7 @@ export async function searchProductsWithFilters(
     }
 
     const data = await response.json();
-    let products = data.data?.products?.nodes || [];
+    const products = data.data?.products?.nodes || [];
 
     // Transform and filter products
     const transformedProducts: SearchProduct[] = products.map((product: any) => {

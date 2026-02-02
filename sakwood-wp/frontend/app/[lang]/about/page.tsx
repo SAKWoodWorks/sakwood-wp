@@ -17,7 +17,7 @@ interface PageProps {
 export default async function AboutPage({ params }: PageProps) {
   const { lang } = await params;
   const dictionary = await getDictionary(lang as Locale);
-  const { common, about } = dictionary;
+  const { common } = dictionary;
 
   const breadcrumbItems = [
     { name: common.home, href: `/${lang}` },

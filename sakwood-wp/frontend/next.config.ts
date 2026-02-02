@@ -98,7 +98,7 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https: http: blob:",
               "font-src 'self' data:",
-              "connect-src 'self' https://lin.ee https://api.line.me",
+              "connect-src 'self' http://localhost:8006 https://lin.ee https://api.line.me https://t.me https://m.me",
               "frame-src 'self' https://www.facebook.com https://www.youtube.com",
               "base-uri 'self'",
               "form-action 'self'",

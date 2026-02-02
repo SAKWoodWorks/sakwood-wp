@@ -5,7 +5,8 @@ import { type Product } from '@/lib/types/product';
 import Link from 'next/link';
 import Image from 'next/image';
 import { X, Check, ArrowRight } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { cn } from '@/lib/utils';
 
 interface ProductCompareTableProps {
   lang: string;
@@ -103,46 +104,66 @@ export function ProductCompareTable({ lang, dictionary }: ProductCompareTablePro
     );
   }
 
-  // Helper function to get unique values
-  const getUniqueValues = (key: string) => {
-    const values = compareItems
-      .map((p) => {
+  // Helper function to get unique values - memoized
+  const uniqueValuesCache = useMemo(() => {
+    const cache = new Map<string, Set<string | number | boolean>>();
+    compareItems.forEach((p) => {
+      Object.keys(p).forEach(key => {
         const value = (p as unknown as Record<string, unknown>)[key];
-        return value ?? null;
-      })
-      .filter((v): v is string | number | boolean => v !== null);
-    return Array.from(new Set(values));
-  };
+        if (value !== null && value !== undefined && (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean')) {
+          if (!cache.has(key)) cache.set(key, new Set());
+          cache.get(key)!.add(value as string | number | boolean);
+        }
+      });
+    });
+    return cache;
+  }, [compareItems]);
 
-  // Check if value is unique (different from others)
-  const isUniqueValue = (key: string, value: unknown) => {
-    const values = compareItems
-      .map((p) => {
-        const val = (p as unknown as Record<string, unknown>)[key];
-        return val ?? null;
-      })
-      .filter((v): v is string | number | boolean => v !== null);
-    return values.filter((v) => v === value).length === 1;
-  };
+  // Check if value is unique (different from others) - memoized
+  const isUniqueValue = useMemo(() => {
+    return (key: string, value: unknown): boolean => {
+      const values = compareItems
+        .map((p) => {
+          const val = (p as unknown as Record<string, unknown>)[key];
+          return val ?? null;
+        })
+        .filter((v): v is string | number | boolean => v !== null);
+      return values.filter((v) => v === value).length === 1;
+    };
+  }, [compareItems]);
 
-  // Parse price to number for comparison
-  const parsePrice = (priceStr: string) => {
-    if (!priceStr) return 0;
-    const numStr = priceStr.replace(/[฿,\s]/g, '');
-    return parseFloat(numStr) || 0;
-  };
+  // Parse price to number for comparison - memoized
+  const parsePrice = useMemo(() => {
+    return (priceStr: string): number => {
+      if (!priceStr) return 0;
+      const numStr = priceStr.replace(/[฿,\s]/g, '');
+      return parseFloat(numStr) || 0;
+    };
+  }, []);
 
-  // Calculate surface area from dimensions
+  // Calculate surface area from dimensions - memoized
   // length is in meters, width is in cm
   // surfaceArea = length (m) × (width (cm) / 100)
-  const getSurfaceArea = (product: Product) => {
-    const length = parseFloat(String(product.length || '0'));
-    const width = parseFloat(String(product.width || '0'));
-    if (length > 0 && width > 0) {
-      return length * (width / 100); // Convert width from cm to meters
-    }
-    return null;
-  };
+  const getSurfaceArea = useMemo(() => {
+    return (product: Product): number | null => {
+      const length = parseFloat(String(product.length || '0'));
+      const width = parseFloat(String(product.width || '0'));
+      if (length > 0 && width > 0) {
+        return length * (width / 100); // Convert width from cm to meters
+      }
+      return null;
+    };
+  }, []);
+
+  // Memoize price calculations for each product
+  const productPriceData = useMemo(() => {
+    return compareItems.map((product) => ({
+      product,
+      price: parsePrice(product.price || ''),
+      regularPrice: parsePrice(product.regularPrice || ''),
+      surfaceArea: getSurfaceArea(product),
+    }));
+  }, [compareItems, parsePrice, getSurfaceArea]);
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12">
@@ -231,16 +252,14 @@ export function ProductCompareTable({ lang, dictionary }: ProductCompareTablePro
               {compare.price}
             </div>
             <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 divide-x divide-gray-200">
-              {compareItems.map((product) => {
-                const price = parsePrice(product.price || '');
-                const regularPrice = parsePrice(product.regularPrice || '');
+              {productPriceData.map(({ product, price, regularPrice }) => {
                 const hasDiscount = regularPrice > price;
-                const isLowestPrice = compareItems.every((p) => parsePrice(p.price || '') >= price);
+                const isLowestPrice = productPriceData.every((p) => p.price >= price);
 
                 return (
                   <div
                     key={product.id}
-                    className={`p-4 ${isUniqueValue('price', product.price) ? 'bg-green-50' : ''}`}
+                    className={cn('p-4', isUniqueValue('price', product.price) ? 'bg-green-50' : '')}
                   >
                     {hasDiscount ? (
                       <div>
@@ -270,7 +289,7 @@ export function ProductCompareTable({ lang, dictionary }: ProductCompareTablePro
               {compare.dimensions}
             </div>
             <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 divide-x divide-gray-200">
-              {compareItems.map((product) => {
+              {productPriceData.map(({ product }) => {
                 const dimensions = [product.length, product.width, product.thickness]
                   .filter(Boolean)
                   .join(' × ');
@@ -278,7 +297,7 @@ export function ProductCompareTable({ lang, dictionary }: ProductCompareTablePro
                 return (
                   <div
                     key={product.id}
-                    className={`p-4 ${isUniqueValue('length', product.length) ? 'bg-blue-50' : ''}`}
+                    className={cn('p-4', isUniqueValue('length', product.length) ? 'bg-blue-50' : '')}
                   >
                     {dimensions ? `${dimensions} m` : 'N/A'}
                   </div>
@@ -295,15 +314,11 @@ export function ProductCompareTable({ lang, dictionary }: ProductCompareTablePro
               {compare.price_per_sqm}
             </div>
             <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 divide-x divide-gray-200">
-              {compareItems.map((product) => {
-                const price = parsePrice(product.price || '');
-                const surfaceArea = getSurfaceArea(product);
+              {productPriceData.map(({ product, price, surfaceArea }) => {
                 const pricePerSqm = surfaceArea !== null && surfaceArea > 0 ? price / surfaceArea : null;
-                const pricesPerSqm = compareItems
+                const pricesPerSqm = productPriceData
                   .map((p) => {
-                    const pPrice = parsePrice(p.price || '');
-                    const pSurfaceArea = getSurfaceArea(p);
-                    return pSurfaceArea !== null && pSurfaceArea > 0 ? pPrice / pSurfaceArea : null;
+                    return p.surfaceArea !== null && p.surfaceArea > 0 ? p.price / p.surfaceArea : null;
                   })
                   .filter((v): v is number => v !== null);
                 const isLowest = pricePerSqm !== null && pricesPerSqm.every((v) => v >= pricePerSqm);
@@ -311,9 +326,9 @@ export function ProductCompareTable({ lang, dictionary }: ProductCompareTablePro
                 return (
                   <div
                     key={product.id}
-                    className={`p-4 ${isLowest ? 'bg-green-50' : ''}`}
+                    className={cn('p-4', isLowest ? 'bg-green-50' : '')}
                   >
-                    <div className={`text-lg font-bold ${isLowest ? 'text-green-600' : 'text-gray-900'}`}>
+                    <div className={cn('text-lg font-bold', isLowest ? 'text-green-600' : 'text-gray-900')}>
                       {pricePerSqm !== null ? `฿${pricePerSqm.toFixed(2)} /m²` : 'N/A'}
                     </div>
                   </div>
@@ -330,16 +345,12 @@ export function ProductCompareTable({ lang, dictionary }: ProductCompareTablePro
               {compare.price_per_sqft}
             </div>
             <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 divide-x divide-gray-200">
-              {compareItems.map((product) => {
-                const price = parsePrice(product.price || '');
-                const surfaceArea = getSurfaceArea(product);
+              {productPriceData.map(({ product, price, surfaceArea }) => {
                 // 1 square meter = 10.7639 square feet
                 const pricePerSqft = surfaceArea !== null && surfaceArea > 0 ? (price / surfaceArea) / 10.7639 : null;
-                const pricesPerSqft = compareItems
+                const pricesPerSqft = productPriceData
                   .map((p) => {
-                    const pPrice = parsePrice(p.price || '');
-                    const pSurfaceArea = getSurfaceArea(p);
-                    return pSurfaceArea !== null && pSurfaceArea > 0 ? (pPrice / pSurfaceArea) / 10.7639 : null;
+                    return p.surfaceArea !== null && p.surfaceArea > 0 ? (p.price / p.surfaceArea) / 10.7639 : null;
                   })
                   .filter((v): v is number => v !== null);
                 const isLowest = pricePerSqft !== null && pricesPerSqft.every((v) => v >= pricePerSqft);
@@ -347,9 +358,9 @@ export function ProductCompareTable({ lang, dictionary }: ProductCompareTablePro
                 return (
                   <div
                     key={product.id}
-                    className={`p-4 ${isLowest ? 'bg-green-50' : ''}`}
+                    className={cn('p-4', isLowest ? 'bg-green-50' : '')}
                   >
-                    <div className={`text-lg font-bold ${isLowest ? 'text-green-600' : 'text-gray-900'}`}>
+                    <div className={cn('text-lg font-bold', isLowest ? 'text-green-600' : 'text-gray-900')}>
                       {pricePerSqft !== null ? `฿${pricePerSqft.toFixed(2)} /ft²` : 'N/A'}
                     </div>
                   </div>

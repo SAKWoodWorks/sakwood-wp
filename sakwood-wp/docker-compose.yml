@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # 1. Database Service
+  db:
+    image: mysql:5.7
+    container_name: sak_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: sakWW099       # <--- Your requested password
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: sakWW099            # <--- Your requested password
+    volumes:
+      - db_data:/var/lib/mysql
+
+  # 2. WordPress (Backend API)
+  wordpress:
+    depends_on:
+      - db
+    build: .
+    container_name: sak_wp
+    restart: always
+    ports:
+      - "8006:80"                         # <--- Running on Port 8006
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: sakWW099     # <--- Must match the database password
+      WORDPRESS_DB_NAME: wordpress
+    volumes:
+      - ./wordpress-plugin/sakwood-integration:/var/www/html/wp-content/plugins/sakwood-integration
+      - wp_data:/var/www/html
+
+  # 3. phpMyAdmin (Database Manager)
+  phpmyadmin:
+    depends_on:
+      - db
+    image: phpmyadmin/phpmyadmin
+    container_name: sak_pma
+    restart: always
+    ports:
+      - "8888:80"                         # <--- Access at http://[IP]:8888
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: sakWW099       # <--- Must match root password
+
+#  # 4. Frontend (Next.js) - NEW! 👈
+#   frontend:
+#     build:
+#       context: ./frontend
+#       dockerfile: Dockerfile
+#     container_name: sak_frontend
+#     restart: always
+#     ports:
+#       - "3000:3000" # Access Home Page at http://[IP]:3000
+#     environment:
+#       - WATCHPACK_POLLING=true
+#     volumes:
+#       - ./frontend:/app
+#       - /app/node_modules # Prevent node_modules conflicts
+
+volumes:
+  db_data:
+  wp_data:

@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination } from 'swiper/modules';
 import type { SwiperRef } from 'swiper/react';
 import { Locale } from '@/i18n-config';
 import { Dictionary } from '@/lib/types/dictionary';
+import { cn } from '@/lib/utils';
 
 interface HeroSliderProps {
   lang: Locale;
@@ -16,7 +17,7 @@ export function HeroSlider({ lang, dictionary }: HeroSliderProps) {
   const [isPlaying, setIsPlaying] = useState(true);
   const swiperRef = useRef<SwiperRef>(null);
 
-  const slides = [
+  const slides = useMemo(() => [
     {
       id: 1,
       image: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1920&q=80',
@@ -49,7 +50,7 @@ export function HeroSlider({ lang, dictionary }: HeroSliderProps) {
       cta: dictionary.hero.btn_catalog,
       link: `/${lang}/products`
     }
-  ];
+  ], [dictionary.hero, lang]);
 
   const togglePlayPause = () => {
     if (swiperRef.current && swiperRef.current.swiper) {
