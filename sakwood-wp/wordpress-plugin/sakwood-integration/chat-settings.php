@@ -21,6 +21,27 @@ class Sakwood_Chat_Settings {
         add_action('admin_menu', array($this, 'add_settings_page'));
         add_action('admin_init', array($this, 'register_settings'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
+
+        // Handle CORS preflight requests
+        add_action('rest_api_init', function() {
+            remove_filter('rest_pre_serve_request', 'rest_send_cors_headers');
+            add_filter('rest_pre_serve_request', function($value) {
+                header('Access-Control-Allow-Origin: *');
+                header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+                header('Access-Control-Allow-Credentials: true');
+                header('Access-Control-Allow-Headers: Authorization, Content-Type, X-WP-Nonce');
+                header('Access-Control-Expose-Headers: X-WP-Total, X-WP-TotalPages');
+                return $value;
+            });
+        }, 15);
+    }
+
+    /**
+     * Handle OPTIONS requests for CORS
+     */
+    public function handle_options_request() {
+        status_header(200);
+        exit();
     }
 
     /**
@@ -38,12 +59,21 @@ class Sakwood_Chat_Settings {
      * Register REST API routes
      */
     public function register_routes() {
+        // OPTIONS route for CORS preflight
+        register_rest_route('sakwood/v1', '/chat', array(
+            'methods' => 'OPTIONS',
+            'callback' => array($this, 'handle_options_request'),
+            'permission_callback' => '__return_true',
+        ));
+
+        // GET route for fetching settings
         register_rest_route('sakwood/v1', '/chat', array(
             'methods' => 'GET',
             'callback' => array($this, 'get_chat_settings'),
             'permission_callback' => '__return_true',
         ));
 
+        // POST route for updating settings
         register_rest_route('sakwood/v1', '/chat', array(
             'methods' => 'POST',
             'callback' => array($this, 'update_chat_settings'),

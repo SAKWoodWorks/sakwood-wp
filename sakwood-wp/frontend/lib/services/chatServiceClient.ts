@@ -35,13 +35,9 @@ import { defaultChatConfig, type ChatConfig } from '@/lib/config/chatConfig';
  */
 export async function getChatConfigClient(): Promise<ChatConfig> {
   try {
-    // Step 1: Get WordPress URL from environment or use localhost default
-    const graphqlUrl = process.env.NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL || 'http://localhost:8006/graphql';
-    const baseUrl = graphqlUrl.replace('/graphql', '');
-    const apiUrl = `${baseUrl}/wp-json/sakwood/v1/chat`;
-
-    // Step 2: Fetch chat settings from WordPress REST API
-    const response = await fetch(apiUrl, {
+    // Step 1: Fetch chat settings from Next.js API route (proxies to WordPress)
+    // This avoids CORS issues since the API route runs server-side
+    const response = await fetch('/api/chat', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -49,16 +45,16 @@ export async function getChatConfigClient(): Promise<ChatConfig> {
       cache: 'no-store', // Don't cache - always get fresh settings
     });
 
-    // Step 3: If WordPress is down/unreachable, use default settings
+    // Step 2: If Next.js API fails, try direct WordPress access (for server-side)
     if (!response.ok) {
-      console.warn('[ChatService] Unable to fetch chat config, using defaults:', response.status);
+      console.warn('[ChatService] Unable to fetch chat config from API route, status:', response.status);
       return defaultChatConfig; // Falls back to LINE @sakww (defined in chatConfig.ts)
     }
 
-    // Step 4: Parse WordPress response
+    // Step 3: Parse response
     const data = await response.json();
 
-    // Step 5: Transform WordPress data to match our ChatConfig interface
+    // Step 4: Transform WordPress data to match our ChatConfig interface
     const platforms = data.platforms || {};
     const defaultIcons: Record<string, string> = {
       line: '/line-logo.png',
