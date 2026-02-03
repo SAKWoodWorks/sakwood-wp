@@ -92,7 +92,16 @@
     "view_all": "View All",
     "error_title": "Something went wrong",
     "error_message": "We apologize for the inconvenience. An unexpected error has occurred.",
-    "try_again": "Try again"
+    "try_again": "Try again",
+    "not_found_title": "Page Not Found",
+    "not_found_message": "The page you are looking for doesn't exist or has been moved.",
+    "not_found_helpful_links": "Helpful Links",
+    "not_found_search_placeholder": "Search for products...",
+    "not_found_try_searching": "Try searching for what you need",
+    "not_found_browse_products": "Browse Products",
+    "not_found_contact_us": "Contact Us",
+    "not_found_go_back": "Go back to homepage",
+    "select_language": "Select Language"
   },
   "blog": {
     "title": "Latest News",

@@ -92,7 +92,16 @@
     "view_all": "ดูทั้งหมด",
     "error_title": "เกิดข้อผิดพลาด",
     "error_message": "เราขออภัยในความไม่สะดวก เกิดข้อผิดพลาดที่ไม่คาดคิด",
-    "try_again": "ลองอีกครั้ง"
+    "try_again": "ลองอีกครั้ง",
+    "not_found_title": "หน้าไม่พบ",
+    "not_found_message": "หน้าที่คุณค้นหาไม่มีอยู่หรือถูกย้ายไปแล้ว",
+    "not_found_helpful_links": "ลิงก์ที่เป็นประโยชน์",
+    "not_found_search_placeholder": "ค้นหาสินค้า...",
+    "not_found_try_searching": "ลองค้นหาสิ่งที่คุณต้องการ",
+    "not_found_browse_products": "ดูสินค้า",
+    "not_found_contact_us": "ติดต่อเรา",
+    "not_found_go_back": "กลับหน้าแรก",
+    "select_language": "เลือกภาษา / Select Language"
   },
   "blog": {
     "title": "ข่าวสารล่าสุด",
