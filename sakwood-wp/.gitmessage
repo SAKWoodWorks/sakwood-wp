@@ -1,0 +1,16 @@
+# <type>(<scope>): <subject>
+# │      │             │
+# │      │             └─⫸ Summary in present tense (max 50 chars)
+# │      │
+# │      └─⫸ Commit scope: component|service|page|api
+# │
+# └─⫸ Commit type: feat|fix|docs|style|refactor|test|chore
+
+# Detailed explanation (optional, wrap at 72 chars):
+#
+# More detailed explanatory text, if necessary. Wrap to 72 characters.
+#
+# List any related issues or breaking changes:
+#
+# Closes #123
+# Breaking change: changes old behavior to new behavior
