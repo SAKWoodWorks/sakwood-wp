@@ -37,6 +37,7 @@ export function ProjectsGallery({ lang, dictionary }: ProjectsGalleryProps) {
   const triggerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Preventing hydration mismatch
     setMounted(true);
   }, []);
 
@@ -309,7 +310,7 @@ export function ProjectsGallery({ lang, dictionary }: ProjectsGalleryProps) {
                 <div className="flex items-start gap-2 bg-blue-50 rounded-lg p-3 border border-blue-100">
                   <Quote className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
                   <p className="text-xs text-gray-700 italic leading-relaxed line-clamp-2">
-                    "{lang === 'th' ? project.testimonialTh : project.testimonial}"
+                    &quot;{lang === 'th' ? project.testimonialTh : project.testimonial}&quot;
                   </p>
                 </div>
 
@@ -416,7 +417,7 @@ export function ProjectsGallery({ lang, dictionary }: ProjectsGalleryProps) {
                       {lang === 'th' ? selectedProject.customerTh : selectedProject.customer}
                     </div>
                     <p className="text-gray-700 leading-relaxed">
-                      "{lang === 'th' ? selectedProject.testimonialTh : selectedProject.testimonial}"
+                      &quot;{lang === 'th' ? selectedProject.testimonialTh : selectedProject.testimonial}&quot;
                     </p>
                   </div>
                 </div>

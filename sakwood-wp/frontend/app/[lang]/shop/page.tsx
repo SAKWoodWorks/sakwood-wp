@@ -1,6 +1,7 @@
 import { getProducts, getProductCategories } from '@/lib/services/productService';
 import { getDictionary } from '@/lib/get-dictionary';
 import type { Locale } from '@/i18n-config';
+import type { ProductSortBy } from '@/lib/types';
 import { ShopPage as ShopPageComponent } from './ShopPage';
 
 interface ShopPageProps {
@@ -21,7 +22,7 @@ export default async function ShopPage({ params, searchParams }: ShopPageProps) 
   const { category: categorySlug, sort: sortParam } = await searchParams;
 
   const [products, categories, dictionary] = await Promise.all([
-    getProducts(lang, categorySlug, sortParam as any),
+    getProducts(lang, categorySlug, sortParam as ProductSortBy | undefined),
     getProductCategories(),
     getDictionary(lang),
   ]);

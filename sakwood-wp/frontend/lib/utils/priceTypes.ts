@@ -1,6 +1,12 @@
 import type { PriceType, Product } from '@/lib/types';
 import { Locale } from '@/i18n-config';
 
+interface DictionaryPriceTable {
+  price_table?: {
+    [key: string]: string;
+  };
+}
+
 export const PRICE_TYPE_LABELS: Record<Locale, Record<PriceType, string>> = {
   th: {
     piece: 'บาท/ชิ้น',
@@ -26,7 +32,7 @@ export const PRICE_TYPE_LABELS: Record<Locale, Record<PriceType, string>> = {
 export function getPriceLabel(
   priceType: PriceType,
   locale: Locale,
-  dictionary?: any
+  dictionary?: DictionaryPriceTable
 ): string {
   return dictionary?.price_table?.[`price_per_${priceType}`]
     || PRICE_TYPE_LABELS[locale][priceType];

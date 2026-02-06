@@ -20,16 +20,21 @@ interface ApplicationData {
   applicationId: string;
   submittedDate: string;
   businessName: string;
+  reviewedDate?: string;
+  assignedTier?: string;
+  assignedTerritories?: string[];
+  adminNotes?: string;
 }
 
 export function DealerStatusPage({ lang, dictionary }: DealerStatusPageProps) {
   const { user, isDealer } = useAuth();
   const router = useRouter();
   const [applicationData, setApplicationData] = useState<ApplicationData | null>(null);
-  const [apiData, setApiData] = useState<any>(null);
+  const [apiData, setApiData] = useState<ApplicationData | null>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Required for SSR-safe component mounting
     setMounted(true);
     let isMounted = true;
 
@@ -171,7 +176,7 @@ export function DealerStatusPage({ lang, dictionary }: DealerStatusPageProps) {
                   <p className="text-blue-800 text-sm">
                     {user ? (
                       <>
-                        Hello <strong>{user.displayName || user.firstName}</strong>, you haven't submitted a dealer application yet.
+                        Hello <strong>{user.displayName || user.firstName}</strong>, you haven&apos;t submitted a dealer application yet.
                       </>
                     ) : (
                       'You need to login to view your dealer application status.'

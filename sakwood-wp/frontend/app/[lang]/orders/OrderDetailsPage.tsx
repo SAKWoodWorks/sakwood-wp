@@ -51,14 +51,18 @@ export function OrderDetailsPage({ lang, dictionary, orderId }: OrderDetailsPage
         const orderData = await getCustomerOrderDetails(orderId, user?.id);
 
         if (orderData) {
+          // eslint-disable-next-line react-hooks/set-state-in-effect -- Loading order data on mount
           setOrder(orderData);
         } else {
+          // eslint-disable-next-line react-hooks/set-state-in-effect -- Setting error state
           setError('Order not found');
         }
       } catch (err) {
         console.error('Error loading order:', err);
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- Setting error state
         setError('Failed to load order');
       } finally {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- Setting loading state
         setLoading(false);
       }
     };

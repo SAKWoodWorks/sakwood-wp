@@ -143,7 +143,7 @@ export function TestimonialsCarousel({ lang, dictionary }: TestimonialsSectionPr
 
                 {/* Content */}
                 <p className="text-lg leading-relaxed mb-6 text-blue-50">
-                  "{testimonial.content}"
+                  &quot;{testimonial.content}&quot;
                 </p>
 
                 {/* Rating */}

@@ -293,7 +293,7 @@ export function SearchAutocomplete({ lang, dictionary, onClose }: SearchAutocomp
               >
                 <Search className="w-5 h-5 text-gray-400" />
                 <span className="text-sm font-medium text-blue-600">
-                  {dict.search_for || 'Search for'} "{query}"
+                  {dict.search_for || 'Search for'} &quot;{query}&quot;
                 </span>
               </button>
             </div>

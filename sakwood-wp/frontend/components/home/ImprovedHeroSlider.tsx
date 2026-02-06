@@ -113,6 +113,7 @@ export function ImprovedHeroSlider({
   const slides = (!useDefaultSlides && wpSlides.length > 0) ? wpSlides : defaultSlides;
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Preventing hydration mismatch
     setMounted(true);
   }, []);
 

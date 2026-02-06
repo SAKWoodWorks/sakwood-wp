@@ -21,6 +21,7 @@ export function SingleChatButton({ platform, config, dictionary, index, isExpand
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Required for SSR-safe component mounting
     setMounted(true);
   }, []);
 

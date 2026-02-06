@@ -9,10 +9,12 @@ import { ProductCard } from '@/components/ui';
 import type { ProductCategory, ProductSortBy } from '@/lib/types';
 import { getProductCategoriesClient, getProductsClient } from '@/lib/services/productServiceClient';
 
+import type { Product } from '@/lib/types';
+
 interface ShopPageProps {
   lang: Locale;
   dictionary: Dictionary;
-  initialProducts: any[];
+  initialProducts: Product[];
   initialCategories: ProductCategory[];
 }
 

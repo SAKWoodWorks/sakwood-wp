@@ -58,11 +58,11 @@ export default function DebugPopupPage() {
       </div>
 
       <div style={{ background: '#fff3cd', padding: '20px', borderRadius: '8px' }}>
-        <h2>Why isn't the popup showing?</h2>
+        <h2>Why isn&apos;t the popup showing?</h2>
         <ul style={{ lineHeight: '1.8' }}>
-          <li><strong>Dismissed before:</strong> If you clicked "Don't show again", the popup won't show</li>
+          <li><strong>Dismissed before:</strong> If you clicked &quot;Don&apos;t show again&quot;, the popup won&apos;t show</li>
           <li><strong>Delay:</strong> The popup waits 3 seconds before appearing</li>
-          <li><strong>Not enabled:</strong> Check WordPress admin → Settings → Popup → Make sure "Enable Popup" is checked</li>
+          <li><strong>Not enabled:</strong> Check WordPress admin → Settings → Popup → Make sure &quot;Enable Popup&quot; is checked</li>
         </ul>
       </div>
     </div>

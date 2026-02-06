@@ -6,12 +6,12 @@ import { searchKBArticles } from '@/lib/services/knowledgeBaseService';
 import { KBArticleCard } from '@/components/knowledge';
 import { Search } from 'lucide-react';
 import type { Locale } from '@/i18n-config';
-import type { KBArticle } from '@/lib/types';
+import type { KBArticle, Dictionary } from '@/lib/types';
 
 interface KnowledgeSearchClientProps {
   lang: string;
   query: string;
-  dictionary: any;
+  dictionary: Pick<Dictionary, 'knowledge'>;
   initialArticles: KBArticle[];
 }
 

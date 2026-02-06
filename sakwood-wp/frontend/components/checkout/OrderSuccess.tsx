@@ -32,6 +32,7 @@ export function OrderSuccess({ lang, dictionary, orderId }: OrderSuccessProps) {
   const [paymentVerified, setPaymentVerified] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Preventing hydration mismatch
     setMounted(true);
   }, []);
 

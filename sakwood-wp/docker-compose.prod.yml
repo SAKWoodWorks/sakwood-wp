@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # Database Service
+  db:
+    image: mysql:5.7
+    container_name: sak_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - sakwood_network
+
+  # WordPress (Backend API)
+  wordpress:
+    depends_on:
+      - db
+    build: .
+    container_name: sak_wp
+    restart: always
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD}
+      WORDPRESS_DB_NAME: wordpress
+    volumes:
+      - ./wordpress-plugin/sakwood-integration:/var/www/html/wp-content/plugins/sakwood-integration
+      - wp_data:/var/www/html
+    networks:
+      - sakwood_network
+
+  # Frontend (Next.js)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sak_frontend
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL=${WORDPRESS_GRAPHQL_URL}
+      - NEXT_PUBLIC_WORDPRESS_API_URL=${WORDPRESS_API_URL}
+      - NEXT_PUBLIC_WORDPRESS_REST_URL=${WORDPRESS_REST_URL}
+      - NEXT_PUBLIC_APP_NAME=${APP_NAME}
+      - NEXT_PUBLIC_APP_DESCRIPTION=${APP_DESCRIPTION}
+      - NEXT_PUBLIC_ENABLE_CART=true
+    networks:
+      - sakwood_network
+
+volumes:
+  db_data:
+  wp_data:
+
+networks:
+  sakwood_network:
+    driver: bridge

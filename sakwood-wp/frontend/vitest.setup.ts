@@ -24,7 +24,7 @@ vi.mock('next/navigation', () => ({
 
 // Mock Next.js image
 vi.mock('next/image', () => ({
-  default: ({ src, alt, ...props }: any) => ({
+  default: ({ src, alt, ...props }: { src: string; alt: string; [key: string]: unknown }) => ({
     src,
     alt,
     ...props,
@@ -34,7 +34,7 @@ vi.mock('next/image', () => ({
 
 // Mock Next.js link
 vi.mock('next/link', () => ({
-  default: ({ children, href, ...props }: any) => ({
+  default: ({ children, href, ...props }: { children: React.ReactNode; href: string; [key: string]: unknown }) => ({
     href,
     children,
     ...props,

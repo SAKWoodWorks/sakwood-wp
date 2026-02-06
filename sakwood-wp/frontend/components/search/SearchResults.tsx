@@ -228,7 +228,7 @@ export function SearchResults({
               {dict.no_results_text}
             </p>
             <p className="text-sm text-gray-600">
-              {lang === 'th' ? 'คำค้นที่ค้นหา: ' : 'Search query: '} <strong>"{query}"</strong>
+              {lang === 'th' ? 'คำค้นที่ค้นหา: ' : 'Search query: '} <strong>&quot;{query}&quot;</strong>
             </p>
           </div>
         )}

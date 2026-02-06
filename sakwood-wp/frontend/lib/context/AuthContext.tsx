@@ -127,6 +127,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Set mounted state
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Required for SSR-safe component mounting
     setMounted(true);
   }, []);
 

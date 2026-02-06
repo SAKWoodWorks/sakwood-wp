@@ -16,7 +16,7 @@ Sentry.init({
 
     // Remove sensitive request body data
     if (event.request?.data) {
-      const data = event.request.data as any;
+      const data = event.request.data as Record<string, unknown>;
       if (data.password) {
         delete data.password;
       }

@@ -224,7 +224,7 @@ describe('CartContext', () => {
 
     const noImageProduct: Product = {
       ...mockProduct,
-      image: undefined as any,
+      image: undefined,
     };
 
     act(() => {

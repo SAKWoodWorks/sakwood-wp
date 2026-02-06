@@ -1,7 +1,40 @@
 import { graphqlRequest } from '@/lib/graphql/client';
 import { GET_PRODUCTS_QUERY, GET_PRODUCT_QUERY, GET_PRODUCT_CATEGORIES_QUERY } from '@/lib/graphql/queries';
-import { Product, ProductResponse, ProductImage, ProductCategory, ProductCategoriesResponse } from '@/lib/types';
+import { Product, ProductResponse, ProductImage, ProductCategory, ProductCategoriesResponse, PriceType } from '@/lib/types';
 import { APP_CONFIG } from '@/lib/config/constants';
+
+/**
+ * Interface for REST API product response
+ */
+interface RestProductCategory {
+  id: number;
+  name: string;
+  slug: string;
+}
+
+interface RestProduct {
+  id: string | number;
+  databaseId: number;
+  name: string;
+  slug: string;
+  sku?: string;
+  language?: string;
+  price?: string;
+  regularPrice?: string;
+  priceTypes?: string[];
+  prices?: Record<string, string>;
+  image?: {
+    sourceUrl: string;
+  };
+  thickness?: string;
+  width?: string;
+  length?: string;
+  categories?: RestProductCategory[];
+  description?: string;
+  galleryImages?: {
+    nodes?: Array<{ sourceUrl: string } & Record<string, unknown>>;
+  };
+}
 
 /**
  * Transform internal Docker URLs to publicly accessible URLs
@@ -138,7 +171,7 @@ export async function getProducts(
     }
 
     // Transform data to match Product interface
-    const products = data.map((product: any) => ({
+    const products = data.map((product: RestProduct) => ({
       id: String(product.id),
       databaseId: product.databaseId,
       name: product.name,
@@ -157,7 +190,7 @@ export async function getProducts(
       width: product.width || undefined,
       length: product.length || undefined,
       // Include categories if available
-      categories: product.categories ? product.categories.map((cat: any) => ({
+      categories: product.categories ? product.categories.map((cat: RestProductCategory) => ({
         id: cat.id,
         name: cat.name,
         slug: cat.slug,
@@ -181,14 +214,20 @@ export async function getProducts(
  * Fallback: Get products via GraphQL (no language filtering)
  */
 async function getProductsViaGraphQL(language: string = 'th'): Promise<Product[]> {
-  const data = await graphqlRequest<any>(GET_PRODUCTS_QUERY, { first: 10 });
+  interface GraphQLProductResponse {
+    products?: {
+      nodes?: Array<Product & { productCategories?: { nodes?: ProductCategory[] } }>;
+    };
+  }
+
+  const data = await graphqlRequest<GraphQLProductResponse>(GET_PRODUCTS_QUERY, { first: 10 });
   const products = data?.products?.nodes || [];
 
   // Transform image URLs
-  return products.map((product: any) => ({
+  return products.map((product) => ({
     ...product,
     image: product.image ? transformProductImage(product.image) : undefined,
-    categories: product.productCategories?.nodes?.map((cat: any) => ({
+    categories: product.productCategories?.nodes?.map((cat) => ({
       id: cat.id,
       name: cat.name,
       slug: cat.slug,
@@ -222,7 +261,7 @@ export async function getProductBySlug(slug: string, language: string = 'th'): P
 
     const product = await response.json();
 
-    if (!product || (product as any).code === 'product_not_found') {
+    if (!product || ('code' in product && product.code === 'product_not_found')) {
       return null;
     }
 
@@ -241,7 +280,7 @@ export async function getProductBySlug(slug: string, language: string = 'th'): P
       image: product.image ? { sourceUrl: transformImageUrl(product.image.sourceUrl) } : undefined,
       description: product.description || '',
       galleryImages: product.galleryImages ? {
-        nodes: (product.galleryImages.nodes || []).map((img: any) => ({
+        nodes: (product.galleryImages.nodes || []).map((img) => ({
           ...img,
           sourceUrl: transformImageUrl(img.sourceUrl)
         }))
@@ -286,7 +325,7 @@ async function getProductBySlugViaGraphQL(slug: string): Promise<Product | null>
  * Get featured products via GraphQL
  * Fetches products ordered by popularity (best sellers)
  */
-export async function getFeaturedProducts(lang: string, limit: number = 6): Promise<any[]> {
+export async function getFeaturedProducts(lang: string, limit: number = 6): Promise<Product[]> {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL || 'http://localhost:8006/graphql';
 
@@ -334,8 +373,19 @@ export async function getFeaturedProducts(lang: string, limit: number = 6): Prom
     const data = await response.json();
 
     // Transform image URLs for each product
+    interface FeaturedProductNode {
+      id: string;
+      databaseId: number;
+      name: string;
+      slug: string;
+      price?: string;
+      regularPrice?: string;
+      shortDescription?: string;
+      image?: ProductImage;
+    }
+
     const products = data.data?.products?.nodes || [];
-    return products.map((product: any) => ({
+    return products.map((product: FeaturedProductNode) => ({
       ...product,
       image: product.image ? transformProductImage(product.image) : undefined,
     }));

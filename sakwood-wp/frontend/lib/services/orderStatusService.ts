@@ -6,6 +6,8 @@
  * used server-side in the API route.
  */
 
+import { createHmac } from 'node:crypto';
+
 // Use internal API route instead of direct WooCommerce API
 const INTERNAL_API_URL = process.env.NEXT_PUBLIC_APP_URL || ''
   + '/api/orders';
@@ -199,8 +201,7 @@ export interface PaymentWebhookPayload {
  * Verify webhook signature (optional, for security)
  */
 export function verifyWebhookSignature(payload: string, signature: string, secret: string): boolean {
-  const hmac = require('crypto')
-    .createHmac('sha256', secret)
+  const hmac = createHmac('sha256', secret)
     .update(payload)
     .digest('base64');
 

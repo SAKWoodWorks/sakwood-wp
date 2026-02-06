@@ -18,6 +18,7 @@ export function VideoPlayerModal({ video, isOpen, onClose }: VideoPlayerModalPro
 
   // Ensure client-side only rendering
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Ensuring client-side only rendering
     setMounted(true);
   }, []);
 

@@ -92,6 +92,7 @@ export function CheckoutPage({ lang, dictionary }: CheckoutPageProps) {
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Required for SSR-safe component mounting
     setMounted(true);
   }, []);
 
@@ -117,6 +118,7 @@ export function CheckoutPage({ lang, dictionary }: CheckoutPageProps) {
     if (mounted && !formInitializedRef.current) {
       const saved = loadForm();
       if (saved) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- Loading saved form data on mount is intentional
         setFormData({
           email: saved.email || '',
           lineId: saved.lineId || '',

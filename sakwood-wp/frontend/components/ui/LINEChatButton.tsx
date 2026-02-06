@@ -23,23 +23,27 @@ export function LINEChatButton({ lineUrl = 'https://lin.ee/ucIAvEC', dictionary 
   const [shouldPulse, setShouldPulse] = useState(true);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Required for SSR-safe component mounting
     setMounted(true);
 
     // Check if user previously dismissed the tooltip
     const wasDismissed = localStorage.getItem('line-chat-dismissed');
     if (wasDismissed) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Restoring dismissed state
       setDismissed(true);
     }
 
     // Show tooltip after 3 seconds if not dismissed
     const timer = setTimeout(() => {
       if (!wasDismissed) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- Tooltip timer callback
         setIsOpen(true);
       }
     }, 3000);
 
     // Stop pulsing after 5 seconds
     const pulseTimer = setTimeout(() => {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Pulse timer callback
       setShouldPulse(false);
     }, 5000);
 

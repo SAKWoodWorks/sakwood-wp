@@ -60,6 +60,7 @@ export function OrderDetailsPage({ lang, dictionary, orderId }: OrderDetailsPage
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Preventing hydration mismatch
     setMounted(true);
     fetchOrder();
   }, [orderId]);

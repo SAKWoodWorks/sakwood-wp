@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import type { Locale } from '@/i18n-config';
+import type { Dictionary } from '@/lib/types/dictionary';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import { Button } from '@/components/ui';
 import { useAuth } from '@/lib/context/AuthContext';
@@ -11,10 +12,7 @@ import { submitWholesaleApplication } from '@/lib/services/wholesaleService';
 
 interface WholesaleApplyPageProps {
   lang: Locale;
-  dictionary: {
-    wholesale: any;
-    common: any;
-  };
+  dictionary: Pick<Dictionary, 'wholesale' | 'common'>;
 }
 
 export function WholesaleApplyForm({ lang, dictionary }: WholesaleApplyPageProps) {

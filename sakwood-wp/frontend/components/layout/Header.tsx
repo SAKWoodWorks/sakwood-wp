@@ -46,6 +46,7 @@ export function Header({ menuItems, lang, dictionary }: HeaderProps) {
 
   // Set mounted state
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Required for SSR-safe component mounting
     setMounted(true);
   }, []);
 
@@ -53,10 +54,12 @@ export function Header({ menuItems, lang, dictionary }: HeaderProps) {
   useEffect(() => {
     if (mounted) {
       const newCount = getCartCount();
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Updating cart count on change
       setCartCount(newCount);
 
       // Trigger animation if count increased
       if (newCount > prevCartCount) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- Animation state update
         setCartAnimating(true);
         setTimeout(() => setCartAnimating(false), 600);
       }

@@ -29,6 +29,7 @@ export function QualityShowcase({ lang, dictionary }: QualityShowcaseProps) {
   const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Preventing hydration mismatch
     setMounted(true);
   }, []);
 

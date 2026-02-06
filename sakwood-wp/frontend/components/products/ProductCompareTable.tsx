@@ -41,6 +41,7 @@ export function ProductCompareTable({ lang, dictionary }: ProductCompareTablePro
 
   // Prevent hydration mismatch
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Preventing hydration mismatch
     setMounted(true);
   }, []);
 

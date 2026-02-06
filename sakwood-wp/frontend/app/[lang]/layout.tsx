@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import { Sarabun } from "next/font/google";
-import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { SkipLink } from "@/components/ui/SkipLink";
@@ -15,13 +13,6 @@ import { OrganizationStructuredData } from "@/components/seo/OrganizationStructu
 import { GoogleAnalytics } from "@/components/seo/GoogleAnalytics";
 import { ChatButtons } from "@/components/chat";
 import { PromotionalPopup } from "@/components/ui/PromotionalPopup";
-
-const sarabun = Sarabun({
-  subsets: ["thai", "latin"],
-  weight: ['300', '400', '500', '600', '700'],
-  display: 'swap',
-  variable: '--font-sarabun',
-});
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -143,27 +134,23 @@ export default async function RootLayout({ children, params }: LayoutProps) {
   const dictionary = await getDictionary(lang as Locale);
 
   return (
-    <html lang={lang} className="scroll-smooth">
-      <head>
-        <GoogleAnalytics />
-        <OrganizationStructuredData siteUrl={siteUrl} />
-      </head>
-      <body className={`${sarabun.variable} font-sans`}>
-        <SkipLink />
-        <AuthProvider>
-          <CartProvider>
-            <CompareProvider>
-              <ChatProvider>
-                <Header menuItems={menuItems} lang={lang as Locale} dictionary={dictionary} />
-                <main id="main-content" className="bg-transparent">{children}</main>
-                <Footer lang={lang as Locale} />
-                <ChatButtons dictionary={dictionary} />
-                <PromotionalPopup />
-              </ChatProvider>
-            </CompareProvider>
-          </CartProvider>
-        </AuthProvider>
-      </body>
-    </html>
+    <>
+      <GoogleAnalytics />
+      <OrganizationStructuredData siteUrl={siteUrl} />
+      <SkipLink />
+      <AuthProvider>
+        <CartProvider>
+          <CompareProvider>
+            <ChatProvider>
+              <Header menuItems={menuItems} lang={lang as Locale} dictionary={dictionary} />
+              <main id="main-content" className="bg-transparent">{children}</main>
+              <Footer lang={lang as Locale} />
+              <ChatButtons dictionary={dictionary} />
+              <PromotionalPopup />
+            </ChatProvider>
+          </CompareProvider>
+        </CartProvider>
+      </AuthProvider>
+    </>
   );
 }

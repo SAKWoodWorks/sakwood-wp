@@ -14,6 +14,7 @@ export function BackToTop({ backToTopLabel }: BackToTopProps) {
   const { isChatOpen } = useChatState();
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Preventing hydration mismatch
     setMounted(true);
   }, []);
 

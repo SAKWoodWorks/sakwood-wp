@@ -30,6 +30,7 @@ export function StatsSection({ lang, dictionary }: StatsSectionProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Preventing hydration mismatch
     setMounted(true);
   }, []);
 

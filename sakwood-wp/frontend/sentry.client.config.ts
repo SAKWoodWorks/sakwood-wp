@@ -10,7 +10,7 @@ Sentry.init({
   replaysOnErrorSampleRate: 1.0,
 
   // Filter sensitive data
-  beforeSend(event, hint) {
+  beforeSend(event) {
     // Remove sensitive data from breadcrumbs
     if (event.breadcrumbs) {
       event.breadcrumbs = event.breadcrumbs.filter((breadcrumb) => {
@@ -34,7 +34,7 @@ Sentry.init({
       const exception = event.exception.values?.[0];
       if (exception) {
         event.contexts = {
-          ...event.contexts,
+          ...(event.contexts || {}),
           app: {
             name: 'SAK WoodWorks',
             version: process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0',

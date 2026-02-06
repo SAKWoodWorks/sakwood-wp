@@ -18,6 +18,7 @@ export function ChatButtons({ dictionary }: ChatButtonsProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Required for SSR-safe component mounting
     setMounted(true);
 
     // Fetch config from WordPress (with fallback to defaults)

@@ -4,9 +4,11 @@ import { useState } from 'react';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import type { Locale } from '@/i18n-config';
 
+import type { Dictionary } from '@/lib/types/dictionary';
+
 interface ContactPageProps {
   lang: Locale;
-  dictionary: any;
+  dictionary: Pick<Dictionary, 'common' | 'contact'>;
 }
 
 export default function ContactPage({ lang, dictionary }: ContactPageProps) {

@@ -8,6 +8,7 @@
  */
 
 import DOMPurify from 'dompurify';
+import { JSDOM } from 'jsdom';
 
 /**
  * Sanitization configuration options
@@ -73,14 +74,9 @@ export function sanitizeHTML(html: string, options?: SanitizeOptions): string {
 
   // Server-side: create DOMPurify instance with jsdom
   if (typeof window === 'undefined') {
-    const DOMPurify = require('dompurify');
-    const { JSDOM } = require('jsdom');
     const jsdomWindow = new JSDOM('').window;
-    const window = jsdomWindow as any;
-
-    // Create DOMPurify instance for jsdom window
-    const createDOMPurify = DOMPurify as any;
-    const serverPurify = createDOMPurify(window);
+    const createDOMPurify = DOMPurify as unknown as (window: Window) => typeof DOMPurify;
+    const serverPurify = createDOMPurify(jsdomWindow);
 
     return serverPurify.sanitize(html, config);
   }

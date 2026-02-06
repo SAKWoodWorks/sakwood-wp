@@ -17,7 +17,7 @@ export interface Product {
   name: string;
   price?: string;
   slug?: string;
-  [key: string]: any;
+  [key: string]: string | number | undefined | boolean;
 }
 
 /**

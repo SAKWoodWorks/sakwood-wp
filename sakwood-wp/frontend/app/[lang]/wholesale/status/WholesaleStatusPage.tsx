@@ -4,16 +4,14 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import type { Locale } from '@/i18n-config';
+import type { Dictionary } from '@/lib/types/dictionary';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import { Button } from '@/components/ui';
 import { useAuth } from '@/lib/context/AuthContext';
 
 interface WholesaleStatusPageProps {
   lang: Locale;
-  dictionary: {
-    wholesale: any;
-    common: any;
-  };
+  dictionary: Pick<Dictionary, 'wholesale' | 'common'>;
 }
 
 export function WholesaleStatusPage({ lang, dictionary }: WholesaleStatusPageProps) {
@@ -32,6 +30,7 @@ export function WholesaleStatusPage({ lang, dictionary }: WholesaleStatusPagePro
     // In production, this would fetch from the API
     // For now, check if user has wholesale status in their profile
     if (user?.wholesaleStatus) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Setting state based on user data on mount
       setApplicationData({
         status: user.wholesaleStatus,
         applicationId: `WSL-${user.id}`,

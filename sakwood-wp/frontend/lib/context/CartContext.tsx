@@ -100,6 +100,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [announcement, setAnnouncement] = useState('');
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Required for SSR-safe component mounting
     setMounted(true);
     try {
       const savedCart = localStorage.getItem('sakwood-cart');
@@ -107,6 +108,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         const parsed = JSON.parse(savedCart);
         // Transform image URLs for all items
         const transformedItems = parsed.map(transformCartImageUrls);
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- Loading saved cart data on mount
         setItems(transformedItems);
       }
     } catch (error) {

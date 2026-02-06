@@ -106,7 +106,22 @@ export async function searchProducts(
     const products = data.data?.products?.nodes || [];
 
     // Transform data to match our Product type
-    const transformedProducts: SearchProduct[] = products.map((product: any) => ({
+    interface GraphQLProductNode {
+      id: string | number;
+      name: string;
+      slug: string;
+      price?: string;
+      regularPrice?: string;
+      description?: string;
+      image?: {
+        sourceUrl: string;
+        altText?: string;
+      };
+      shortDescription?: string;
+      type?: string;
+    }
+
+    const transformedProducts: SearchProduct[] = products.map((product: GraphQLProductNode) => ({
       id: String(product.id),
       name: product.name,
       slug: product.slug,
@@ -195,7 +210,11 @@ export async function searchProductsWithFilters(
     const products = data.data?.products?.nodes || [];
 
     // Transform and filter products
-    const transformedProducts: SearchProduct[] = products.map((product: any) => {
+    interface GraphQLProductNodeWithStock extends GraphQLProductNode {
+      stockStatus?: string;
+    }
+
+    const transformedProducts: SearchProduct[] = products.map((product: GraphQLProductNodeWithStock) => {
       // Extract dimensions from product meta or description
       const length = extractDimension(product, 'length');
       const width = extractDimension(product, 'width');
@@ -292,7 +311,7 @@ function parsePrice(priceStr: string): number {
 /**
  * Extract dimension from product data
  */
-function extractDimension(product: any, dimension: string): number | undefined {
+function extractDimension(product: GraphQLProductNode, dimension: string): number | undefined {
   // Try to extract from description or meta
   const regex = new RegExp(`${dimension}:\\s*(\\d+)`, 'i');
   const match = product.description?.match(regex) || product.shortDescription?.match(regex);
@@ -302,7 +321,7 @@ function extractDimension(product: any, dimension: string): number | undefined {
 /**
  * Extract grade from product data
  */
-function extractGrade(product: any): string | undefined {
+function extractGrade(product: GraphQLProductNode): string | undefined {
   // Try to extract grade from description
   const gradeRegex = /grade[:\s]*([A-D])/i;
   const match = product.description?.match(gradeRegex) || product.shortDescription?.match(gradeRegex);

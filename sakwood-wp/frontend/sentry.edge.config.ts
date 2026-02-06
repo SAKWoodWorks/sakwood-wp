@@ -6,7 +6,7 @@ Sentry.init({
   tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
 
   // Edge runtime specific configuration
-  beforeSend(event, hint) {
+  beforeSend(event) {
     // Filter edge-specific errors
     if (event.request?.headers) {
       delete event.request.headers['authorization'];

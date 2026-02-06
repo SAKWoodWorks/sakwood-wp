@@ -53,7 +53,9 @@ The frontend is a **Next.js 16 App Router** application with the following archi
 **State Management:**
 - `CartContext.tsx` - Client-side cart state with localStorage persistence (`sakwood-cart` key)
 - `AuthContext.tsx` - User authentication, roles (retail/wholesale), wholesale status
-- Both contexts handle SSR safely with mounted state pattern
+- `CompareProvider` - Product comparison functionality
+- `ChatProvider` - Chat configuration state
+- All contexts handle SSR safely with mounted state pattern
 
 **Component Organization:**
 ```
@@ -97,6 +99,12 @@ npm start
 
 # Lint code
 npm run lint
+
+# Run tests
+npm test              # Unit tests with Vitest
+npm run test:ui       # Vitest UI
+npm run test:coverage # Coverage report
+npm run test:e2e      # E2E tests with Playwright
 ```
 
 **Docker Environment:**
@@ -130,6 +138,20 @@ docker logs sak_wp
 
 # Access WordPress container directly
 docker exec -it sak_wp bash
+```
+
+**Deployment:**
+```bash
+# Deploy to production (requires configured droplet)
+.\deploy.ps1         # Windows PowerShell
+./deploy.sh          # Mac/Linux Bash
+
+# Scripts will:
+# - Upload files to DigitalOcean droplet
+# - Configure environment variables
+# - Set up Nginx configuration
+# - Start Docker containers via docker-compose.prod.yml
+# - Verify deployment
 ```
 
 **Creating Test Users:**
@@ -182,11 +204,31 @@ NEXT_PUBLIC_ENABLE_CART=true
   - `sak_wp:80` (Docker WordPress container)
   - `localhost:8006` (Local development)
   - `images.unsplash.com` (Placeholder images)
+- Image URL transformation for mobile compatibility
+- Next.js rewrite rules proxy `/wp-content/` requests to bypass CORS
+
+**Mobile Compatibility:**
+- API proxy routes (`/api/products`, `/api/chat`) bypass CORS on mobile devices
+- Client-side image URL transformation in cart and product services
+- Next.js rewrites proxy WordPress content requests
+- Custom WordPress plugin volume-mounted in production (read-only)
 
 **Content Types:**
 - Products: Simple products with price, regular price, images, gallery
 - Blog Posts: Posts with author, categories, tags, featured images
 - Menus: Hierarchical navigation menus from WordPress
+- Custom Post Types (via plugin): FAQ, knowledge base, hero slides, video gallery, contact forms
+
+**WordPress Plugin Architecture (40+ PHP files):**
+- REST APIs: orders, customers, products, CRM, dealer, chat
+- Custom post types: FAQ, knowledge base, hero slides, video gallery, contact forms
+- Admin interfaces: chat settings, popup management, PromptPay, slider settings
+- Multilingual support: TH/EN for products and blog
+- CRM system: customers, interactions, tasks, payments
+- Wholesale application workflow
+- Product language meta fields
+- Menu management
+- Password reset functionality
 
 ## Important Notes
 
@@ -216,6 +258,7 @@ NEXT_PUBLIC_ENABLE_CART=true
 **User Roles:**
 - `retail` - Standard retail customers
 - `wholesale` - B2B customers with special pricing and credit terms
+- `dealer` - Dealers/distributors (managed via separate dealer management system)
 
 **Wholesale Status Flow:**
 - `pending` → `approved` → `active` (or `rejected`)
@@ -391,6 +434,24 @@ useEffect(() => {
 
 // Null-safe array mapping
 items?.nodes?.map((item) => ...) || []
+
+// API proxy pattern (bypass CORS on mobile)
+// Next.js API route (app/api/chat/route.ts):
+export async function GET() {
+  const response = await fetch('http://localhost:8006/wp-json/sakwood/v1/chat');
+  const data = await response.json();
+  return NextResponse.json(data);
+}
+
+// Image URL transformation for mobile
+function transformImageUrl(url: string) {
+  if (url.includes('localhost:8006')) {
+    const urlObj = new URL(url);
+    const match = urlObj.pathname.match(/\/wp-content\/(.*)/);
+    if (match) return `/wp-content/${match[1]}`; // Proxied path
+  }
+  return url;
+}
 ```
 
 ## Delivery/Shipping Architecture
@@ -419,3 +480,9 @@ To add new translations:
 1. Add the key to both `dictionaries/en.json` and `dictionaries/th.json`
 2. Update the `Dictionary` interface in `lib/types/dictionary.ts`
 3. Access in components using the `dict` prop from `getDictionary(locale)`
+
+## Additional Documentation
+
+- **DEPLOYMENT.md** - Comprehensive DigitalOcean deployment guide with SSL setup, troubleshooting, and maintenance procedures
+- **docs/user-manuals/** - Complete series (8 manuals) for blog management, product management, hero slider, popups, wholesale/dealer management, customer portal, and chat settings
+- **process.md** - Development session logs with issue tracking and architecture decision records

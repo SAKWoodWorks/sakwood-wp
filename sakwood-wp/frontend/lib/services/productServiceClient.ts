@@ -29,6 +29,35 @@ import type { Product, ProductCategory } from '@/lib/types';
 export type ProductSortBy = 'name' | 'price' | 'date';
 
 /**
+ * Interface for REST API product response
+ */
+interface RestProductCategory {
+  id: number;
+  name: string;
+  slug: string;
+}
+
+interface RestProduct {
+  id: string | number;
+  databaseId: number;
+  name: string;
+  slug: string;
+  sku?: string;
+  language?: string;
+  price?: string;
+  regularPrice?: string;
+  priceTypes?: string[];
+  prices?: Record<string, string>;
+  image?: {
+    sourceUrl: string;
+  };
+  thickness?: string;
+  width?: string;
+  length?: string;
+  categories?: RestProductCategory[];
+}
+
+/**
  * Transform WordPress image URLs to work on mobile
  *
  * PROBLEM:
@@ -129,7 +158,7 @@ export async function getProductsClient(
     }
 
     // Step 3: Transform WordPress data to match Product interface
-    const products: Product[] = data.map((product: any) => ({
+    const products: Product[] = data.map((product: RestProduct) => ({
       id: String(product.id),
       databaseId: product.databaseId,
       name: product.name,
@@ -149,7 +178,7 @@ export async function getProductsClient(
       width: product.width || undefined,
       length: product.length || undefined,
       // Product categories
-      categories: product.categories ? product.categories.map((cat: any) => ({
+      categories: product.categories ? product.categories.map((cat: RestProductCategory) => ({
         id: cat.id,
         name: cat.name,
         slug: cat.slug,
