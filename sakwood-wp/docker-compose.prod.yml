@@ -6,6 +6,12 @@ services:
     image: mysql:5.7
     container_name: sak_db
     restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+        reservations:
+          memory: 512M
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: wordpress
@@ -23,6 +29,12 @@ services:
     build: .
     container_name: sak_wp
     restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
     environment:
       WORDPRESS_DB_HOST: db:3306
       WORDPRESS_DB_USER: wordpress
@@ -41,6 +53,12 @@ services:
       dockerfile: Dockerfile
     container_name: sak_frontend
     restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
     environment:
       - NODE_ENV=production
       - NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL=${WORDPRESS_GRAPHQL_URL}
