@@ -5,6 +5,9 @@ import Dashboard from '../Dashboard/Dashboard';
 
 // Page component for unimplemented pages
 function ComingSoon({ pageName }) {
+    // Get the base page and section from pageName
+    const [basePage, section] = pageName.split('-');
+
     const titles = {
         'crm': 'CRM',
         'products': 'Products',
@@ -15,9 +18,29 @@ function ComingSoon({ pageName }) {
         'settings': 'Settings',
     };
 
+    const sectionTitles = {
+        'customers': 'Customers',
+        'interactions': 'Interactions',
+        'tasks': 'Tasks',
+        'reports': 'Reports',
+        'all': 'All Products',
+        'bulk-import': 'Bulk Import',
+        'applications': 'Applications',
+        'dealers': 'Dealers',
+        'blog': 'Blog Management',
+        'hero-slides': 'Hero Slides',
+        'faq': 'FAQ Management',
+        'popups': 'Popup Management',
+        'chat': 'Chat Settings',
+    };
+
+    const fullTitle = section
+        ? `${titles[basePage]} - ${sectionTitles[section] || section}`
+        : (titles[pageName] || pageName);
+
     return (
         <div className="sakwood-page-coming-soon">
-            <h1>{titles[pageName] || pageName}</h1>
+            <h1>{fullTitle}</h1>
             <div className="coming-soon-content">
                 <div className="coming-soon-icon">🚧</div>
                 <h2>Coming Soon</h2>
@@ -25,7 +48,7 @@ function ComingSoon({ pageName }) {
                 <div className="coming-soon-features">
                     <h3>Planned Features:</h3>
                     <ul>
-                        {pageName === 'crm' && (
+                        {pageName.startsWith('crm') && (
                             <>
                                 <li>Customer list with search and filters</li>
                                 <li>Interaction history tracking</li>
@@ -33,7 +56,7 @@ function ComingSoon({ pageName }) {
                                 <li>Sales reports and analytics</li>
                             </>
                         )}
-                        {pageName === 'products' && (
+                        {pageName.startsWith('products') && (
                             <>
                                 <li>Product catalog with images</li>
                                 <li>Bulk import from CSV</li>
@@ -41,7 +64,7 @@ function ComingSoon({ pageName }) {
                                 <li>Price editing tools</li>
                             </>
                         )}
-                        {pageName === 'wholesale' && (
+                        {pageName.startsWith('wholesale') && (
                             <>
                                 <li>Application approval workflow</li>
                                 <li>Dealer management system</li>
@@ -56,11 +79,25 @@ function ComingSoon({ pageName }) {
                                 <li>Shipping management</li>
                             </>
                         )}
-                        {!['crm', 'products', 'wholesale', 'orders'].includes(pageName) && (
+                        {pageName.startsWith('content') && (
                             <>
-                                <li>Full page content</li>
-                                <li>Interactive tools</li>
-                                <li>Data management</li>
+                                <li>Content editor with live preview</li>
+                                <li>Media library integration</li>
+                                <li>SEO optimization tools</li>
+                            </>
+                        )}
+                        {pageName.startsWith('marketing') && (
+                            <>
+                                <li>Campaign management</li>
+                                <li>Analytics tracking</li>
+                                <li>Customer engagement tools</li>
+                            </>
+                        )}
+                        {pageName === 'settings' && (
+                            <>
+                                <li>Site configuration</li>
+                                <li>User management</li>
+                                <li>Integration settings</li>
                             </>
                         )}
                     </ul>
