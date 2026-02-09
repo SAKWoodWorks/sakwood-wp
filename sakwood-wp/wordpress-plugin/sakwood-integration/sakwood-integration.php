@@ -141,6 +141,9 @@ class Sakwood_Integration {
         // Load Admin Access Blocking (Security - prevents customers from accessing wp-admin)
         require_once SAKWOOD_PLUGIN_DIR . 'block-admin-access.php';
 
+        // Load Login Restriction (Security - only allows @sakww.com emails)
+        require_once SAKWOOD_PLUGIN_DIR . 'restrict-admin-login.php';
+
         // Load FAQ System
         require_once SAKWOOD_PLUGIN_DIR . 'faq-cpt.php';
         require_once SAKWOOD_PLUGIN_DIR . 'faq-rest-api.php';
