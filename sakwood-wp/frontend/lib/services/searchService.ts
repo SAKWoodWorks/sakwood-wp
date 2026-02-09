@@ -25,6 +25,30 @@ interface SearchResponse {
   total: number;
 }
 
+/**
+ * GraphQL Product Node structure
+ * Used for parsing GraphQL responses in search functions
+ */
+interface GraphQLProductNode {
+  id: string | number;
+  name: string;
+  slug: string;
+  price?: string;
+  regularPrice?: string;
+  description?: string;
+  image?: {
+    sourceUrl: string;
+    altText?: string;
+  };
+  shortDescription?: string;
+  type?: string;
+  stockStatus?: string;
+  length?: number;
+  width?: number;
+  thickness?: number;
+  grade?: string;
+}
+
 export interface SearchFilters {
   query: string;
   priceRange?: [number, number];
@@ -106,21 +130,6 @@ export async function searchProducts(
     const products = data.data?.products?.nodes || [];
 
     // Transform data to match our Product type
-    interface GraphQLProductNode {
-      id: string | number;
-      name: string;
-      slug: string;
-      price?: string;
-      regularPrice?: string;
-      description?: string;
-      image?: {
-        sourceUrl: string;
-        altText?: string;
-      };
-      shortDescription?: string;
-      type?: string;
-    }
-
     const transformedProducts: SearchProduct[] = products.map((product: GraphQLProductNode) => ({
       id: String(product.id),
       name: product.name,

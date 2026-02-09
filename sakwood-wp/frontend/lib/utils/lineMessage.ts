@@ -5,6 +5,7 @@
 
 import type { Locale } from '@/i18n-config';
 import { defaultChatConfig } from '@/lib/config/chatConfig';
+import type { Product as ProductType } from '@/lib/types/product';
 
 export interface CartItem {
   id: string | number;
@@ -13,12 +14,8 @@ export interface CartItem {
   quantity: number;
 }
 
-export interface Product {
-  name: string;
-  price?: string;
-  slug?: string;
-  [key: string]: string | number | undefined | boolean;
-}
+// Re-export Product type from main types file
+export type Product = ProductType;
 
 /**
  * Format price for display in LINE message

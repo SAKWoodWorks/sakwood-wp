@@ -180,7 +180,7 @@ export async function getProducts(
       language: product.language || 'th',
       price: product.price || product.prices?.piece || undefined,
       regularPrice: product.regularPrice || undefined,
-      priceTypes: product.priceTypes || ['piece'],
+      priceTypes: (product.priceTypes || ['piece']) as PriceType[],
       prices: product.prices || {},
       image: product.image ? { sourceUrl: transformImageUrl(product.image.sourceUrl) } : undefined,
       description: '',
@@ -275,12 +275,12 @@ export async function getProductBySlug(slug: string, language: string = 'th'): P
       language: product.language || 'th',
       price: product.price || product.prices?.piece || undefined,
       regularPrice: product.regularPrice || undefined,
-      priceTypes: product.priceTypes || ['piece'],
+      priceTypes: (product.priceTypes || ['piece']) as PriceType[],
       prices: product.prices || {},
       image: product.image ? { sourceUrl: transformImageUrl(product.image.sourceUrl) } : undefined,
       description: product.description || '',
       galleryImages: product.galleryImages ? {
-        nodes: (product.galleryImages.nodes || []).map((img) => ({
+        nodes: (product.galleryImages.nodes || []).map((img: any) => ({
           ...img,
           sourceUrl: transformImageUrl(img.sourceUrl)
         }))

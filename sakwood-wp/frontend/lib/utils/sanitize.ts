@@ -8,7 +8,18 @@
  */
 
 import DOMPurify from 'dompurify';
-import { JSDOM } from 'jsdom';
+
+// Dynamic import for jsdom (server-only)
+let JSDOM: any = null;
+async function getJSDOM() {
+  if (typeof window !== 'undefined') {
+    return null; // Not available on client
+  }
+  if (!JSDOM) {
+    JSDOM = (await import('jsdom')).JSDOM;
+  }
+  return JSDOM;
+}
 
 /**
  * Sanitization configuration options
@@ -62,10 +73,10 @@ export const STRICT_CONFIG: SanitizeOptions = {
  *
  * @example
  * ```tsx
- * <div dangerouslySetInnerHTML={{ __html: sanitizeHTML(product.description) }} />
+ * <div dangerouslySetInnerHTML={{ __html: await sanitizeHTML(product.description) }} />
  * ```
  */
-export function sanitizeHTML(html: string, options?: SanitizeOptions): string {
+export async function sanitizeHTML(html: string, options?: SanitizeOptions): Promise<string> {
   if (!html || typeof html !== 'string') {
     return '';
   }
@@ -74,14 +85,30 @@ export function sanitizeHTML(html: string, options?: SanitizeOptions): string {
 
   // Server-side: create DOMPurify instance with jsdom
   if (typeof window === 'undefined') {
-    const jsdomWindow = new JSDOM('').window;
-    const createDOMPurify = DOMPurify as unknown as (window: Window) => typeof DOMPurify;
-    const serverPurify = createDOMPurify(jsdomWindow);
-
-    return serverPurify.sanitize(html, config);
+    const JSDOMClass = await getJSDOM();
+    if (JSDOMClass) {
+      const jsdomWindow = new JSDOMClass('').window;
+      const createDOMPurify = DOMPurify as any;
+      const serverPurify = createDOMPurify(jsdomWindow);
+      return serverPurify.sanitize(html, config);
+    }
   }
 
   // Client-side: use browser DOMPurify
+  return DOMPurify.sanitize(html, config);
+}
+
+/**
+ * Synchronous version for client-side use only
+ */
+export function sanitizeHTMLSync(html: string, options?: SanitizeOptions): string {
+  if (!html || typeof html !== 'string') {
+    return '';
+  }
+
+  const config = { ...DEFAULT_CONFIG, ...options };
+
+  // Client-side only - use browser DOMPurify
   return DOMPurify.sanitize(html, config);
 }
 
@@ -91,8 +118,15 @@ export function sanitizeHTML(html: string, options?: SanitizeOptions): string {
  * @param html - The HTML string to sanitize
  * @returns Sanitized HTML with minimal tags allowed
  */
-export function sanitizeStrict(html: string): string {
+export async function sanitizeStrict(html: string): Promise<string> {
   return sanitizeHTML(html, STRICT_CONFIG);
+}
+
+/**
+ * Synchronous strict version for client-side
+ */
+export function sanitizeStrictSync(html: string): string {
+  return sanitizeHTMLSync(html, STRICT_CONFIG);
 }
 
 /**
@@ -140,9 +174,21 @@ export function sanitizeURL(url: string): string {
  * Type guard to check if content is safe HTML
  * (useful for TypeScript validation)
  */
-export function isValidHTML(html: string): boolean {
+export async function isValidHTML(html: string): Promise<boolean> {
   try {
-    const sanitized = sanitizeHTML(html);
+    const sanitized = await sanitizeHTML(html);
+    return sanitized.length > 0;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Synchronous version for client-side
+ */
+export function isValidHTMLSync(html: string): boolean {
+  try {
+    const sanitized = sanitizeHTMLSync(html);
     return sanitized.length > 0;
   } catch {
     return false;

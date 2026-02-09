@@ -52,7 +52,17 @@ export function DealerStatusPage({ lang, dictionary }: DealerStatusPageProps) {
               // Fetch fresh data from API
               const result = await getDealerApplicationStatus(data.applicationId);
               if (result.success && result.data) {
-                setApiData(result.data);
+                // Map API response to ApplicationData format
+                setApiData({
+                  applicationId: result.data.application_id,
+                  submittedDate: result.data.submitted_date,
+                  businessName: result.data.business_registration || 'N/A',
+                  status: result.data.status,
+                  reviewedDate: result.data.reviewed_date || undefined,
+                  assignedTier: result.data.requested_tier_id ? result.data.requested_tier_id.toString() : undefined,
+                  assignedTerritories: result.data.assigned_territories ? result.data.assigned_territories.split(',') : undefined,
+                  adminNotes: result.data.admin_notes || undefined,
+                });
               }
             } else {
               console.error('Invalid stored application data structure');
@@ -327,9 +337,10 @@ export function DealerStatusPage({ lang, dictionary }: DealerStatusPageProps) {
               <div className="flex justify-between items-center py-3 border-b">
                 <span className="text-gray-600 font-medium">{dealer.submitted_date}:</span>
                 <span className="text-gray-900">
-                  {apiData?.submittedDate || applicationData?.submittedDate
-                    ? new Date(apiData?.submittedDate || applicationData?.submittedDate).toLocaleDateString()
-                    : 'N/A'}
+                  {(() => {
+                    const date = apiData?.submittedDate || applicationData?.submittedDate;
+                    return date ? new Date(date).toLocaleDateString() : 'N/A';
+                  })()}
                 </span>
               </div>
 

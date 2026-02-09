@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { getBlogPostBySlug } from '@/lib/services/blogService';
 import { getDictionary } from '@/lib/get-dictionary';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
-import { sanitizeHTML } from '@/lib/utils/sanitize';
+import { sanitizeHTMLSync } from '@/lib/utils/sanitize';
 import { ArticleStructuredData } from '@/components/seo/ArticleStructuredData';
 import { SpeakableStructuredData } from '@/components/seo/SpeakableStructuredData';
 import type { Locale } from '@/i18n-config';
@@ -173,7 +173,7 @@ export default async function BlogPostPage({ params }: PageProps) {
             {/* Content */}
             <div
               className="prose prose-lg max-w-none"
-              dangerouslySetInnerHTML={{ __html: sanitizeHTML(post.content || '') }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHTMLSync(post.content || '') }}
             />
 
             {/* Tags */}

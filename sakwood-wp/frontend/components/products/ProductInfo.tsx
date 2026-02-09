@@ -6,7 +6,7 @@ import { useState, useMemo } from 'react';
 import { useCart } from '@/lib/context/CartContext';
 import { useRouter } from 'next/navigation';
 import { AddToCompareButton } from '@/components/products/AddToCompareButton';
-import { sanitizeHTML } from '@/lib/utils/sanitize';
+import { sanitizeHTMLSync } from '@/lib/utils/sanitize';
 import { generateProductLineMessage } from '@/lib/utils/lineMessage';
 
 interface ProductInfoProps {
@@ -110,7 +110,7 @@ export function ProductInfo({ product, lang, dictionary }: ProductInfoProps) {
         <div
           className="prose prose-sm text-gray-600 leading-relaxed"
           dangerouslySetInnerHTML={{
-            __html: sanitizeHTML(product.description || '<p>No description available.</p>')
+            __html: sanitizeHTMLSync(product.description || '<p>No description available.</p>')
           }}
         />
       </div>

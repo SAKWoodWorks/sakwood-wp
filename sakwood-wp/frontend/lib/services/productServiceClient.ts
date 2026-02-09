@@ -24,7 +24,7 @@
  * ============================================================================
  */
 
-import type { Product, ProductCategory } from '@/lib/types';
+import type { Product, ProductCategory, PriceType } from '@/lib/types';
 
 export type ProductSortBy = 'name' | 'price' | 'date';
 
@@ -167,7 +167,7 @@ export async function getProductsClient(
       language: product.language || 'th',
       price: product.price || product.prices?.piece || undefined,
       regularPrice: product.regularPrice || undefined,
-      priceTypes: product.priceTypes || ['piece'],
+      priceTypes: (product.priceTypes || ['piece']) as PriceType[],
       prices: product.prices || {},
       // Transform image URL to work on mobile
       image: product.image ? { sourceUrl: transformImageUrl(product.image.sourceUrl) } : undefined,
