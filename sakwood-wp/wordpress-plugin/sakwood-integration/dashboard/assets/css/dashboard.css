@@ -941,3 +941,288 @@
         padding: 8px 12px;
     }
 }
+
+/* Orders Page Styles */
+.sakwood-orders-page h1 {
+    font-size: 32px;
+    font-weight: 600;
+    margin-bottom: 24px;
+}
+
+.sakwood-order-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    align-items: flex-end;
+    margin-bottom: 24px;
+}
+
+/* Order Table */
+.sakwood-order-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.sakwood-order-table thead {
+    background: #f0f0f1;
+}
+
+.sakwood-order-table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 14px;
+    color: #1d2327;
+    border-bottom: 2px solid #0000001a;
+}
+
+.sakwood-order-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f0f0f1;
+    font-size: 14px;
+    color: #1d2327;
+}
+
+.sakwood-order-table tbody tr:hover {
+    background: #f6f7f7;
+}
+
+.sakwood-order-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.sakwood-order-table tbody tr.status-critical {
+    background: #fff5f5;
+}
+
+.order-number {
+    font-weight: 600;
+    color: #2271b1;
+}
+
+.order-date {
+    color: #50575e;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.customer-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.customer-name {
+    font-weight: 500;
+}
+
+.customer-email {
+    font-size: 12px;
+    color: #50575e;
+}
+
+.order-total {
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.payment-method {
+    color: #50575e;
+}
+
+.order-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-view {
+    padding: 6px 12px;
+    background: #2271b1;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.btn-view:hover {
+    background: #135e96;
+}
+
+.btn-verify {
+    padding: 6px 12px;
+    background: #00a32a;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.btn-verify:hover {
+    background: #008724;
+}
+
+.btn-verify-payment {
+    padding: 8px 16px;
+    background: #00a32a;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.btn-verify-payment:hover {
+    background: #008724;
+}
+
+/* Order Details Modal */
+.sakwood-order-modal {
+    max-width: 700px;
+}
+
+.order-details-section {
+    margin-bottom: 24px;
+}
+
+.order-details-section h4 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #1d2327;
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.details-grid > div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.details-grid label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #50575e;
+}
+
+.details-grid span {
+    font-size: 14px;
+    color: #1d2327;
+}
+
+.customer-details p {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: #1d2327;
+}
+
+.order-items {
+    border: 1px solid #f0f0f1;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.order-item {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 12px;
+    padding: 12px;
+    border-bottom: 1px solid #f0f0f1;
+}
+
+.order-item:last-child {
+    border-bottom: none;
+}
+
+.item-name {
+    font-weight: 500;
+}
+
+.item-qty {
+    color: #50575e;
+}
+
+.item-total {
+    font-weight: 600;
+    color: #2271b1;
+}
+
+.order-quick-actions {
+    padding: 16px;
+    background: #f0f0f1;
+    border-radius: 4px;
+}
+
+.order-quick-actions h4 {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0 0 12px 0;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .sakwood-order-filters {
+        flex-direction: column;
+    }
+
+    .filter-group input,
+    .filter-group select {
+        min-width: 100%;
+    }
+
+    .sakwood-order-table thead {
+        display: none;
+    }
+
+    .sakwood-order-table tbody {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sakwood-order-table tr {
+        display: flex;
+        flex-direction: column;
+        border: 1px solid #f0f0f1;
+        margin-bottom: 12px;
+        border-radius: 8px;
+    }
+
+    .sakwood-order-table td {
+        border: none;
+        padding: 8px 12px;
+    }
+
+    .details-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .order-item {
+        grid-template-columns: 1fr;
+    }
+}
