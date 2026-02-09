@@ -9,9 +9,20 @@ This is a monorepo for **Sakwood**, a WordPress + Next.js e-commerce site for pr
 ```
 sakwood/
 └── sakwood-wp/
-    ├── frontend/           # Next.js 16 frontend (React 19)
-    ├── wordpress-plugin/   # WordPress/WooCommerce integration plugin (sakwood-integration)
-    └── docker-compose.yml  # Dev environment setup
+    ├── frontend/              # Next.js 16 frontend (React 19)
+    │   ├── app/              # Next.js App Router pages
+    │   ├── components/       # React components
+    │   ├── lib/              # Utilities, services, types
+    │   ├── dictionaries/     # Translation files (en.json, th.json)
+    │   ├── public/           # Static assets
+    │   └── __tests__/        # Test files
+    ├── wordpress-plugin/     # WordPress/WooCommerce integration plugin
+    │   └── sakwood-integration/  # Custom WordPress plugin (40+ PHP files)
+    ├── nginx/                # Production Nginx configuration
+    ├── scripts/              # Deployment and utility scripts
+    ├── docs/                 # Documentation and user manuals
+    ├── docker-compose.yml    # Development environment
+    └── docker-compose.prod.yml  # Production environment
 ```
 
 ### Frontend Architecture (`sakwood-wp/frontend/`)
@@ -79,6 +90,12 @@ components/
 - Target: ES2017
 - Use `Locale` type from `i18n-config.ts` for type-safe locale handling
 
+**Error Monitoring:**
+- Sentry integration for production error tracking
+- Configuration in `next.config.ts` and `sentry.client.config.ts`
+- Automatic error reporting from frontend and API routes
+- Performance monitoring for page loads and API calls
+
 ## Development Commands
 
 **Frontend Development:**
@@ -105,6 +122,9 @@ npm test              # Unit tests with Vitest
 npm run test:ui       # Vitest UI
 npm run test:coverage # Coverage report
 npm run test:e2e      # E2E tests with Playwright
+
+# Run individual test file
+npm test -- cart.test.ts
 ```
 
 **Docker Environment:**
@@ -152,6 +172,11 @@ docker exec -it sak_wp bash
 # - Set up Nginx configuration
 # - Start Docker containers via docker-compose.prod.yml
 # - Verify deployment
+
+# Production environment
+docker-compose -f docker-compose.prod.yml up -d    # Start production containers
+docker-compose -f docker-compose.prod.yml down     # Stop production containers
+docker-compose -f docker-compose.prod.yml logs -f  # View production logs
 ```
 
 **Creating Test Users:**
@@ -167,6 +192,13 @@ echo "User created: testuser / test123\n";
 # Method 2: Via PHP script in plugin
 # Create create-user.php with admin_init hook, visit /wp-admin/?create_test_user=1
 ```
+
+**Scripts Directory:**
+The `scripts/` directory contains utility scripts for development and deployment:
+- `deploy.sh` / `deploy.ps1` - Production deployment scripts
+- `setup-local.sh` - Local development environment setup
+- Database backup/restore scripts
+- SSL certificate management scripts
 
 ## Environment Variables
 
@@ -229,6 +261,14 @@ NEXT_PUBLIC_ENABLE_CART=true
 - Product language meta fields
 - Menu management
 - Password reset functionality
+- Password management system (password-reset-*.php)
+
+**Production Architecture:**
+- Nginx reverse proxy routing between frontend and backend
+- Docker Compose production configuration (`docker-compose.prod.yml`)
+- Custom WordPress plugin volume-mounted read-only in production
+- Next.js rewrite rules proxy WordPress content requests
+- SSL/TLS termination at Nginx level
 
 ## Important Notes
 
@@ -486,3 +526,100 @@ To add new translations:
 - **DEPLOYMENT.md** - Comprehensive DigitalOcean deployment guide with SSL setup, troubleshooting, and maintenance procedures
 - **docs/user-manuals/** - Complete series (8 manuals) for blog management, product management, hero slider, popups, wholesale/dealer management, customer portal, and chat settings
 - **process.md** - Development session logs with issue tracking and architecture decision records
+- **nginx/** - Nginx configuration files for production deployment:
+  - `nginx.conf` - Main Nginx configuration
+  - `sakwood.conf` - Site-specific configuration with SSL
+  - `nginx-ssl.conf` - SSL/TLS configuration
+
+## Production URLs & Endpoints
+
+When deployed to production:
+- Frontend: `https://sakwood.com` (or configured domain)
+- WordPress Admin: `https://sakwood.com/wp-admin`
+- WordPress GraphQL API: `https://sakwood.com/graphql`
+- Custom REST API: `https://sakwood.com/wp-json/sakwood/v1/*`
+- WordPress Content: Proxied via `/wp-content/*` rewrites
+
+The production architecture uses Nginx as a reverse proxy to route requests between the Next.js frontend and WordPress backend, with SSL/TLS termination at the Nginx level.
+
+## Testing Strategy
+
+The project uses a multi-layered testing approach:
+
+**Unit Testing (Vitest):**
+- Component testing with React Testing Library
+- Service layer testing
+- Utility function testing
+- Test files located in `__tests__/` directories
+- Configuration: `vitest.config.ts`
+
+**E2E Testing (Playwright):**
+- Full user flow testing
+- Cross-browser testing
+- Mobile responsiveness testing
+- Configuration: `playwright.config.ts`
+
+**Coverage Reporting:**
+- Run `npm run test:coverage` to generate coverage reports
+- Coverage thresholds configured in Vitest setup
+
+When adding new features, include tests for:
+- Critical user flows (checkout, authentication)
+- API service functions
+- Complex business logic (shipping calculations, price parsing)
+- Component interactions and state management
+
+## Common Development Workflow
+
+**Starting Development:**
+1. Start Docker containers: `cd sakwood-wp && docker-compose up -d`
+2. Install frontend dependencies: `cd frontend && npm install`
+3. Start development server: `npm run dev`
+4. Access frontend at `http://localhost:3000`
+5. Access WordPress at `http://localhost:8006`
+
+**Making Changes:**
+- **Frontend changes**: Edit files in `frontend/`, hot-reload is automatic
+- **WordPress plugin changes**: Copy to Docker container or restart:
+  ```bash
+  docker cp wordpress-plugin/sakwood-integration/file.php sak_wp:/var/www/html/wp-content/plugins/sakwood-integration/
+  ```
+- **Database changes**: Use phpMyAdmin at `http://localhost:8888`
+
+**Testing Changes:**
+1. Run unit tests: `npm test`
+2. Run E2E tests: `npm run test:e2e`
+3. Check types: `npm run lint` (includes TypeScript checking)
+4. Build production bundle: `npm run build`
+
+**Committing Changes:**
+1. Remove console.log statements
+2. Ensure all tests pass
+3. Run linting and fix issues
+4. Follow conventional commit format: `feat:`, `fix:`, `refactor:`, etc.
+
+## Troubleshooting Common Issues
+
+**Docker Containers Won't Start:**
+- Check port conflicts: Ensure ports 8006 (WordPress) and 8888 (phpMyAdmin) are available
+- Rebuild containers: `docker-compose down && docker-compose up -d --build`
+- Check logs: `docker-compose logs -f`
+
+**Frontend Can't Connect to WordPress:**
+- Verify WordPress is running: `docker-compose ps`
+- Check API URL in `.env.local` matches Docker container
+- Try accessing GraphQL directly: `http://localhost:8006/graphql`
+
+**Plugin Changes Not Appearing:**
+- Restart WordPress container: `docker-compose restart sak_wp`
+- Or copy plugin file directly: `docker cp wordpress-plugin/sakwood-integration/file.php sak_wp:/var/www/html/wp-content/plugins/sakwood-integration/`
+
+**Build Errors:**
+- Clear Next.js cache: `rm -rf .next`
+- Reinstall dependencies: `rm -rf node_modules && npm install`
+- Check TypeScript errors: `npm run lint`
+
+**Translation Issues:**
+- Verify key exists in both `dictionaries/en.json` and `dictionaries/th.json`
+- Check `Dictionary` interface in `lib/types/dictionary.ts` is updated
+- Restart dev server to reload dictionaries

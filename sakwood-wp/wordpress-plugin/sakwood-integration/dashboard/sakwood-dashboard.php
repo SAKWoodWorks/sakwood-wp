@@ -1,0 +1,122 @@
+<?php
+/**
+ * Sakwood Unified Dashboard
+ *
+ * @package SakwoodIntegration
+ */
+
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+class Sakwood_Dashboard {
+
+    private static $instance = null;
+
+    public static function get_instance() {
+        if (null === self::$instance) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
+
+    private function __construct() {
+        add_action('admin_menu', array($this, 'add_dashboard_menu'));
+        add_action('admin_enqueue_scripts', array($this, 'enqueue_assets'));
+        add_filter('login_redirect', array($this, 'redirect_to_dashboard'), 10, 3);
+    }
+
+    public function add_dashboard_menu() {
+        // Remove default dashboard
+        remove_menu_page('index.php');
+
+        // Add our dashboard as the main menu
+        add_menu_page(
+            'Sakwood Dashboard',
+            'Dashboard',
+            'edit_posts',
+            'sakwood-dashboard',
+            array($this, 'render_dashboard'),
+            'dashicons-dashboard',
+            1
+        );
+
+        // Add submenu items (placeholders for now)
+        add_submenu_page(
+            'sakwood-dashboard',
+            'Overview',
+            'Overview',
+            'edit_posts',
+            'sakwood-dashboard',
+            array($this, 'render_dashboard')
+        );
+    }
+
+    public function enqueue_assets($hook) {
+        // Only load on our dashboard pages
+        if (strpos($hook, 'sakwood-dashboard') === false) {
+            return;
+        }
+
+        // Enqueue React app
+        wp_enqueue_script(
+            'sakwood-dashboard-app',
+            plugins_url('dashboard/assets/js/build/dashboard.js', dirname(__FILE__)),
+            array('wp-element'),
+            '1.0.0',
+            true
+        );
+
+        // Enqueue styles
+        wp_enqueue_style(
+            'sakwood-dashboard-style',
+            plugins_url('dashboard/assets/css/dashboard.css', dirname(__FILE__)),
+            array(),
+            '1.0.0'
+        );
+
+        // Pass data to React
+        wp_localize_script('sakwood-dashboard-app', 'sakwoodDashboard', array(
+            'apiUrl' => rest_url('sakwood/v1/dashboard'),
+            'nonce' => wp_create_nonce('wp_rest'),
+            'user' => array(
+                'id' => get_current_user_id(),
+                'role' => wp_get_current_user()->roles[0] ?? '',
+                'name' => wp_get_current_user()->display_name,
+                'capabilities' => array(
+                    'manage_options' => current_user_can('manage_options'),
+                    'edit_posts' => current_user_can('edit_posts'),
+                    'manage_woocommerce' => current_user_can('manage_woocommerce'),
+                ),
+            ),
+        ));
+    }
+
+    public function render_dashboard() {
+        ?>
+        <div id="sakwood-dashboard-root"></div>
+        <?php
+    }
+
+    public function redirect_to_dashboard($redirect_to, $request, $user) {
+        // Redirect admins to our dashboard after login
+        if (isset($user->roles) && is_array($user->roles)) {
+            if (in_array('administrator', $user->roles) ||
+                in_array('editor', $user->roles) ||
+                in_array('shop_manager', $user->roles)) {
+                return admin_url('admin.php?page=sakwood-dashboard');
+            }
+        }
+        return $redirect_to;
+    }
+}
+
+// Load API endpoints
+require_once SAKWOOD_PLUGIN_DIR . 'dashboard/api/dashboard-stats.php';
+require_once SAKWOOD_PLUGIN_DIR . 'dashboard/api/dashboard-activity.php';
+
+// Initialize dashboard
+function sakwood_dashboard_init() {
+    return Sakwood_Dashboard::get_instance();
+}
+add_action('plugins_loaded', 'sakwood_dashboard_init');

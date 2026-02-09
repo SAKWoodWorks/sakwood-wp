@@ -165,6 +165,9 @@ class Sakwood_Integration {
         // Load Menu REST API
         require_once SAKWOOD_PLUGIN_DIR . 'menu-rest-api.php';
 
+        // Load Unified Dashboard
+        require_once SAKWOOD_PLUGIN_DIR . 'dashboard/sakwood-dashboard.php';
+
         // Initialize CRM database
         $crm_db = new Sakwood_CRM_Database();
 
