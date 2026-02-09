@@ -24,6 +24,13 @@ class Sakwood_Dashboard {
         add_action('admin_menu', array($this, 'add_dashboard_menu'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_assets'));
         add_filter('login_redirect', array($this, 'redirect_to_dashboard'), 10, 3);
+
+        // Hide WordPress admin bar
+        add_filter('show_admin_bar', '__return_false');
+
+        // Hide all WordPress admin menus
+        add_action('admin_head', array($this, 'hide_wp_menus'));
+        add_action('admin_body_class', array($this, 'full_screen_class'));
     }
 
     public function add_dashboard_menu() {
@@ -108,6 +115,67 @@ class Sakwood_Dashboard {
             }
         }
         return $redirect_to;
+    }
+
+    /**
+     * Hide WordPress admin menu and make dashboard full-screen
+     */
+    public function hide_wp_menus() {
+        // Only hide on our dashboard page
+        $screen = get_current_screen();
+        if (strpos($screen->id, 'sakwood-dashboard') !== false) {
+            ?>
+            <style>
+                /* Hide WordPress admin menu */
+                #adminmenumain,
+                #wpadminbar {
+                    display: none !important;
+                }
+
+                /* Make dashboard full screen */
+                #wpbody {
+                    margin-top: 0 !important;
+                    margin-left: 0 !important;
+                }
+
+                #wpbody-content {
+                    padding-bottom: 0 !important;
+                }
+
+                /* Hide WordPress footer */
+                #wpfooter {
+                    display: none !important;
+                }
+
+                /* Reset body styles */
+                .wp-admin {
+                    margin-top: 0 !important;
+                }
+
+                body {
+                    overflow: hidden !important;
+                }
+
+                /* Hide screen options and help tabs */
+                #screen-options-link-wrap,
+                #contextual-help-link-wrap,
+                #collapse-menu {
+                    display: none !important;
+                }
+            </style>
+            <?php
+        }
+    }
+
+    /**
+     * Add full-screen class to body
+     */
+    public function full_screen_class($classes) {
+        $screen = get_current_screen();
+        if (strpos($screen->id, 'sakwood-dashboard') !== false) {
+            $classes .= ' sakwood-fullscreen';
+        }
+        return $classes;
     }
 }
 
