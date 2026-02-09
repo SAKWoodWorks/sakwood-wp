@@ -5,6 +5,7 @@ import Dashboard from '../Dashboard/Dashboard';
 import Products from '../Products/Products';
 import Orders from '../Orders/Orders';
 import WholesaleApplications from '../WholesaleApplications/WholesaleApplications';
+import CRMCustomers from '../CRMCustomers/CRMCustomers';
 
 // Page component for unimplemented pages
 function ComingSoon({ pageName }) {
@@ -125,6 +126,8 @@ function App() {
                 return <Orders />;
             case 'wholesale-applications':
                 return <WholesaleApplications />;
+            case 'crm-customers':
+                return <CRMCustomers />;
             default:
                 return <ComingSoon pageName={currentPage} />;
         }
