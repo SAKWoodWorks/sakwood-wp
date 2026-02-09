@@ -1,6 +1,6 @@
 import React from 'react';
 
-function HeroSlides() {
+function HeroSlider() {
     return (
         <div className="sakwood-hero-slides-page">
             <h1>Hero Slides Management</h1>
@@ -94,4 +94,4 @@ function HeroSlides() {
     );
 }
 
-export default HeroSlides;
+export default HeroSlider;

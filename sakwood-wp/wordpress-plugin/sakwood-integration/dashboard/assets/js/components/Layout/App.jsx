@@ -8,8 +8,15 @@ import WholesaleApplications from '../WholesaleApplications/WholesaleApplication
 import CRMCustomers from '../CRMCustomers/CRMCustomers';
 import Settings from '../Settings/Settings';
 import Blog from '../Content/Blog';
-import HeroSlides from '../Content/HeroSlides';
+import HeroSlider from '../Content/HeroSlider';
 import FAQ from '../Content/FAQ';
+import Interactions from '../CRM/Interactions';
+import Tasks from '../CRM/Tasks';
+import Reports from '../CRM/Reports';
+import BulkImport from '../Products/BulkImport';
+import Dealers from '../Wholesale/Dealers';
+import Popups from '../Marketing/Popups';
+import Chat from '../Marketing/Chat';
 
 // Page component for unimplemented pages
 function ComingSoon({ pageName }) {
@@ -126,20 +133,34 @@ function App() {
                 return <Dashboard />;
             case 'products-all':
                 return <Products />;
+            case 'products-bulk-import':
+                return <BulkImport />;
             case 'orders':
                 return <Orders />;
             case 'wholesale-applications':
                 return <WholesaleApplications />;
+            case 'wholesale-dealers':
+                return <Dealers />;
             case 'crm-customers':
                 return <CRMCustomers />;
+            case 'crm-interactions':
+                return <Interactions />;
+            case 'crm-tasks':
+                return <Tasks />;
+            case 'crm-reports':
+                return <Reports />;
             case 'settings':
                 return <Settings />;
             case 'content-blog':
                 return <Blog />;
             case 'content-hero-slides':
-                return <HeroSlides />;
+                return <HeroSlider />;
             case 'content-faq':
                 return <FAQ />;
+            case 'marketing-popups':
+                return <Popups />;
+            case 'marketing-chat':
+                return <Chat />;
             default:
                 return <ComingSoon pageName={currentPage} />;
         }
