@@ -138,9 +138,27 @@
     font-size: 13px;
 }
 
-.submenu a:hover {
+.submenu button {
+    width: 100%;
+    display: block;
+    padding: 8px 16px;
+    background: none;
+    border: none;
+    color: #ffffffcc;
+    cursor: pointer;
+    text-align: left;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+.submenu button:hover {
     color: #fff;
     background: #0000001a;
+}
+
+.submenu button.active {
+    color: #fff;
+    background: #2271b1;
 }
 
 /* Main Content */

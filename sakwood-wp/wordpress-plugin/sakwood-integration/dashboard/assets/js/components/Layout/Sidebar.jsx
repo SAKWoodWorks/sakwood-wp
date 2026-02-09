@@ -43,9 +43,12 @@ function Sidebar({ isOpen, currentPage, onNavigate, onToggle }) {
                                 <ul className="submenu">
                                     {item.submenu.map((sub) => (
                                         <li key={sub}>
-                                            <a href={`#${item.id}/${sub.toLowerCase().replace(' ', '-')}`}>
+                                            <button
+                                                onClick={() => onNavigate(item.id)}
+                                                className={currentPage === item.id ? 'active' : ''}
+                                            >
                                                 {sub}
-                                            </a>
+                                            </button>
                                         </li>
                                     ))}
                                 </ul>
