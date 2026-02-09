@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import Dashboard from '../Dashboard/Dashboard';
+import Products from '../Products/Products';
 
 // Page component for unimplemented pages
 function ComingSoon({ pageName }) {
@@ -116,6 +117,8 @@ function App() {
         switch (currentPage) {
             case 'dashboard':
                 return <Dashboard />;
+            case 'products-all':
+                return <Products />;
             default:
                 return <ComingSoon pageName={currentPage} />;
         }
