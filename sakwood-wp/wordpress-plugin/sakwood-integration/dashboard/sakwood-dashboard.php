@@ -126,16 +126,36 @@ class Sakwood_Dashboard {
         if (strpos($screen->id, 'sakwood-dashboard') !== false) {
             ?>
             <style>
-                /* Hide WordPress admin menu */
-                #adminmenumain,
-                #wpadminbar {
+                /* Hide WordPress admin menu by default */
+                body.sakwood-wp-menu-hidden #adminmenumain,
+                body.sakwood-wp-menu-hidden #wpadminbar {
                     display: none !important;
                 }
 
+                /* Show WordPress menu when toggled */
+                body.sakwood-wp-menu-visible #adminmenumain,
+                body.sakwood-wp-menu-visible #wpadminbar {
+                    display: block !important;
+                }
+
                 /* Make dashboard full screen */
-                #wpbody {
+                body.sakwood-wp-menu-hidden #wpbody {
                     margin-top: 0 !important;
                     margin-left: 0 !important;
+                }
+
+                /* Restore margins when menu is visible */
+                body.sakwood-wp-menu-visible #wpbody {
+                    margin-top: 32px !important;
+                    margin-left: 160px !important;
+                }
+
+                /* Adjust our dashboard when WP menu is visible */
+                body.sakwood-wp-menu-visible .sakwood-dashboard {
+                    width: calc(100vw - 160px);
+                    margin-left: 160px;
+                    margin-top: 32px;
+                    height: calc(100vh - 32px);
                 }
 
                 #wpbody-content {
@@ -145,11 +165,6 @@ class Sakwood_Dashboard {
                 /* Hide WordPress footer */
                 #wpfooter {
                     display: none !important;
-                }
-
-                /* Reset body styles */
-                .wp-admin {
-                    margin-top: 0 !important;
                 }
 
                 body {
@@ -163,6 +178,32 @@ class Sakwood_Dashboard {
                     display: none !important;
                 }
             </style>
+            <script>
+                // Initialize WP menu toggle state
+                document.addEventListener('DOMContentLoaded', function() {
+                    const wpMenuHidden = localStorage.getItem('sakwood_wp_menu_hidden') !== 'false';
+                    if (wpMenuHidden) {
+                        document.body.classList.add('sakwood-wp-menu-hidden');
+                        document.body.classList.remove('sakwood-wp-menu-visible');
+                    } else {
+                        document.body.classList.add('sakwood-wp-menu-visible');
+                        document.body.classList.remove('sakwood-wp-menu-hidden');
+                    }
+
+                    // Listen for toggle events from React
+                    window.addEventListener('toggle-wp-menu', function(e) {
+                        if (e.detail.show) {
+                            document.body.classList.remove('sakwood-wp-menu-hidden');
+                            document.body.classList.add('sakwood-wp-menu-visible');
+                            localStorage.setItem('sakwood_wp_menu_hidden', 'false');
+                        } else {
+                            document.body.classList.add('sakwood-wp-menu-hidden');
+                            document.body.classList.remove('sakwood-wp-menu-visible');
+                            localStorage.setItem('sakwood_wp_menu_hidden', 'true');
+                        }
+                    });
+                });
+            </script>
             <?php
         }
     }
