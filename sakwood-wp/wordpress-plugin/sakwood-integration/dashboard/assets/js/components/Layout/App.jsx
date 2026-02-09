@@ -4,6 +4,7 @@ import Header from './Header';
 import Dashboard from '../Dashboard/Dashboard';
 import Products from '../Products/Products';
 import Orders from '../Orders/Orders';
+import WholesaleApplications from '../WholesaleApplications/WholesaleApplications';
 
 // Page component for unimplemented pages
 function ComingSoon({ pageName }) {
@@ -122,6 +123,8 @@ function App() {
                 return <Products />;
             case 'orders':
                 return <Orders />;
+            case 'wholesale-applications':
+                return <WholesaleApplications />;
             default:
                 return <ComingSoon pageName={currentPage} />;
         }

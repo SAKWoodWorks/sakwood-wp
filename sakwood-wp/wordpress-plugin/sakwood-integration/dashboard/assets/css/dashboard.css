@@ -1226,3 +1226,204 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* Wholesale Applications Page Styles */
+.sakwood-wholesale-applications-page h1 {
+    font-size: 32px;
+    font-weight: 600;
+    margin-bottom: 24px;
+}
+
+.sakwood-application-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    align-items: flex-end;
+    margin-bottom: 24px;
+}
+
+.sakwood-application-filters .filter-group {
+    flex: 0;
+}
+
+/* Application Table */
+.sakwood-application-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.sakwood-application-table thead {
+    background: #f0f0f1;
+}
+
+.sakwood-application-table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 14px;
+    color: #1d2327;
+    border-bottom: 2px solid #0000001a;
+}
+
+.sakwood-application-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f0f0f1;
+    font-size: 14px;
+    color: #1d2327;
+}
+
+.sakwood-application-table tbody tr:hover {
+    background: #f6f7f7;
+}
+
+.sakwood-application-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.application-id {
+    font-family: monospace;
+    font-weight: 500;
+    color: #2271b1;
+}
+
+.company-name {
+    font-weight: 500;
+}
+
+.applicant-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.applicant-name {
+    font-weight: 500;
+}
+
+.applicant-email {
+    font-size: 12px;
+    color: #50575e;
+}
+
+.application-date {
+    color: #50575e;
+}
+
+.application-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* Application Details Modal */
+.sakwood-application-modal {
+    max-width: 700px;
+}
+
+.application-details-section {
+    margin-bottom: 24px;
+}
+
+.application-details-section h4 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #1d2327;
+}
+
+.application-details-section .full-width {
+    grid-column: 1 / -1;
+}
+
+.application-details-section .full-width label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: #50575e;
+    margin-bottom: 4px;
+}
+
+.application-details-section .full-width span {
+    display: block;
+    font-size: 14px;
+    color: #1d2327;
+}
+
+.application-actions-section {
+    padding: 16px;
+    background: #f0f0f1;
+    border-radius: 4px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.btn-approve {
+    padding: 10px 20px;
+    background: #00a32a;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.btn-approve:hover:not(:disabled) {
+    background: #008724;
+}
+
+.btn-reject {
+    padding: 10px 20px;
+    background: #d63638;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.btn-reject:hover:not(:disabled) {
+    background: #b92b2b;
+}
+
+.btn-activate {
+    padding: 10px 20px;
+    background: #2271b1;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.btn-activate:hover:not(:disabled) {
+    background: #135e96;
+}
+
+.action-buttons button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.sakwood-application-modal .form-group textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #00000033;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+}
