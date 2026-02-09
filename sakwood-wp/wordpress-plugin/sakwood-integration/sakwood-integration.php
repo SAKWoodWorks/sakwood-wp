@@ -144,6 +144,9 @@ class Sakwood_Integration {
         // Load Login Restriction (Security - only allows @sakww.com emails)
         require_once SAKWOOD_PLUGIN_DIR . 'restrict-admin-login.php';
 
+        // Load Bulk User Import
+        require_once SAKWOOD_PLUGIN_DIR . 'bulk-user-import.php';
+
         // Load FAQ System
         require_once SAKWOOD_PLUGIN_DIR . 'faq-cpt.php';
         require_once SAKWOOD_PLUGIN_DIR . 'faq-rest-api.php';
