@@ -301,3 +301,78 @@
     font-size: 16px;
     color: #50575e;
 }
+
+/* Coming Soon Page */
+.sakwood-page-coming-soon {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.sakwood-page-coming-soon h1 {
+    font-size: 32px;
+    font-weight: 600;
+    margin-bottom: 32px;
+    color: #1d2327;
+}
+
+.coming-soon-content {
+    text-align: center;
+    padding: 60px 40px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.coming-soon-icon {
+    font-size: 64px;
+    margin-bottom: 24px;
+}
+
+.coming-soon-content h2 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #1d2327;
+}
+
+.coming-soon-content > p {
+    font-size: 16px;
+    color: #50575e;
+    margin-bottom: 32px;
+}
+
+.coming-soon-features {
+    text-align: left;
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 24px;
+    background: #f0f0f1;
+    border-radius: 8px;
+}
+
+.coming-soon-features h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #1d2327;
+}
+
+.coming-soon-features ul {
+    list-style: none;
+    padding: 0;
+}
+
+.coming-soon-features li {
+    padding: 12px 0;
+    padding-left: 32px;
+    position: relative;
+    color: #50575e;
+}
+
+.coming-soon-features li:before {
+    content: "→";
+    position: absolute;
+    left: 8px;
+    color: #2271b1;
+    font-weight: bold;
+}
