@@ -1676,6 +1676,75 @@
     background: #135e96;
 }
 
+/* Content Pages Styles */
+.sakwood-blog-page h1,
+.sakwood-hero-slides-page h1,
+.sakwood-faq-page h1 {
+    font-size: 32px;
+    font-weight: 600;
+    margin-bottom: 32px;
+}
+
+/* Language Indicators */
+.language-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: #f0f0f1;
+    border-radius: 4px;
+    margin-top: 8px;
+}
+
+.language-indicator.th {
+    border-left: 3px solid #00a32a;
+}
+
+.language-indicator.en {
+    border-left: 3px solid #2271b1;
+}
+
+.lang-code {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: #fff;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.lang-label {
+    font-size: 13px;
+    color: #50575e;
+}
+
+/* Feature List */
+.feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 8px 0 0 0;
+}
+
+.feature-list li {
+    padding: 6px 0;
+    padding-left: 24px;
+    position: relative;
+    font-size: 13px;
+    color: #50575e;
+}
+
+.feature-list li:before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: #00a32a;
+    font-weight: bold;
+}
+
 @media (max-width: 768px) {
     .settings-grid {
         grid-template-columns: 1fr;

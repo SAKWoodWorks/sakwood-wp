@@ -7,6 +7,9 @@ import Orders from '../Orders/Orders';
 import WholesaleApplications from '../WholesaleApplications/WholesaleApplications';
 import CRMCustomers from '../CRMCustomers/CRMCustomers';
 import Settings from '../Settings/Settings';
+import Blog from '../Content/Blog';
+import HeroSlides from '../Content/HeroSlides';
+import FAQ from '../Content/FAQ';
 
 // Page component for unimplemented pages
 function ComingSoon({ pageName }) {
@@ -131,6 +134,12 @@ function App() {
                 return <CRMCustomers />;
             case 'settings':
                 return <Settings />;
+            case 'content-blog':
+                return <Blog />;
+            case 'content-hero-slides':
+                return <HeroSlides />;
+            case 'content-faq':
+                return <FAQ />;
             default:
                 return <ComingSoon pageName={currentPage} />;
         }
