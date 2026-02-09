@@ -138,6 +138,17 @@ class Sakwood_Dashboard {
                     display: block !important;
                 }
 
+                /* Enable scrolling for WordPress admin menu */
+                body.sakwood-wp-menu-visible #adminmenumain {
+                    overflow-y: auto !important;
+                    max-height: 100vh !important;
+                }
+
+                body.sakwood-wp-menu-visible #adminmenuwrap {
+                    overflow-y: auto !important;
+                    max-height: calc(100vh - 32px) !important;
+                }
+
                 /* Make dashboard full screen */
                 body.sakwood-wp-menu-hidden #wpbody {
                     margin-top: 0 !important;
