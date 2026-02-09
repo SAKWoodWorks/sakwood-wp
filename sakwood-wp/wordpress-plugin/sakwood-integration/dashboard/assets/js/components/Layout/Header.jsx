@@ -30,7 +30,7 @@ function Header({ onToggleSidebar }) {
                     className={`wp-menu-toggle ${wpMenuVisible ? 'active' : ''}`}
                     title="Toggle WordPress Admin Menu"
                 >
-                    {wpMenuVisible ? '⊟' : '⊠'}
+                    {wpMenuVisible ? 'WP ✓' : 'WP'}
                 </button>
             </div>
             <div className="sakwood-header-center">
