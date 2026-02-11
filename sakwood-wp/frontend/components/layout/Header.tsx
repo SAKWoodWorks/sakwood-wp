@@ -272,14 +272,6 @@ export function Header({ menuItems, lang, dictionary }: HeaderProps) {
           <nav className="hidden md:flex items-center gap-6">
             {menuItems.map((item) => renderMenuItem(item))}
 
-            {/* Quick Shop Link */}
-            <Link
-              href={`/${lang}/quick-shop`}
-              className="text-sm text-blue-600 font-semibold hover:text-blue-700 transition-colors"
-            >
-              {lang === 'th' ? 'ช้อปปิ้ง' : 'Quick Shop'}
-            </Link>
-
             {/* Search Icon */}
             <div className="relative">
               {!isSearchOpen ? (
@@ -564,18 +556,6 @@ export function Header({ menuItems, lang, dictionary }: HeaderProps) {
                     </Link>
                   );
                 })}
-
-                {/* Quick Shop Link */}
-                <Link
-                  href={`/${lang}/quick-shop`}
-                  className="flex items-center gap-3 px-4 py-3 text-blue-600 font-semibold hover:text-blue-700 hover:bg-blue-50 rounded-xl transition-all group focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <svg className="w-5 h-5 text-blue-500 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                  </svg>
-                  <span className="text-sm">{lang === 'th' ? 'ช้อปปิ้ง' : 'Quick Shop'}</span>
-                </Link>
               </div>
 
               {/* Quick Actions Bar */}
