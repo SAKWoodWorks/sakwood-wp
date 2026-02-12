@@ -1,7 +1,7 @@
 import { graphqlRequest } from '@/lib/graphql/client';
 import { GET_PRODUCTS_QUERY, GET_PRODUCT_QUERY, GET_PRODUCT_CATEGORIES_QUERY } from '@/lib/graphql/queries';
 import { Product, ProductResponse, ProductImage, ProductCategory, ProductCategoriesResponse, PriceType } from '@/lib/types';
-import { APP_CONFIG } from '@/lib/config/constants';
+import { APP_CONFIG, API_CONFIG } from '@/lib/config/constants';
 
 /**
  * Interface for REST API product response
