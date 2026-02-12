@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-const WORDPRESS_API_URL = process.env.WORDPRESS_API_URL || 'http://localhost:8006/wp-json';
+const WORDPRESS_API_URL = process.env.WORDPRESS_API_URL || process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'http://localhost:8006/wp-json/sakwood/v1';
 
 /**
  * Transform WordPress image URL to use Next.js proxy
@@ -29,7 +29,7 @@ function transformImageUrl(url: string | undefined): string | undefined {
 
 export async function GET() {
   try {
-    const response = await fetch(`${WORDPRESS_API_URL}/sakwood/v1/popup`, {
+    const response = await fetch(`${WORDPRESS_API_URL}/popup`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

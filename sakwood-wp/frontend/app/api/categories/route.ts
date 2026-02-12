@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-const WORDPRESS_API_URL = process.env.WORDPRESS_API_URL || 'http://localhost:8006/wp-json';
+const WORDPRESS_API_URL = process.env.WORDPRESS_API_URL || process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'http://localhost:8006/wp-json/sakwood/v1';
 // GraphQL endpoint is at the same host, different path
 const GRAPHQL_URL = WORDPRESS_API_URL.replace('/wp-json', '/graphql');
 

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-const WORDPRESS_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'http://localhost:8006/wp-json';
+const WORDPRESS_API_URL = process.env.WORDPRESS_API_URL || process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'http://localhost:8006/wp-json/sakwood/v1';
 
 export async function GET(request: Request) {
   try {
@@ -9,8 +9,8 @@ export async function GET(request: Request) {
     const cookieHeader = request.headers.get('cookie') || '';
 
     const wpUrl = userId
-      ? `${WORDPRESS_API_URL}/sakwood/v1/dealer/territories?user_id=${userId}`
-      : `${WORDPRESS_API_URL}/sakwood/v1/dealer/territories`;
+      ? `${WORDPRESS_API_URL}/dealer/territories?user_id=${userId}`
+      : `${WORDPRESS_API_URL}/dealer/territories`;
 
     const response = await fetch(wpUrl, {
       method: 'GET',

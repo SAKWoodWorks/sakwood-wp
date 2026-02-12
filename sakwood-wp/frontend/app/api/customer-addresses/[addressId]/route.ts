@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-const WORDPRESS_API_URL = process.env.WORDPRESS_API_URL || 'http://localhost:8006/wp-json';
+const WORDPRESS_API_URL = process.env.WORDPRESS_API_URL || process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'http://localhost:8006/wp-json/sakwood/v1';
 
 export async function PUT(
   request: Request,
@@ -15,7 +15,7 @@ export async function PUT(
     const bodyWithUserId = { ...body, user_id: body.user_id };
 
     const response = await fetch(
-      `${WORDPRESS_API_URL}/sakwood/v1/customer/addresses/${addressId}`,
+      `${WORDPRESS_API_URL}/customer/addresses/${addressId}`,
       {
         method: 'POST',
         headers: {
@@ -57,8 +57,8 @@ export async function DELETE(
 
     // Include user_id as query parameter
     const wpUrl = userId
-      ? `${WORDPRESS_API_URL}/sakwood/v1/customer/addresses/${addressId}?user_id=${userId}`
-      : `${WORDPRESS_API_URL}/sakwood/v1/customer/addresses/${addressId}`;
+      ? `${WORDPRESS_API_URL}/customer/addresses/${addressId}?user_id=${userId}`
+      : `${WORDPRESS_API_URL}/customer/addresses/${addressId}`;
 
     const response = await fetch(wpUrl, {
       method: 'DELETE',

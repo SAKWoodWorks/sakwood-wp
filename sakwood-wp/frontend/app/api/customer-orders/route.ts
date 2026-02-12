@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
-const WORDPRESS_API_URL = process.env.WORDPRESS_API_URL || 'http://localhost:8006/wp-json';
+const WORDPRESS_API_URL = process.env.WORDPRESS_API_URL || process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'http://localhost:8006/wp-json/sakwood/v1';
 
 export async function GET(request: Request) {
   try {
@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     // DEV MODE: If user_id is provided, use it directly (bypass auth)
     if (devUserId) {
       const wpResponse = await fetch(
-        `${WORDPRESS_API_URL}/sakwood/v1/customer/orders?page=${page}&per_page=${per_page}&status=${status}&user_id=${devUserId}`,
+        `${WORDPRESS_API_URL}/customer/orders?page=${page}&per_page=${per_page}&status=${status}&user_id=${devUserId}`,
         {
           method: 'GET',
           headers: {
@@ -49,7 +49,7 @@ export async function GET(request: Request) {
 
     // Forward the request to WordPress with JWT token
     const wpResponse = await fetch(
-      `${WORDPRESS_API_URL}/sakwood/v1/customer/orders?page=${page}&per_page=${per_page}&status=${status}`,
+      `${WORDPRESS_API_URL}/customer/orders?page=${page}&per_page=${per_page}&status=${status}`,
       {
         method: 'GET',
         headers: {

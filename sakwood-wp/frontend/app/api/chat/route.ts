@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-const WORDPRESS_API_URL = process.env.WORDPRESS_API_URL || 'http://localhost:8006/wp-json';
+const WORDPRESS_API_URL = process.env.WORDPRESS_API_URL || process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'http://localhost:8006/wp-json/sakwood/v1';
 
 /**
  * GET /api/chat
@@ -8,7 +8,7 @@ const WORDPRESS_API_URL = process.env.WORDPRESS_API_URL || 'http://localhost:800
  */
 export async function GET() {
   try {
-    const response = await fetch(`${WORDPRESS_API_URL}/sakwood/v1/chat`, {
+    const response = await fetch(`${WORDPRESS_API_URL}/chat`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

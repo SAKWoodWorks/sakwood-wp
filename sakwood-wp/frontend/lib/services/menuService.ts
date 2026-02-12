@@ -1,7 +1,9 @@
 import { MenuItem } from '@/lib/types';
 
 // WordPress REST API base URL - use server-side or fallback to client-side
-const BASE_URL = process.env.WORDPRESS_API_URL || process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'http://localhost:8006/wp-json';
+// Remove /sakwood/v1 suffix if present to avoid double path
+const RAW_BASE_URL = process.env.WORDPRESS_API_URL || process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'http://localhost:8006/wp-json/sakwood/v1';
+const BASE_URL = RAW_BASE_URL.replace(/\/sakwood\/v1$/, '');
 
 // Fallback menu items for Thai language
 const FALLBACK_MENU_TH: MenuItem[] = [
