@@ -12,17 +12,30 @@ export function getApiUrl(path: string): string {
     return cleanPath;
   }
 
-  // Server-side: construct absolute URL
-  const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+  // Server-side: use absolute URL with correct protocol
+  // Production Docker environment: use http:// for internal Docker network
+  // Development: use http://localhost:8006
+  const isProduction = process.env.NODE_ENV === 'production';
+  const protocol = isProduction ? 'http' : 'http';
 
-  // Try to get host from environment variables
-  let host = 'localhost:3000';
-
-  if (process.env.NEXT_PUBLIC_SITE_URL) {
+  // Determine host based on environment
+  let host: string;
+  if (isProduction) {
+    // Production: Use internal Docker hostname for WordPress services
+    // Skip API routes (they proxy to WordPress)
+    if (path.startsWith('/api/')) {
+      // API routes already handle proxying, just need base URL
+      host = 'localhost:8006';
+    } else {
+      // Direct WordPress services (slider settings, etc.)
+      host = 'sak_wp:80';
+    }
+  } else if (process.env.NEXT_PUBLIC_SITE_URL) {
     try {
       host = new URL(process.env.NEXT_PUBLIC_SITE_URL).host;
     } catch {
-      // If parsing fails, use default
+      // If parsing fails or in local dev, use default
+      host = 'localhost:3000';
     }
   } else if (process.env.VERCEL_URL) {
     host = process.env.VERCEL_URL;
