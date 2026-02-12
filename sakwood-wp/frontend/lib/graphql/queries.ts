@@ -56,13 +56,6 @@ export const GET_PRODUCTS_QUERY = `
         length
         thickness
         volume
-        productCategories {
-          nodes {
-            id
-            name
-            slug
-          }
-        }
         ... on SimpleProduct {
           price
           regularPrice
