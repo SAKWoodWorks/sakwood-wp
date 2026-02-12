@@ -148,7 +148,7 @@ export async function getProducts(
   sortBy?: ProductSortBy
 ): Promise<Product[]> {
   try {
-    const baseUrl = process.env.WORDPRESS_API_URL || process.env.NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL?.replace('/graphql', '') || 'http://localhost:8006';
+    const baseUrl = process.env.WORDPRESS_API_URL || process.env.NEXT_PUBLIC_WORDPRESS_API_URL?.replace('/wp-json/sakwood/v1', '') || 'http://localhost:8006';
     let url = `${baseUrl}/wp-json/sakwood/v1/products?language=${language}&per_page=${APP_CONFIG.productsPerPage}`;
 
     // Add category filter if provided
