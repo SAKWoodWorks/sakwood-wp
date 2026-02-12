@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 
-const WORDPRESS_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL?.replace('/graphql', '') || 'http://localhost:8006';
+const WORDPRESS_API_URL = process.env.WORDPRESS_API_URL || 'http://localhost:8006/wp-json';
+// GraphQL endpoint is at the same host, different path
+const GRAPHQL_URL = WORDPRESS_API_URL.replace('/wp-json', '/graphql');
 
 export async function GET() {
   try {
@@ -18,7 +20,7 @@ export async function GET() {
       }
     `;
 
-    const response = await fetch(`${WORDPRESS_API_URL}/graphql`, {
+    const response = await fetch(GRAPHQL_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

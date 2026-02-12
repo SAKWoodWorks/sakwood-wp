@@ -30,7 +30,7 @@
 import { NextResponse } from 'next/server';
 
 // WordPress API URL from environment or default to localhost
-const WORDPRESS_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'http://localhost:8006/wp-json/sakwood/v1';
+const WORDPRESS_API_URL = process.env.WORDPRESS_API_URL || 'http://localhost:8006/wp-json';
 
 /**
  * GET handler for products API
