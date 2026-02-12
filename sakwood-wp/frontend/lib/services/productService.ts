@@ -220,7 +220,7 @@ async function getProductsViaGraphQL(language: string = 'th'): Promise<Product[]
     };
   }
 
-  const data = await graphqlRequest<GraphQLProductResponse>(GET_PRODUCTS_QUERY, { first: 10 });
+  const data = await graphqlRequest<GraphQLProductResponse>(GET_PRODUCTS_QUERY, { first: 100 });
   const products = data?.products?.nodes || [];
 
   // Transform image URLs
