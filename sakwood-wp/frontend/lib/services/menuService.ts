@@ -54,7 +54,7 @@ const FALLBACK_MENU_EN: MenuItem[] = [
   {
     id: '2',
     label: 'Shop',
-    path: '/products',
+    path: '/shop',
     order: 2,
   },
   {
