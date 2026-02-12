@@ -18,7 +18,7 @@ export function getApiUrl(path: string): string {
   const isProduction = process.env.NODE_ENV === 'production';
   const protocol = isProduction ? 'http' : 'http';
 
-  // Determine host based on environment
+  // Determine host based on environment (initialized for all code paths)
   let host: string;
   if (isProduction) {
     // Production: Use internal Docker hostname for WordPress services
@@ -31,12 +31,7 @@ export function getApiUrl(path: string): string {
       host = 'sak_wp:80';
     }
   } else if (process.env.NEXT_PUBLIC_SITE_URL) {
-    try {
-      host = new URL(process.env.NEXT_PUBLIC_SITE_URL).host;
-    } catch {
-      // If parsing fails or in local dev, use default
-      host = 'localhost:3000';
-    }
+    host = new URL(process.env.NEXT_PUBLIC_SITE_URL).host;
   } else if (process.env.VERCEL_URL) {
     host = process.env.VERCEL_URL;
   }
