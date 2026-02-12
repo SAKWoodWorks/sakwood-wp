@@ -57,14 +57,23 @@ class Sakwood_Menu_REST_API {
         $lang = $request->get_param('lang');
 
         // Determine menu location based on language
-        $location = $lang === 'en' ? 'PRIMARY_EN' : 'PRIMARY_TH';
+        // WordPress themes typically register 'primary' not 'PRIMARY_EN'/'PRIMARY_TH'
+        $location = $lang === 'en' ? 'primary' : 'primary';
 
         // Get menu items from the specified location
         $menu_items = $this->get_menu_items_by_location($location);
 
-        // If no items found, fall back to PRIMARY location
+        // If no items found, try the common location names
         if (empty($menu_items)) {
-            $menu_items = $this->get_menu_items_by_location('PRIMARY');
+            // Try alternative location names that WordPress themes commonly use
+            $alt_locations = array('primary', 'main', 'menu-1', 'menu-primary');
+            foreach ($alt_locations as $alt_loc) {
+                $items = $this->get_menu_items_by_location($alt_loc);
+                if (!empty($items)) {
+                    $menu_items = $items;
+                    break;
+                }
+            }
         }
 
         // If still empty, return empty array
