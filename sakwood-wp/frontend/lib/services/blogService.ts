@@ -116,7 +116,7 @@ const FALLBACK_BLOG_POSTS: BlogPost[] = [
  */
 export async function getBlogPosts(language: string = 'th'): Promise<BlogPost[]> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL?.replace('/graphql', '') || 'http://localhost:8006';
+    const baseUrl = process.env.WORDPRESS_API_URL || process.env.NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL?.replace('/graphql', '') || 'http://localhost:8006';
     const url = `${baseUrl}/wp-json/sakwood/v1/posts?language=${language}&per_page=${APP_CONFIG.blogPerPage}`;
 
     const response = await fetch(url);
@@ -175,7 +175,7 @@ export async function getBlogPostBySlug(slug: string, language: string = 'th'): 
     // The slug from Next.js is already decoded, but we need to URL-encode it for the API request
     // This ensures Thai characters are properly encoded for the HTTP request
     const encodedSlug = encodeURIComponent(slug);
-    const baseUrl = process.env.NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL?.replace('/graphql', '') || 'http://localhost:8006';
+    const baseUrl = process.env.WORDPRESS_API_URL || process.env.NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL?.replace('/graphql', '') || 'http://localhost:8006';
     const url = `${baseUrl}/wp-json/sakwood/v1/posts/${encodedSlug}?language=${language}`;
 
     const response = await fetch(url);

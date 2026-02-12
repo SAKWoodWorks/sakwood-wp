@@ -65,7 +65,10 @@ services:
           memory: 256M
     environment:
       - NODE_ENV=production
-      - WORDPRESS_API_URL=${WORDPRESS_API_URL}
+      # Server-side: Use internal Docker network hostname
+      - WORDPRESS_API_URL=http://sak_wp:80/wp-json
+      - WORDPRESS_GRAPHQL_URL=http://sak_wp:80/graphql
+      # Client-side: Use external URLs for browser access
       - NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL=${WORDPRESS_GRAPHQL_URL}
       - NEXT_PUBLIC_WORDPRESS_API_URL=${WORDPRESS_API_URL}
       - NEXT_PUBLIC_WORDPRESS_REST_URL=${WORDPRESS_REST_URL}

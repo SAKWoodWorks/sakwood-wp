@@ -148,7 +148,7 @@ export async function getProducts(
   sortBy?: ProductSortBy
 ): Promise<Product[]> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL?.replace('/graphql', '') || 'http://localhost:8006';
+    const baseUrl = process.env.WORDPRESS_API_URL || process.env.NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL?.replace('/graphql', '') || 'http://localhost:8006';
     let url = `${baseUrl}/wp-json/sakwood/v1/products?language=${language}&per_page=${APP_CONFIG.productsPerPage}`;
 
     // Add category filter if provided
@@ -244,7 +244,7 @@ export async function getProductBySlug(slug: string, language: string = 'th'): P
     // The slug from Next.js is already decoded, but we need to URL-encode it for the API request
     // This ensures Thai characters are properly encoded for the HTTP request
     const encodedSlug = encodeURIComponent(slug);
-    const baseUrl = process.env.NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL?.replace('/graphql', '') || 'http://localhost:8006';
+    const baseUrl = process.env.WORDPRESS_API_URL || process.env.NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL?.replace('/graphql', '') || 'http://localhost:8006';
     const url = `${baseUrl}/wp-json/sakwood/v1/products/${encodedSlug}?language=${language}`;
 
     const response = await fetch(url);
@@ -327,69 +327,53 @@ async function getProductBySlugViaGraphQL(slug: string): Promise<Product | null>
  */
 export async function getFeaturedProducts(lang: string, limit: number = 6): Promise<Product[]> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL || 'http://localhost:8006/graphql';
-
-    const query = `
-      query GetFeaturedProducts($lang: LanguageCodeEnum!, $limit: Int) {
-        products(where: {
-          language: $lang,
-          orderby: { field: POPULARITY, order: DESC }
-        }, first: $limit) {
-          nodes {
-            id
-            databaseId
-            name
-            slug
-            price
-            regularPrice
-            shortDescription(format: RENDERED)
-            image {
-              sourceUrl
-              altText
-            }
-            ... on SimpleProduct {
-              price
-              regularPrice
-            }
-          }
-        }
-      }
-    `;
-
-    const response = await fetch(baseUrl, {
+    // Use API_CONFIG which handles server-side vs client-side GraphQL URL
+    const response = await fetch(API_CONFIG.endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        query,
-        variables: { lang: lang.toUpperCase(), limit }
+        query: `
+          query GetFeaturedProducts($lang: LanguageCodeEnum!, $limit: Int) {
+            products(where: {
+              language: $lang,
+              orderby: { field: POPULARITY, order: DESC }
+            }, first: $limit) {
+              nodes {
+                id
+                databaseId
+                name
+                slug
+                price
+                regularPrice
+                shortDescription(format: RENDERED)
+                image {
+                  sourceUrl
+                  altText
+                }
+                ... on SimpleProduct {
+                  price
+                  regularPrice
+                }
+              }
+            }
+          }
+        `,
+        variables: { lang, limit },
       }),
-      next: { revalidate: 60 }
     });
 
     if (!response.ok) {
-      throw new Error('Failed to fetch featured products');
+      throw new Error(`GraphQL request failed: ${response.statusText}`);
     }
 
-    const data = await response.json();
-
-    // Transform image URLs for each product
-    interface FeaturedProductNode {
-      id: string;
-      databaseId: number;
-      name: string;
-      slug: string;
-      price?: string;
-      regularPrice?: string;
-      shortDescription?: string;
-      image?: ProductImage;
-    }
-
-    const products = data.data?.products?.nodes || [];
-    return products.map((product: FeaturedProductNode) => ({
+    const json = await response.json();
+    const products = json.data?.products?.nodes || [];
+    return products.map((product: any) => ({
       ...product,
       image: product.image ? transformProductImage(product.image) : undefined,
     }));
   } catch (error) {
+    console.error('Failed to fetch featured products:', error);
     return [];
   }
 }

@@ -1,5 +1,7 @@
 export const API_CONFIG = {
-  endpoint: process.env.NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL || 'http://localhost:8006/graphql',
+  // Server-side uses WORDPRESS_GRAPHQL_URL (internal Docker network)
+  // Client-side falls back to NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL (browser access)
+  endpoint: process.env.WORDPRESS_GRAPHQL_URL || process.env.NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL || 'http://localhost:8006/graphql',
   cache: 'no-store' as RequestCache,
 };
 

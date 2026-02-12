@@ -12,17 +12,17 @@ sakwood/
     ├── frontend/              # Next.js 16 frontend (React 19)
     │   ├── app/              # Next.js App Router pages
     │   ├── components/       # React components
-    │   ├── lib/              # Utilities, services, types
+    │   ├── lib/             # Utilities, services, types
     │   ├── dictionaries/     # Translation files (en.json, th.json)
-    │   ├── public/           # Static assets
-    │   └── __tests__/        # Test files
-    ├── wordpress-plugin/     # WordPress/WooCommerce integration plugin
-    │   └── sakwood-integration/  # Custom WordPress plugin (40+ PHP files)
-    ├── nginx/                # Production Nginx configuration
-    ├── scripts/              # Deployment and utility scripts
-    ├── docs/                 # Documentation and user manuals
+    │   ├── public/          # Static assets
+    │   └── __tests__/       # Test files
+    ├── wordpress-plugin/      # WordPress/WooCommerce integration plugin
+    │   └── sakwood-integration/ # Custom WordPress plugin (40+ PHP files)
+    ├── nginx/               # Production Nginx configuration
+    ├── scripts/             # Deployment and utility scripts
+    ├── docs/               # Documentation and user manuals
     ├── docker-compose.yml    # Development environment
-    └── docker-compose.prod.yml  # Production environment
+    └── docker-compose.prod.yml # Production environment
 ```
 
 ### Frontend Architecture (`sakwood-wp/frontend/`)
@@ -114,7 +114,7 @@ npm run build
 # Start production server
 npm start
 
-# Lint code
+# Lint code (includes TypeScript checking)
 npm run lint
 
 # Run tests
@@ -122,6 +122,7 @@ npm test              # Unit tests with Vitest
 npm run test:ui       # Vitest UI
 npm run test:coverage # Coverage report
 npm run test:e2e      # E2E tests with Playwright
+npm run test:e2e:ui   # E2E tests with UI
 
 # Run individual test file
 npm test -- cart.test.ts
@@ -143,6 +144,14 @@ docker-compose up -d
 
 # Stop services
 docker-compose down
+
+# View logs
+docker-compose logs -f          # All services
+docker logs sak_wp              # WordPress only
+docker logs sak_db              # MySQL only
+
+# Restart services
+docker-compose restart
 ```
 
 **WordPress Plugin Development:**
@@ -197,8 +206,8 @@ echo "User created: testuser / test123\n";
 The `scripts/` directory contains utility scripts for development and deployment:
 - `deploy.sh` / `deploy.ps1` - Production deployment scripts
 - `setup-local.sh` - Local development environment setup
-- Database backup/restore scripts
-- SSL certificate management scripts
+- `backup-database.sh` - Database backup utility
+- `monitor-resources.sh` - System resource monitoring
 
 ## Environment Variables
 
@@ -218,9 +227,25 @@ NEXT_PUBLIC_APP_DESCRIPTION=Premium Construction Materials
 
 # Feature Flags
 NEXT_PUBLIC_ENABLE_CART=true
+NEXT_PUBLIC_ENABLE_REGISTRATION=true
+NEXT_PUBLIC_ENABLE_WHOLESALE=true
+
+# Analytics & Monitoring (Optional)
+# NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
+# NEXT_PUBLIC_GTM_ID=GTM-XXXXXXX
+# NEXT_PUBLIC_SENTRY_DSN=https://examplePublicKey@o0.ingest.sentry.io/0
+
+# Social Media Links
+NEXT_PUBLIC_LINE_URL=https://lin.ee/v86CTkq
+
+# Payment Configuration (PromptPay)
+NEXT_PUBLIC_PROMPTPAY_MERCHANT_ID=0225559000467
+NEXT_PUBLIC_PROMPTPAY_MERCHANT_NAME=SAK WoodWorks
 ```
 
 **Important:** The application uses custom WordPress endpoints (`/wp-json/sakwood/v1/*`) instead of direct WooCommerce REST API. No API keys are required - orders are created via the custom `create-order` endpoint implemented in `wordpress-plugin/sakwood-integration/`.
+
+See `frontend/.env.local.example` for all available environment variables.
 
 ## Key Architecture Patterns
 
@@ -237,7 +262,10 @@ NEXT_PUBLIC_ENABLE_CART=true
   - `localhost:8006` (Local development)
   - `images.unsplash.com` (Placeholder images)
 - Image URL transformation for mobile compatibility
-- Next.js rewrite rules proxy `/wp-content/` requests to bypass CORS
+- **Next.js rewrite rules proxy `/wp-content/` requests to bypass CORS**
+  - Critical for mobile devices that cannot access `localhost:8006`
+  - Browser requests `/wp-content/uploads/image.jpg` → Next.js proxies to WordPress
+  - Disabled Next.js image optimization (`unoptimized: true`) for compatibility
 
 **Mobile Compatibility:**
 - API proxy routes (`/api/products`, `/api/chat`) bypass CORS on mobile devices
@@ -266,6 +294,9 @@ NEXT_PUBLIC_ENABLE_CART=true
 **Production Architecture:**
 - Nginx reverse proxy routing between frontend and backend
 - Docker Compose production configuration (`docker-compose.prod.yml`)
+  - Frontend container runs on port 8007
+  - WordPress container runs on port 8006
+  - Resource limits configured for each service
 - Custom WordPress plugin volume-mounted read-only in production
 - Next.js rewrite rules proxy WordPress content requests
 - SSL/TLS termination at Nginx level
@@ -542,6 +573,11 @@ When deployed to production:
 
 The production architecture uses Nginx as a reverse proxy to route requests between the Next.js frontend and WordPress backend, with SSL/TLS termination at the Nginx level.
 
+**Production Ports:**
+- Frontend (Next.js): Port 8007 (internal)
+- WordPress: Port 8006 (internal)
+- Nginx routes external traffic (80/443) to appropriate services
+
 ## Testing Strategy
 
 The project uses a multi-layered testing approach:
@@ -623,3 +659,9 @@ When adding new features, include tests for:
 - Verify key exists in both `dictionaries/en.json` and `dictionaries/th.json`
 - Check `Dictionary` interface in `lib/types/dictionary.ts` is updated
 - Restart dev server to reload dictionaries
+
+**Images Broken on Mobile:**
+- Verify rewrite rules in `next.config.ts` are active
+- Check that images are being requested through Next.js proxy
+- Ensure `unoptimized: true` is set in next.config.ts
+- Restart dev server after changing configuration

@@ -58,8 +58,11 @@ export const defaultChatConfig: ChatConfig = {
 // Fetch config from WordPress REST API
 export async function getChatConfig(): Promise<ChatConfig> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL?.replace('/graphql', '') || 'http://localhost:8006';
-    const response = await fetch(`${baseUrl}/wp-json/sakwood/v1/chat`);
+    // Server-side: use WORDPRESS_API_URL, Client-side: derive from NEXT_PUBLIC_GRAPHQL_URL
+    const baseUrl = process.env.WORDPRESS_API_URL ||
+      process.env.NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL?.replace('/graphql', '') ||
+      'http://localhost:8006';
+    const response = await fetch(`${baseUrl}/sakwood/v1/chat`);
 
     if (!response.ok) {
       console.error('Failed to fetch chat config:', response.status);
