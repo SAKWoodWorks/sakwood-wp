@@ -87,7 +87,7 @@ function transformProductImage(image?: ProductImage): ProductImage | undefined {
 export async function getProductCategories(): Promise<ProductCategory[]> {
   try {
     const data = await graphqlRequest<ProductCategoriesResponse>(GET_PRODUCT_CATEGORIES_QUERY);
-    return data?.productCategories?.nodes || [];
+    return data?.categories?.nodes || [];
   } catch (error) {
     console.error('Error fetching product categories:', error);
     return [];

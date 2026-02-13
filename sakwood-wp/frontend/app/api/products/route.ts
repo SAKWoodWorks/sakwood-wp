@@ -34,6 +34,34 @@ import { NextResponse } from 'next/server';
 const WORDPRESS_API_URL = process.env.WORDPRESS_API_URL || process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'http://localhost:8006/wp-json/sakwood/v1';
 
 /**
+ * Transform WordPress image URLs to work on mobile and all devices
+ * Converts http://localhost:8006/wp-content/... to /wp-content/...
+ * This uses Next.js rewrite rules in next.config.ts
+ */
+function transformImageUrl(url: string | undefined): string | undefined {
+  if (!url) return undefined;
+
+  // Check if URL contains localhost:8006 or sak_wp:80 (Docker internal URL)
+  if (url.includes('sak_wp:80') || url.includes('localhost:8006')) {
+    try {
+      const urlObj = new URL(url);
+      // Extract path after /wp-content/
+      const wpContentMatch = urlObj.pathname.match(/\/wp-content\/(.*)/);
+
+      if (wpContentMatch) {
+        // Return proxy path: /wp-content/uploads/...
+        return `/wp-content/${wpContentMatch[1]}`;
+      }
+    } catch (e) {
+      console.error('Error transforming image URL:', e);
+      return url;
+    }
+  }
+
+  return url; // Return original URL if no transformation needed
+}
+
+/**
  * GET handler for products API
  *
  * PROCESS:
@@ -84,9 +112,25 @@ export async function GET(request: Request) {
       );
     }
 
-    // Step 5: Return product data to browser
+    // Step 5: Transform image URLs to use Next.js proxy
     const data = await response.json();
-    return NextResponse.json(data);
+
+    // Transform image URLs in each product
+    const transformedData = Array.isArray(data) ? data.map((product: any) => {
+      if (product.image?.sourceUrl) {
+        product.image.sourceUrl = transformImageUrl(product.image.sourceUrl);
+      }
+      // Transform gallery images too
+      if (product.galleryImages?.nodes) {
+        product.galleryImages.nodes = product.galleryImages.nodes.map((img: any) => ({
+          ...img,
+          sourceUrl: img.sourceUrl ? transformImageUrl(img.sourceUrl) : img.sourceUrl
+        }));
+      }
+      return product;
+    }) : data;
+
+    return NextResponse.json(transformedData);
   } catch (error) {
     // Handle any unexpected errors (network issues, invalid data, etc.)
     console.error('Products API error:', error);

@@ -129,9 +129,10 @@ export async function getProductsClient(
       params.set('category', categorySlug);
     }
 
-    // Step 2: Fetch from Next.js API route (not WordPress directly)
-    // Browser → /api/products → Next.js server → WordPress
-    const response = await fetch(`/api/products?${params.toString()}`, {
+    // Step 2: Fetch from WordPress API directly
+    // In production, /api/products route doesn't work, so call WordPress directly
+    const wpApiUrl = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'http://localhost:8006/wp-json/sakwood/v1';
+    const response = await fetch(`${wpApiUrl}/products?${params.toString()}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -206,7 +207,9 @@ export async function getProductsClient(
  */
 export async function getProductCategoriesClient(): Promise<ProductCategory[]> {
   try {
-    const response = await fetch('/api/categories', {
+    // Call WordPress API directly instead of Next.js API route
+    const wpApiUrl = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'http://localhost:8006/wp-json/sakwood/v1';
+    const response = await fetch(`${wpApiUrl}/categories`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
