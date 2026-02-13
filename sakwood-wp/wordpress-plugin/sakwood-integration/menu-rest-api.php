@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
  * Class Sakwood_Menu_REST_API
  *
  * Registers REST API endpoints for multilingual menu support
- */
+ * */
 class Sakwood_Menu_REST_API {
 
     /**
@@ -57,13 +57,24 @@ class Sakwood_Menu_REST_API {
         $lang = $request->get_param('lang');
 
         // Determine menu location based on language
-        // WordPress themes typically register 'primary' not 'PRIMARY_EN'/'PRIMARY_TH'
-        $location = $lang === 'en' ? 'primary' : 'primary';
+        // Try different possible menu location names
+        if ($lang === 'en') {
+            // Try various English menu location names
+            $location = $this->find_menu_location(array('primary-en', 'primary_en', 'PRIMARY_EN', 'english', 'en'));
+        } else {
+            // Try various Thai menu location names
+            $location = $this->find_menu_location(array('primary-th', 'primary_th', 'PRIMARY_TH', 'thai', 'th'));
+        }
+
+        // Fallback to primary if no specific menu found
+        if (!$location) {
+            $location = 'primary';
+        }
 
         // Get menu items from the specified location
         $menu_items = $this->get_menu_items_by_location($location);
 
-        // If no items found, try the common location names
+        // If no items found, try common location names
         if (empty($menu_items)) {
             // Try alternative location names that WordPress themes commonly use
             $alt_locations = array('primary', 'main', 'menu-1', 'menu-primary');
@@ -88,6 +99,20 @@ class Sakwood_Menu_REST_API {
     }
 
     /**
+     * Find available menu location from list of possibilities
+     */
+    private function find_menu_location($possible_locations) {
+        $locations = get_nav_menu_locations();
+
+        foreach ($possible_locations as $loc) {
+            if (isset($locations[$loc])) {
+                return $loc;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Get menu items by location
      *
      * @param string $location Menu location identifier
@@ -97,7 +122,7 @@ class Sakwood_Menu_REST_API {
         // Get all registered nav menus
         $locations = get_nav_menu_locations();
 
-        // Check if the location exists
+        // Check if location exists
         if (!isset($locations[$location]) || !$locations[$location]) {
             return array();
         }
@@ -185,5 +210,5 @@ class Sakwood_Menu_REST_API {
     }
 }
 
-// Initialize the Menu REST API
+// Initialize
 new Sakwood_Menu_REST_API();
