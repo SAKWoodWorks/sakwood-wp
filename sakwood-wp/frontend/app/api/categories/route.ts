@@ -9,7 +9,7 @@ export async function GET() {
     // Use GraphQL to fetch categories
     const query = `
       query GetProductCategories {
-        productCategories(first: 100) {
+        categories(first: 100) {
           nodes {
             id
             name
@@ -35,7 +35,7 @@ export async function GET() {
     }
 
     const data = await response.json();
-    return NextResponse.json(data?.data?.productCategories?.nodes || []);
+    return NextResponse.json(data?.data?.categories?.nodes || []);
   } catch (error) {
     console.error('Categories API error:', error);
     return NextResponse.json([], { status: 500 });

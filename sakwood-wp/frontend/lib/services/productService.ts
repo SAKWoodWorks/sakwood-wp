@@ -161,7 +161,7 @@ async function getProductsViaGraphQL(
 ): Promise<Product[]> {
   interface GraphQLProductResponse {
     products?: {
-      nodes?: Array<Product & { productCategories?: { nodes?: ProductCategory[] } }>;
+      nodes?: Array<Product & { categories?: { nodes?: ProductCategory[] } }>;
     };
   }
 
@@ -171,7 +171,7 @@ async function getProductsViaGraphQL(
   // Filter by category if provided
   if (categorySlug) {
     products = products.filter((product) =>
-      product.productCategories?.nodes?.some((cat) => cat.slug === categorySlug)
+      product.categories?.nodes?.some((cat) => cat.slug === categorySlug)
     );
   }
 
@@ -179,7 +179,7 @@ async function getProductsViaGraphQL(
   const transformedProducts = products.map((product) => ({
     ...product,
     image: product.image ? transformProductImage(product.image) : undefined,
-    categories: product.productCategories?.nodes?.map((cat) => ({
+    categories: product.categories?.nodes?.map((cat) => ({
       id: cat.id,
       name: cat.name,
       slug: cat.slug,
