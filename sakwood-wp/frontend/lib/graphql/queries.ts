@@ -2,7 +2,7 @@ import { ProductsResponse, ProductResponse, MenuResponse, BlogPostsResponse, Blo
 
 export const GET_PRODUCT_CATEGORIES_QUERY = `
   query GetProductCategories {
-    productCategories(first: 100, where: { hideEmpty: true }) {
+    categories(first: 100, where: { hideEmpty: true }) {
       nodes {
         id
         name

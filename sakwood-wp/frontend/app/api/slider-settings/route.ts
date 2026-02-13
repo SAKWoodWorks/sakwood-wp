@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server';
 
-const WORDPRESS_API_URL = process.env.WORDPRESS_API_URL || process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'http://localhost:8006/wp-json/sakwood/v1';
-
 export async function GET() {
   try {
-    const response = await fetch(`${WORDPRESS_API_URL}/slider-settings`, {
+    // Determine WordPress API URL based on environment
+    // Production: Use internal Docker hostname for WordPress
+    // Development: Use localhost
+    const isProduction = process.env.NODE_ENV === 'production';
+    const wordpressApiUrl = isProduction
+      ? 'http://sak_wp:80/wp-json/sakwood/v1'
+      : (process.env.WORDPRESS_API_URL || process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'http://localhost:8006/wp-json/sakwood/v1');
+
+    const response = await fetch(`${wordpressApiUrl}/slider-settings`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
