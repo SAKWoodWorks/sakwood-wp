@@ -20,6 +20,8 @@ export async function getMenu(locale: string = 'th'): Promise<MenuItem[]> {
       locale = 'th';
     }
 
+    console.log('[menuService] Fetching menu from:', `${BASE_URL}/sakwood/v1/menu?lang=${locale}`);
+
     const response = await fetch(`${BASE_URL}/sakwood/v1/menu?lang=${locale}`, {
       method: 'GET',
       headers: {
