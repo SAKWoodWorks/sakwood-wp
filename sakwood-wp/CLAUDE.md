@@ -61,11 +61,11 @@ The frontend is a **Next.js 16 App Router** application with the following archi
   - `customerAddressService.ts` - Customer address CRUD operations
   - `customerOrderService.ts` - Customer order history (in development)
 
-**State Management:**
+**State Management (in `lib/context/`):**
 - `CartContext.tsx` - Client-side cart state with localStorage persistence (`sakwood-cart` key)
 - `AuthContext.tsx` - User authentication, roles (retail/wholesale), wholesale status
-- `CompareProvider` - Product comparison functionality
-- `ChatProvider` - Chat configuration state
+- `CompareContext.tsx` - Product comparison functionality
+- `ChatContext.tsx` - Chat configuration state
 - All contexts handle SSR safely with mounted state pattern
 
 **Component Organization:**
@@ -85,16 +85,30 @@ components/
 ```
 
 **TypeScript Configuration:**
-- Path alias `@/*` maps to `frontend/`
+- Path alias `@/*` maps to `frontend/` root directory
 - Strict mode enabled
 - Target: ES2017
 - Use `Locale` type from `i18n-config.ts` for type-safe locale handling
+
+**Internationalization (Middleware):**
+- `middleware.ts` handles locale detection and redirection using `@formatjs/intl-localematcher` and `negotiator`
+- Middleware excludes static assets (images, manifests, API routes) from locale processing
+- URLs without locale prefix are redirected to browser-detected locale
+- URLs with existing locale prefix are preserved without auto-detection (prevents forced redirects)
+- Note: Middleware contains Thai language comments explaining the locale routing logic
 
 **Error Monitoring:**
 - Sentry integration for production error tracking
 - Configuration in `next.config.ts` and `sentry.client.config.ts`
 - Automatic error reporting from frontend and API routes
 - Performance monitoring for page loads and API calls
+
+**Security Headers (next.config.ts):**
+- HSTS (Strict-Transport-Security) with preload
+- XSS Protection with block mode
+- Content Security Policy (CSP) for script, style, image, font, and connect sources
+- Permissions Policy for camera, microphone, and geolocation (disabled by default)
+- Frame Options, X-Content-Type-Options, and Referrer-Policy configured
 
 ## Development Commands
 
@@ -114,7 +128,7 @@ npm run build
 # Start production server
 npm start
 
-# Lint code (includes TypeScript checking)
+# Lint code (includes TypeScript checking via tsc --noEmit)
 npm run lint
 
 # Run tests
@@ -204,10 +218,11 @@ echo "User created: testuser / test123\n";
 
 **Scripts Directory:**
 The `scripts/` directory contains utility scripts for development and deployment:
-- `deploy.sh` / `deploy.ps1` - Production deployment scripts
-- `setup-local.sh` - Local development environment setup
 - `backup-database.sh` - Database backup utility
 - `monitor-resources.sh` - System resource monitoring
+
+**Root-level Deployment Scripts:**
+- `deploy.sh` / `deploy.ps1` - Production deployment scripts (DigitalOcean)
 
 ## Environment Variables
 
@@ -266,6 +281,8 @@ See `frontend/.env.local.example` for all available environment variables.
   - Critical for mobile devices that cannot access `localhost:8006`
   - Browser requests `/wp-content/uploads/image.jpg` → Next.js proxies to WordPress
   - Disabled Next.js image optimization (`unoptimized: true`) for compatibility
+  - Both locale-prefixed (`/:lang(wp-content/...`) and root (`/wp-content/...`) paths are handled
+  - Restart dev server after changing `next.config.ts` for rewrite rules to take effect
 
 **Mobile Compatibility:**
 - API proxy routes (`/api/products`, `/api/chat`) bypass CORS on mobile devices

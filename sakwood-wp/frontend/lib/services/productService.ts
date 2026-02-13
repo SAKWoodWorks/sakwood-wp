@@ -148,8 +148,9 @@ export async function getProducts(
   sortBy?: ProductSortBy
 ): Promise<Product[]> {
   try {
-    const baseUrl = process.env.WORDPRESS_API_URL || process.env.NEXT_PUBLIC_WORDPRESS_API_URL?.replace('/wp-json/sakwood/v1', '') || 'http://localhost:8006';
-    let url = `${baseUrl}/wp-json/sakwood/v1/products?language=${language}&per_page=${APP_CONFIG.productsPerPage}`;
+    // Use WordPress API URL without /sakwood/v1 suffix (it's added in the URL path)
+    const baseUrl = process.env.WORDPRESS_API_URL || process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'http://localhost:8006/wp-json';
+    let url = `${baseUrl}/sakwood/v1/products?language=${language}&per_page=${APP_CONFIG.productsPerPage}`;
 
     // Add category filter if provided
     if (categorySlug) {
