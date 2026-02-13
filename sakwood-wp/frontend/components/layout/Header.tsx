@@ -19,7 +19,32 @@ interface HeaderProps {
   dictionary?: Record<string, any>;
 }
 
-export function Header({ menuItems, lang, dictionary }: HeaderProps) {
+// Client-side menu fetching function
+async function fetchMenu(locale: string): Promise<MenuItem[]> {
+  try {
+    const baseUrl = '/wp-json/sakwood/v1';
+    const response = await fetch(`${baseUrl}/menu?lang=${locale}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      console.error('Failed to fetch menu:', response.statusText);
+      return [];
+    }
+
+    const data = await response.json();
+    return data || [];
+  } catch (error) {
+    console.error('Failed to fetch menu:', error);
+    return [];
+  }
+}
+
+export function Header({ menuItems: initialMenuItems, lang, dictionary }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { getCartCount } = useCart();
@@ -34,6 +59,16 @@ export function Header({ menuItems, lang, dictionary }: HeaderProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const [menuItems, setMenuItems] = useState(initialMenuItems);
+
+  // Fetch menu when language changes
+  useEffect(() => {
+    async function loadMenu() {
+      const menu = await fetchMenu(lang);
+      setMenuItems(menu);
+    }
+    loadMenu();
+  }, [lang]);
 
   // Check if we're on the homepage
   const isHomePage = mounted && (pathname === `/${lang}` || pathname === `/${lang}/`);
