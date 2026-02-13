@@ -147,74 +147,18 @@ export async function getProducts(
   categorySlug?: string,
   sortBy?: ProductSortBy
 ): Promise<Product[]> {
-  try {
-    // Use WordPress API URL without /sakwood/v1 suffix (it's added in the URL path)
-    const baseUrl = process.env.WORDPRESS_API_URL || process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'http://localhost:8006/wp-json';
-    let url = `${baseUrl}/sakwood/v1/products?language=${language}&per_page=${APP_CONFIG.productsPerPage}`;
-
-    // Add category filter if provided
-    if (categorySlug) {
-      url += `&category=${encodeURIComponent(categorySlug)}`;
-    }
-
-    const response = await fetch(url);
-    if (!response.ok) {
-      console.error('Failed to fetch products:', response.status);
-      // Fall back to GraphQL
-      return getProductsViaGraphQL(language);
-    }
-
-    const data = await response.json();
-
-    // Handle empty array
-    if (!Array.isArray(data) || data.length === 0) {
-      return [];
-    }
-
-    // Transform data to match Product interface
-    const products = data.map((product: RestProduct) => ({
-      id: String(product.id),
-      databaseId: product.databaseId,
-      name: product.name,
-      slug: product.slug,
-      sku: product.sku || undefined,
-      language: product.language || 'th',
-      price: product.price || product.prices?.piece || undefined,
-      regularPrice: product.regularPrice || undefined,
-      priceTypes: (product.priceTypes || ['piece']) as PriceType[],
-      prices: product.prices || {},
-      image: product.image ? { sourceUrl: transformImageUrl(product.image.sourceUrl) } : undefined,
-      description: '',
-      galleryImages: undefined,
-      // Include dimensions
-      thickness: product.thickness || undefined,
-      width: product.width || undefined,
-      length: product.length || undefined,
-      // Include categories if available
-      categories: product.categories ? product.categories.map((cat: RestProductCategory) => ({
-        id: cat.id,
-        name: cat.name,
-        slug: cat.slug,
-      })) : undefined,
-    }));
-
-    // Sort products if sortBy is provided
-    if (sortBy) {
-      return sortProducts(products, sortBy);
-    }
-
-    return products;
-  } catch (error) {
-    console.error('Error fetching products via REST API:', error);
-    // Fall back to GraphQL
-    return getProductsViaGraphQL(language);
-  }
+  // Use GraphQL directly - REST API endpoint not implemented
+  return getProductsViaGraphQL(language, categorySlug, sortBy);
 }
 
 /**
- * Fallback: Get products via GraphQL (no language filtering)
+ * Get products via GraphQL with optional category filtering
  */
-async function getProductsViaGraphQL(language: string = 'th'): Promise<Product[]> {
+async function getProductsViaGraphQL(
+  language: string = 'th',
+  categorySlug?: string,
+  sortBy?: ProductSortBy
+): Promise<Product[]> {
   interface GraphQLProductResponse {
     products?: {
       nodes?: Array<Product & { productCategories?: { nodes?: ProductCategory[] } }>;
@@ -222,10 +166,17 @@ async function getProductsViaGraphQL(language: string = 'th'): Promise<Product[]
   }
 
   const data = await graphqlRequest<GraphQLProductResponse>(GET_PRODUCTS_QUERY, { first: 100 });
-  const products = data?.products?.nodes || [];
+  let products = data?.products?.nodes || [];
+
+  // Filter by category if provided
+  if (categorySlug) {
+    products = products.filter((product) =>
+      product.productCategories?.nodes?.some((cat) => cat.slug === categorySlug)
+    );
+  }
 
   // Transform image URLs
-  return products.map((product) => ({
+  const transformedProducts = products.map((product) => ({
     ...product,
     image: product.image ? transformProductImage(product.image) : undefined,
     categories: product.productCategories?.nodes?.map((cat) => ({
@@ -234,6 +185,13 @@ async function getProductsViaGraphQL(language: string = 'th'): Promise<Product[]
       slug: cat.slug,
     })) || [],
   }));
+
+  // Sort if requested
+  if (sortBy) {
+    return sortProducts(transformedProducts, sortBy);
+  }
+
+  return transformedProducts;
 }
 
 /**

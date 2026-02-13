@@ -264,7 +264,7 @@ export function QuickViewModal({ product, isOpen, onClose, lang = 'th', dictiona
                     {(product as any).volume && (
                       <div>
                         <span className="text-gray-600">{dict.volume}:</span>
-                        <span className="ml-1 sm:ml-2 font-medium text-gray-900">{(product as any).volume?.toFixed(4) ?? '-'} m³</span>
+                        <span className="ml-1 sm:ml-2 font-medium text-gray-900">{(product as any).volume ? parseFloat((product as any).volume).toFixed(4) : '-'} m³</span>
                       </div>
                     )}
                   </div>
