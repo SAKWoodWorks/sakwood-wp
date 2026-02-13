@@ -12,7 +12,7 @@ export interface ProductCategory {
 }
 
 export interface ProductCategoriesResponse {
-  productCategories: {
+  categories: {
     nodes: ProductCategory[];
   };
 }
