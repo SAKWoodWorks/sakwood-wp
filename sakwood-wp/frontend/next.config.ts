@@ -113,12 +113,22 @@ const nextConfig: NextConfig = {
     ];
   },
 
-  // Rewrite WordPress uploads to proxy through Next.js
-  // This fixes mobile image loading issues where localhost:8006 is not accessible
+  // Rewrite WordPress uploads and API to proxy through Next.js
+  // This fixes mobile image loading issues and API access
   async rewrites() {
     const wordpressUrl = process.env.NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL?.replace('/graphql', '') || 'http://localhost:8006';
 
     return [
+      // Handle locale-prefixed API paths: /en/wp-json/... or /th/wp-json/...
+      {
+        source: '/:lang(en|th)/wp-json/:path*',
+        destination: `${wordpressUrl}/wp-json/:path*`,
+      },
+      // Handle root API paths: /wp-json/...
+      {
+        source: '/wp-json/:path*',
+        destination: `${wordpressUrl}/wp-json/:path*`,
+      },
       // Handle locale-prefixed paths: /en/wp-content/... or /th/wp-content/...
       {
         source: '/:lang(en|th)/wp-content/:path*',
