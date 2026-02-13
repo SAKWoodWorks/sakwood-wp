@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import type { Locale } from '@/i18n-config';
 import type { Dictionary } from '@/lib/types';
 import { ProductCard } from '@/components/ui';
 import type { ProductCategory, ProductSortBy } from '@/lib/types';
-import { getProductCategoriesClient, getProductsClient } from '@/lib/services/productServiceClient';
+import { getProductsClient } from '@/lib/services/productServiceClient';
 
 import type { Product } from '@/lib/types';
 
@@ -30,7 +30,28 @@ export function ShopPage({
   const sortParam = searchParams.get('sort') as ProductSortBy | null;
 
   const [products, setProducts] = useState(initialProducts);
-  const [categories] = useState(initialCategories);
+
+  // Extract unique categories from products (since /categories endpoint doesn't exist)
+  const categories = useMemo(() => {
+    const categoryMap = new Map<number, ProductCategory>();
+
+    // Add initial categories (from server-side GraphQL)
+    initialCategories.forEach(cat => {
+      categoryMap.set(cat.id, cat);
+    });
+
+    // Add categories from products
+    products.forEach(product => {
+      product.categories?.forEach(cat => {
+        if (!categoryMap.has(cat.id)) {
+          categoryMap.set(cat.id, cat);
+        }
+      });
+    });
+
+    return Array.from(categoryMap.values()).sort((a, b) => a.name.localeCompare(b.name, 'th'));
+  }, [products, initialCategories]);
+
   const [selectedCategory, setSelectedCategory] = useState<string | null>(categoryParam);
   const [sortBy, setSortBy] = useState<ProductSortBy | null>(sortParam);
   const [isLoading, setIsLoading] = useState(false);
