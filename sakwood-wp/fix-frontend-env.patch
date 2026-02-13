@@ -1,0 +1,10 @@
+--- a/docker-compose.prod.yml.orig
++++ b/docker-compose.prod.yml
+@@ -69,7 +72,7 @@
+       # Client-side: Use external URLs for browser access
+-      - NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL=${WORDPRESS_GRAPHQL_URL}
+-      - NEXT_PUBLIC_WORDPRESS_API_URL=${WORDPRESS_API_URL}
+-      - NEXT_PUBLIC_WORDPRESS_REST_URL=${WORDPRESS_REST_URL}
++      - NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL=https://wp.sakww.com/graphql
++      - NEXT_PUBLIC_WORDPRESS_API_URL=https://wp.sakww.com/wp-json/sakwood/v1
++      - NEXT_PUBLIC_WORDPRESS_REST_URL=https://wp.sakww.com/wp-json/sakwood/v1
