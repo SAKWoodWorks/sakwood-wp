@@ -9,6 +9,8 @@ import { CartProvider } from "@/lib/context/CartContext";
 import { AuthProvider } from "@/lib/context/AuthContext";
 import { CompareProvider } from "@/lib/context/CompareContext";
 import { ChatProvider } from "@/lib/context/ChatContext";
+import { CookieProvider } from "@/context/CookieContext";
+import { CookieConsentBanner } from "@/components/layout/CookieConsentBanner";
 import { OrganizationStructuredData } from "@/components/seo/OrganizationStructuredData";
 import { GoogleAnalytics } from "@/components/seo/GoogleAnalytics";
 import { ChatButtons } from "@/components/chat";
@@ -138,19 +140,22 @@ export default async function RootLayout({ children, params }: LayoutProps) {
       <GoogleAnalytics />
       <OrganizationStructuredData siteUrl={siteUrl} />
       <SkipLink />
-      <AuthProvider>
-        <CartProvider>
-          <CompareProvider>
-            <ChatProvider>
-              <Header menuItems={menuItems} lang={lang as Locale} dictionary={dictionary} />
-              <main id="main-content" className="bg-transparent">{children}</main>
-              <Footer lang={lang as Locale} />
-              <ChatButtons dictionary={dictionary} />
-              <PromotionalPopup />
-            </ChatProvider>
-          </CompareProvider>
-        </CartProvider>
-      </AuthProvider>
+      <CookieProvider>
+        <AuthProvider>
+          <CartProvider>
+            <CompareProvider>
+              <ChatProvider>
+                <Header menuItems={menuItems} lang={lang as Locale} dictionary={dictionary} />
+                <main id="main-content" className="bg-transparent">{children}</main>
+                <Footer lang={lang as Locale} />
+                <ChatButtons dictionary={dictionary} />
+                <PromotionalPopup />
+                <CookieConsentBanner lang={lang as 'th' | 'en'} />
+              </ChatProvider>
+            </CompareProvider>
+          </CartProvider>
+        </AuthProvider>
+      </CookieProvider>
     </>
   );
 }

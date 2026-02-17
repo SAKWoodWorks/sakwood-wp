@@ -175,16 +175,36 @@ async function getProductsViaGraphQL(
     );
   }
 
-  // Transform image URLs
-  const transformedProducts = products.map((product) => ({
-    ...product,
-    image: product.image ? transformProductImage(product.image) : undefined,
-    categories: product.categories?.nodes?.map((cat) => ({
-      id: cat.id,
-      name: cat.name,
-      slug: cat.slug,
-    })) || [],
-  }));
+  // Transform image URLs and add price types
+  const transformedProducts = products.map((product) => {
+    // Generate default priceTypes and prices from the single price field
+    const price = product.price || '';
+    const priceTypes: PriceType[] = ['piece'];
+    const prices: Record<PriceType, string> = {
+      piece: price,
+    };
+
+    // If product has dimensions, add additional price types
+    if (product.length && product.width && product.thickness) {
+      // For dimensional lumber, we can calculate or add other price types
+      // For now, just add the piece price
+      priceTypes.push('meter');
+      prices.meter = price; // Use same price for now - can be customized later
+    }
+
+    return {
+      ...product,
+      image: product.image ? transformProductImage(product.image) : undefined,
+      categories: product.categories?.nodes?.map((cat) => ({
+        id: cat.id,
+        name: cat.name,
+        slug: cat.slug,
+      })) || [],
+      priceTypes,
+      prices,
+      stockStatus: product.stockStatus || 'instock',
+    };
+  });
 
   // Sort if requested
   if (sortBy) {
@@ -224,6 +244,23 @@ export async function getProductBySlug(slug: string, language: string = 'th'): P
       return null;
     }
 
+    // Generate default priceTypes and prices from the single price field
+    const price = product.price || product.prices?.piece || '';
+    const priceTypes: PriceType[] = (product.priceTypes || ['piece']) as PriceType[];
+    const prices: Record<PriceType, string> = product.prices || {
+      piece: price,
+    };
+
+    // If product has dimensions, add additional price types
+    if (product.length && product.width && product.thickness) {
+      if (!priceTypes.includes('meter')) {
+        priceTypes.push('meter');
+      }
+      if (!prices.meter) {
+        prices.meter = price;
+      }
+    }
+
     // Transform data to match Product interface
     return {
       id: String(product.id),
@@ -232,10 +269,10 @@ export async function getProductBySlug(slug: string, language: string = 'th'): P
       slug: product.slug,
       sku: product.sku || undefined,
       language: product.language || 'th',
-      price: product.price || product.prices?.piece || undefined,
+      price,
       regularPrice: product.regularPrice || undefined,
-      priceTypes: (product.priceTypes || ['piece']) as PriceType[],
-      prices: product.prices || {},
+      priceTypes,
+      prices,
       image: product.image ? { sourceUrl: transformImageUrl(product.image.sourceUrl) } : undefined,
       description: product.description || '',
       galleryImages: product.galleryImages ? {
@@ -247,6 +284,7 @@ export async function getProductBySlug(slug: string, language: string = 'th'): P
       thickness: product.thickness || undefined,
       width: product.width || undefined,
       length: product.length || undefined,
+      stockStatus: product.stockStatus || 'instock',
     };
   } catch (error) {
     console.error('Error fetching product via REST API:', error);
@@ -266,9 +304,25 @@ async function getProductBySlugViaGraphQL(slug: string): Promise<Product | null>
 
   if (!product) return null;
 
+  // Generate default priceTypes and prices from the single price field
+  const price = product.price || '';
+  const priceTypes: PriceType[] = ['piece'];
+  const prices: Record<PriceType, string> = {
+    piece: price,
+  };
+
+  // If product has dimensions, add additional price types
+  if (product.length && product.width && product.thickness) {
+    priceTypes.push('meter');
+    prices.meter = price;
+  }
+
   // Transform image URLs
   return {
     ...product,
+    priceTypes,
+    prices,
+    stockStatus: product.stockStatus || 'instock',
     image: transformProductImage(product.image),
     galleryImages: product.galleryImages
       ? {
@@ -327,10 +381,28 @@ export async function getFeaturedProducts(lang: string, limit: number = 6): Prom
 
     const json = await response.json();
     const products = json.data?.products?.nodes || [];
-    return products.map((product: any) => ({
-      ...product,
-      image: product.image ? transformProductImage(product.image) : undefined,
-    }));
+    return products.map((product: any) => {
+      // Generate default priceTypes and prices from the single price field
+      const price = product.price || '';
+      const priceTypes: PriceType[] = ['piece'];
+      const prices: Record<PriceType, string> = {
+        piece: price,
+      };
+
+      // If product has dimensions, add additional price types
+      if (product.length && product.width && product.thickness) {
+        priceTypes.push('meter');
+        prices.meter = price;
+      }
+
+      return {
+        ...product,
+        priceTypes,
+        prices,
+        stockStatus: product.stockStatus || 'instock',
+        image: product.image ? transformProductImage(product.image) : undefined,
+      };
+    });
   } catch (error) {
     console.error('Failed to fetch featured products:', error);
     return [];

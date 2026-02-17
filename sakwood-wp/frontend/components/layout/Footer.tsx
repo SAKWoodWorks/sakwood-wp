@@ -1,18 +1,17 @@
+'use client';
+
 import Link from 'next/link';
 import { APP_CONFIG } from '@/lib/config/constants';
 import { SocialLinks } from './SocialLinks';
 import { FooterPartners } from './FooterPartners';
-import { getDictionary } from '@/lib/get-dictionary';
+import { CookieSettings } from './CookieSettings';
 import type { Locale } from '@/i18n-config';
 
 interface FooterProps {
   lang: Locale;
 }
 
-export async function Footer({ lang }: FooterProps) {
-  const dictionary = await getDictionary(lang);
-  const { common } = dictionary;
-
+export function Footer({ lang }: FooterProps) {
   return (
     <footer className="bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 text-white py-8 sm:py-12 lg:py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -33,16 +32,18 @@ export async function Footer({ lang }: FooterProps) {
 
           {/* Quick Links */}
           <div>
-            <h3 className="font-bold text-base sm:text-lg mb-4 sm:mb-6 text-white">Quick Links</h3>
+            <h3 className="font-bold text-base sm:text-lg mb-4 sm:mb-6 text-white">
+              {lang === 'th' ? 'ลิงก์ด่วน' : 'Quick Links'}
+            </h3>
             <ul className="space-y-2 sm:space-y-3">
               <li>
                 <Link href={`/${lang}`} className="text-blue-200 hover:text-white transition-colors text-sm sm:text-base">
-                  {common.home}
+                  {lang === 'th' ? 'หน้าแรก' : 'Home'}
                 </Link>
               </li>
               <li>
                 <Link href={`/${lang}/shop`} className="text-blue-200 hover:text-white transition-colors text-sm sm:text-base">
-                  {common.products}
+                  {lang === 'th' ? 'สินค้า' : 'Products'}
                 </Link>
               </li>
               <li>
@@ -67,12 +68,12 @@ export async function Footer({ lang }: FooterProps) {
               </li>
               <li>
                 <Link href={`/${lang}/about`} className="text-blue-200 hover:text-white transition-colors text-sm sm:text-base">
-                  {common.about}
+                  {lang === 'th' ? 'เกี่ยวกับเรา' : 'About'}
                 </Link>
               </li>
               <li>
                 <Link href={`/${lang}/contact`} className="text-blue-200 hover:text-white transition-colors text-sm sm:text-base">
-                  {common.contact}
+                  {lang === 'th' ? 'ติดต่อเรา' : 'Contact'}
                 </Link>
               </li>
             </ul>
@@ -80,7 +81,9 @@ export async function Footer({ lang }: FooterProps) {
 
           {/* Contact Info */}
           <div className="sm:col-span-2 lg:col-span-1">
-            <h3 className="font-bold text-base sm:text-lg mb-4 sm:mb-6 text-white">Contact Us</h3>
+            <h3 className="font-bold text-base sm:text-lg mb-4 sm:mb-6 text-white">
+              {lang === 'th' ? 'ติดต่อเรา' : 'Contact Us'}
+            </h3>
             <ul className="space-y-3 text-blue-200">
               <li className="flex items-start gap-2 sm:gap-3">
                 <svg className="w-4 h-4 sm:w-5 sm:h-5 mt-0.5 sm:mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -111,15 +114,16 @@ export async function Footer({ lang }: FooterProps) {
         {/* Bottom Bar */}
         <div className="border-t border-blue-700/50 mt-6 sm:mt-8 lg:mt-12 pt-6 sm:pt-8 flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4">
           <p className="text-blue-300 text-xs sm:text-sm text-center sm:text-left">
-            © 2026 {APP_CONFIG.name}. All rights reserved.
+            © 2026 {APP_CONFIG.name}. {lang === 'th' ? 'สงวนลิขสิทธิ์' : 'All rights reserved.'}
           </p>
-          <div className="flex gap-4 sm:gap-6">
-            <a href="#" className="text-blue-300 hover:text-white transition-colors text-xs sm:text-sm">
-              Privacy Policy
-            </a>
-            <a href="#" className="text-blue-300 hover:text-white transition-colors text-xs sm:text-sm">
-              Terms of Service
-            </a>
+          <div className="flex gap-4 sm:gap-6 items-center">
+            <Link href={`/${lang}/privacy-policy`} className="text-blue-300 hover:text-white transition-colors text-xs sm:text-sm">
+              {lang === 'th' ? 'นโยบายความเป็นส่วนตัว' : 'Privacy Policy'}
+            </Link>
+            <Link href={`/${lang}/terms-of-service`} className="text-blue-300 hover:text-white transition-colors text-xs sm:text-sm">
+              {lang === 'th' ? 'เงื่อนไขการให้บริการ' : 'Terms of Service'}
+            </Link>
+            <CookieSettings lang={lang as 'th' | 'en'} />
           </div>
         </div>
       </div>
