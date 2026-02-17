@@ -9,7 +9,6 @@ import { ArrowUpDown, Filter, Eye, ShoppingCart, GitCompare, Download } from 'lu
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { getPriceLabel, getAllPrices } from '@/lib/utils/priceTypes';
-import { loadThaiFont, needsCustomFont } from '@/lib/utils/pdfFont';
 
 interface PriceTableProps {
   products: Product[];
@@ -90,18 +89,11 @@ export function PriceTable({ products, lang, dictionary }: PriceTableProps) {
   const exportToPDF = async () => {
     const doc = new jsPDF();
 
-    // Load Thai font if needed
-    if (needsCustomFont(lang)) {
-      try {
-        const thaiFontBase64 = await loadThaiFont();
-        if (thaiFontBase64) {
-          doc.addFileToVFS('Sarabun-Regular.ttf', thaiFontBase64);
-          doc.addFont('Sarabun-Regular.ttf', 'Sarabun', 'normal');
-          doc.setFont('Sarabun');
-        }
-      } catch (error) {
-        console.error('Failed to load Thai font, using default font:', error);
-      }
+    // Note: Thai font support is limited in client-side PDF generation
+    // For production use with proper Thai support, consider server-side PDF generation
+    // Thai characters may display as squares or question marks
+    if (lang === 'th') {
+      console.warn('⚠️ Thai characters may not display correctly in PDF - consider using print stylesheet or server-side PDF generation');
     }
 
     // Add title
@@ -173,7 +165,6 @@ export function PriceTable({ products, lang, dictionary }: PriceTableProps) {
       styles: {
         fontSize: 9,
         cellPadding: 2,
-        font: needsCustomFont(lang) ? 'Sarabun' : 'helvetica',
       },
       headStyles: {
         fillColor: [30, 58, 138],
@@ -192,11 +183,6 @@ export function PriceTable({ products, lang, dictionary }: PriceTableProps) {
       doc.setPage(i);
       doc.setFontSize(9);
       doc.setTextColor(150);
-
-      // Use Thai font if needed
-      if (needsCustomFont(lang)) {
-        doc.setFont('Sarabun');
-      }
 
       doc.text(
         `SAK WoodWorks - ${lang === 'th' ? 'ผู้จำหน่ายไม้คุณภาพสูง' : 'Premium Wood Products Supplier'}`,
