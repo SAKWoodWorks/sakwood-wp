@@ -5,12 +5,13 @@
 
 export async function loadThaiFont(): Promise<string | null> {
   try {
-    // Load Sarabun font from public folder
-    const fontUrl = '/fonts/Sarabun-Regular.woff2';
+    // Use jsdelivr CDN which allows CORS
+    const fontUrl = 'https://cdn.jsdelivr.net/npm/@canvas-fonts/sarabun@1.0.3/Sarabun-Regular.ttf';
 
     const response = await fetch(fontUrl);
     if (!response.ok) {
-      throw new Error('Failed to load Thai font');
+      console.warn('Font fetch failed, using default font');
+      return null;
     }
 
     const arrayBuffer = await response.arrayBuffer();
