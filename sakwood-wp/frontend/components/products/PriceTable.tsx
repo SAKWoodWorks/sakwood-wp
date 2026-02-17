@@ -317,7 +317,7 @@ export function PriceTable({ products, lang, dictionary }: PriceTableProps) {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-xl shadow-md p-6 mb-6 border border-gray-200">
+      <div className="bg-white rounded-xl shadow-md p-6 mb-6 border border-gray-200 print-hidden">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
           <div>
             <h3 className="text-lg font-semibold text-gray-900">
@@ -403,7 +403,7 @@ export function PriceTable({ products, lang, dictionary }: PriceTableProps) {
                   </th>
                 ))}
                 <th className="px-4 py-4 text-left text-sm font-semibold">{dict.stock}</th>
-                <th className="px-6 py-4 text-center text-sm font-semibold">{dict.actions}</th>
+                <th className="px-6 py-4 text-center text-sm font-semibold print-hidden">{dict.actions}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -463,7 +463,7 @@ export function PriceTable({ products, lang, dictionary }: PriceTableProps) {
                           {stockStatus.text}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 print-hidden">
                         <div className="flex items-center justify-center gap-2">
                           <Link
                             href={`/${lang}/products/${product.slug}`}
@@ -549,7 +549,7 @@ export function PriceTable({ products, lang, dictionary }: PriceTableProps) {
                       </div>
                     ))}
                   </div>
-                  <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-200">
+                  <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-200 print-hidden">
                     <Link
                       href={`/${lang}/products/${product.slug}`}
                       className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
