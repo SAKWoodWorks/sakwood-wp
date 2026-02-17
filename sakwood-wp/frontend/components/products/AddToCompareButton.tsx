@@ -2,9 +2,10 @@
 
 import { useCompare } from '@/lib/context/CompareContext';
 import { Scale, Check, Plus } from 'lucide-react';
+import type { Product } from '@/lib/types/product';
 
 interface AddToCompareButtonProps {
-  product: any;
+  product: Product;
   variant?: 'default' | 'small' | 'icon';
   className?: string;
   dictionary?: {
