@@ -1,0 +1,69 @@
+/* Print styles for price list page */
+@media print {
+  /* Hide non-printable elements */
+  .no-print,
+  button:not(.print-button),
+  a[href*="/quote"],
+  a[href*="/contact"] {
+    display: none !important;
+  }
+
+  /* Ensure full width */
+  main,
+  .container {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Table styles for print */
+  table {
+    width: 100% !important;
+    page-break-inside: auto;
+    font-size: 10pt;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  tfoot {
+    display: table-footer-group;
+  }
+
+  /* Background colors */
+  th {
+    background-color: #1e3a8a !important;
+    color: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Remove shadows and borders for cleaner print */
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  /* Page breaks */
+  .page-break {
+    page-break-before: always;
+  }
+
+  /* Footer for print */
+  @page {
+    margin: 1cm;
+    size: landscape;
+  }
+
+  /* Hide filters and search in print */
+  .print-hidden {
+    display: none !important;
+  }
+}
