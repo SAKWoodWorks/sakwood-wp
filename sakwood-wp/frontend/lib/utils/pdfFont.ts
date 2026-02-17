@@ -3,10 +3,10 @@
  * Loads Thai fonts for jsPDF
  */
 
-export async function loadThaiFont() {
+export async function loadThaiFont(): Promise<string | null> {
   try {
-    // Load Sarabun font from Google Fonts
-    const fontUrl = 'https://fonts.gstatic.com/s/sarabun/v13/DtVjJx26TKEr37c9YHZJmnw.woff2';
+    // Load Sarabun font from public folder
+    const fontUrl = '/fonts/Sarabun-Regular.woff2';
 
     const response = await fetch(fontUrl);
     if (!response.ok) {
