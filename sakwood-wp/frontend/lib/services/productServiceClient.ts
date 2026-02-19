@@ -28,6 +28,11 @@ import type { Product, ProductCategory, PriceType } from '@/lib/types';
 
 export type ProductSortBy = 'name' | 'price' | 'date';
 
+export interface ProductsResponse {
+  products: Product[];
+  total: number;
+}
+
 /**
  * Interface for REST API product response
  */
@@ -102,27 +107,31 @@ function transformImageUrl(url: string | undefined): string | undefined {
  * Fetch products via Next.js API route
  *
  * PROCESS:
- * 1. Build query parameters (language, category, sort)
- * 2. Call Next.js API route (/api/products)
- * 3. API route forwards request to WordPress server-side
- * 4. Transform image URLs to use proxy paths
- * 5. Sort products if requested
+ * 1. Build query parameters (language, category, sort, page)
+ * 2. Call WordPress REST API (/wp-json/sakwood/v1/products)
+ * 3. Transform image URLs to use proxy paths
+ * 4. Sort products if requested
+ * 5. Apply pagination
  *
  * @param language - 'th' or 'en'
  * @param categorySlug - Optional category filter
  * @param sortBy - Optional sort field ('name', 'price', 'date')
- * @returns Array of Product objects
+ * @param page - Page number (default: 1)
+ * @param perPage - Items per page (default: 12)
+ * @returns ProductsResponse with products array and total count
  */
 export async function getProductsClient(
   language: string = 'th',
   categorySlug?: string,
-  sortBy?: ProductSortBy
-): Promise<Product[]> {
+  sortBy?: ProductSortBy,
+  page: number = 1,
+  perPage: number = 12
+): Promise<ProductsResponse> {
   try {
     // Step 1: Build query parameters for API request
     const params = new URLSearchParams({
       language,
-      per_page: '50', // Get up to 50 products per page
+      per_page: '100', // Get all products then paginate client-side
     });
 
     if (categorySlug) {
@@ -131,7 +140,8 @@ export async function getProductsClient(
 
     // Step 2: Fetch from WordPress API directly
     // Use relative path for production (same domain) or localhost for development
-    const wpApiUrl = '/wp-json/sakwood/v1';
+    // Must include language prefix to avoid middleware redirect
+    const wpApiUrl = `/${language}/wp-json/sakwood/v1`;
     const response = await fetch(`${wpApiUrl}/products?${params.toString()}`, {
       method: 'GET',
       headers: {
@@ -142,7 +152,7 @@ export async function getProductsClient(
 
     if (!response.ok) {
       console.error('Failed to fetch products:', response.status);
-      return [];
+      return { products: [], total: 0 };
     }
 
     const data = await response.json();
@@ -150,12 +160,12 @@ export async function getProductsClient(
     // Handle error response from API
     if (data.error) {
       console.error('Products API error:', data.error);
-      return [];
+      return { products: [], total: 0 };
     }
 
     // Handle empty response
     if (!Array.isArray(data) || data.length === 0) {
-      return [];
+      return { products: [], total: 0 };
     }
 
     // Step 3: Transform WordPress data to match Product interface
@@ -186,15 +196,26 @@ export async function getProductsClient(
       })) : undefined,
     }));
 
+    const totalProducts = products.length;
+
     // Step 4: Sort products if requested
+    let sortedProducts = products;
     if (sortBy) {
-      return sortProducts(products, sortBy);
+      sortedProducts = sortProducts(products, sortBy);
     }
 
-    return products;
+    // Step 5: Apply pagination
+    const startIndex = (page - 1) * perPage;
+    const endIndex = startIndex + perPage;
+    const paginatedProducts = sortedProducts.slice(startIndex, endIndex);
+
+    return {
+      products: paginatedProducts,
+      total: totalProducts,
+    };
   } catch (error) {
     console.error('Error fetching products:', error);
-    return [];
+    return { products: [], total: 0 };
   }
 }
 

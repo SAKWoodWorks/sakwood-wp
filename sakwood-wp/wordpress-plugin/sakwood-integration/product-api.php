@@ -41,6 +41,10 @@ class Sakwood_Product_API {
                     'default' => 'th',
                     'sanitize_callback' => 'sanitize_text_field',
                 ),
+                'category' => array(
+                    'default' => '',
+                    'sanitize_callback' => 'sanitize_text_field',
+                ),
                 'per_page' => array(
                     'default' => 10,
                     'sanitize_callback' => 'absint',
@@ -74,15 +78,21 @@ class Sakwood_Product_API {
      */
     public function get_products($request) {
         $language = $request->get_param('language');
+        $category = $request->get_param('category');
         $per_page = $request->get_param('per_page');
         $page = $request->get_param('page');
 
-        // Get all products via WooCommerce (no language filtering needed now)
+        // Build query arguments for WooCommerce
         $args = array(
             'status' => 'publish',
             'limit' => $per_page,
             'page' => $page,
         );
+
+        // Add category filter if provided
+        if (!empty($category)) {
+            $args['category'] = array($category);
+        }
 
         $products = wc_get_products($args);
 

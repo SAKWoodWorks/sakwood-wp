@@ -9,6 +9,8 @@ export interface ProductCategory {
   slug: string;
   count?: number;
   description?: string;
+  name_th?: string;  // Thai name
+  name_en?: string;  // English name
 }
 
 export interface ProductCategoriesResponse {
@@ -40,7 +42,7 @@ export interface Product {
   price?: string;
   regularPrice?: string;
   priceTypes?: PriceType[];  // Array of enabled price types for this product
-  prices?: Record<PriceType, string>;  // Map of price type to amount
+  prices?: Partial<Record<PriceType, string>>;  // Map of price type to amount
   description?: string;
   thickness?: string; // Thickness in cm
   width?: string; // Width in cm

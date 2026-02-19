@@ -142,13 +142,20 @@ function sortProducts(products: Product[], sortBy: ProductSortBy): Product[] {
  * @param categorySlug - Optional category slug to filter by
  * @param sortBy - Optional sort field ('name', 'price', 'date')
  */
+export interface ProductsResponse {
+  products: Product[];
+  total: number;
+}
+
 export async function getProducts(
   language: string = 'th',
   categorySlug?: string,
-  sortBy?: ProductSortBy
-): Promise<Product[]> {
+  sortBy?: ProductSortBy,
+  page: number = 1,
+  perPage: number = 12
+): Promise<ProductsResponse> {
   // Use GraphQL directly - REST API endpoint not implemented
-  return getProductsViaGraphQL(language, categorySlug, sortBy);
+  return getProductsViaGraphQL(language, categorySlug, sortBy, page, perPage);
 }
 
 /**
@@ -157,14 +164,21 @@ export async function getProducts(
 async function getProductsViaGraphQL(
   language: string = 'th',
   categorySlug?: string,
-  sortBy?: ProductSortBy
-): Promise<Product[]> {
+  sortBy?: ProductSortBy,
+  page: number = 1,
+  perPage: number = 12
+): Promise<ProductsResponse> {
   interface GraphQLProductResponse {
     products?: {
       nodes?: Array<Product & { categories?: { nodes?: ProductCategory[] } }>;
+      pageInfo?: {
+        totalPages?: number;
+        totalProducts?: number;
+      };
     };
   }
 
+  // Fetch all products (GraphQL doesn't support offset well for pagination)
   const data = await graphqlRequest<GraphQLProductResponse>(GET_PRODUCTS_QUERY, { first: 100 });
   let products = data?.products?.nodes || [];
 
@@ -175,12 +189,14 @@ async function getProductsViaGraphQL(
     );
   }
 
+  const totalProducts = products.length;
+
   // Transform image URLs and add price types
   const transformedProducts = products.map((product) => {
     // Generate default priceTypes and prices from the single price field
     const price = product.price || '';
     const priceTypes: PriceType[] = ['piece'];
-    const prices: Record<PriceType, string> = {
+    const prices: Partial<Record<PriceType, string>> = {
       piece: price,
     };
 
@@ -207,11 +223,20 @@ async function getProductsViaGraphQL(
   });
 
   // Sort if requested
+  let sortedProducts = transformedProducts;
   if (sortBy) {
-    return sortProducts(transformedProducts, sortBy);
+    sortedProducts = sortProducts(transformedProducts, sortBy);
   }
 
-  return transformedProducts;
+  // Apply pagination
+  const startIndex = (page - 1) * perPage;
+  const endIndex = startIndex + perPage;
+  const paginatedProducts = sortedProducts.slice(startIndex, endIndex);
+
+  return {
+    products: paginatedProducts,
+    total: totalProducts,
+  };
 }
 
 /**
@@ -247,7 +272,7 @@ export async function getProductBySlug(slug: string, language: string = 'th'): P
     // Generate default priceTypes and prices from the single price field
     const price = product.price || product.prices?.piece || '';
     const priceTypes: PriceType[] = (product.priceTypes || ['piece']) as PriceType[];
-    const prices: Record<PriceType, string> = product.prices || {
+    const prices: Partial<Record<PriceType, string>> = product.prices || {
       piece: price,
     };
 
@@ -307,7 +332,7 @@ async function getProductBySlugViaGraphQL(slug: string): Promise<Product | null>
   // Generate default priceTypes and prices from the single price field
   const price = product.price || '';
   const priceTypes: PriceType[] = ['piece'];
-  const prices: Record<PriceType, string> = {
+  const prices: Partial<Record<PriceType, string>> = {
     piece: price,
   };
 
@@ -385,7 +410,7 @@ export async function getFeaturedProducts(lang: string, limit: number = 6): Prom
       // Generate default priceTypes and prices from the single price field
       const price = product.price || '';
       const priceTypes: PriceType[] = ['piece'];
-      const prices: Record<PriceType, string> = {
+      const prices: Partial<Record<PriceType, string>> = {
         piece: price,
       };
 

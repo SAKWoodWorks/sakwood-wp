@@ -98,6 +98,9 @@ class Sakwood_Integration {
         // Load Product Language Meta Fields (NEW SYSTEM - 1 product with 2 languages)
         require_once SAKWOOD_PLUGIN_DIR . 'product-language.php';
 
+        // Load Category Language Meta Fields (1 category with 2 languages)
+        require_once SAKWOOD_PLUGIN_DIR . 'category-language.php';
+
         // Load Blog Language Translation (adds English translation meta fields and language column)
         require_once SAKWOOD_PLUGIN_DIR . 'blog-language-translation.php';
 
@@ -118,6 +121,9 @@ class Sakwood_Integration {
 
         // Load Product Bulk Import
         require_once SAKWOOD_PLUGIN_DIR . 'product-bulk-import.php';
+
+        // Load Product Categories API
+        require_once SAKWOOD_PLUGIN_DIR . 'product-categories-api.php';
 
         // Load Customer Orders API (DEV MODE - No authentication for testing)
         require_once SAKWOOD_PLUGIN_DIR . 'customer-orders-api-dev.php';

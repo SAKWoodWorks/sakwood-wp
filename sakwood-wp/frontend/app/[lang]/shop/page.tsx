@@ -1,4 +1,4 @@
-import { getProducts, getProductCategories } from '@/lib/services/productService';
+import { getProducts } from '@/lib/services/productService';
 import { getDictionary } from '@/lib/get-dictionary';
 import type { Locale } from '@/i18n-config';
 import type { ProductSortBy } from '@/lib/types';
@@ -11,6 +11,7 @@ interface ShopPageProps {
   searchParams: Promise<{
     category?: string;
     sort?: string;
+    page?: string;
   }>;
 }
 
@@ -19,11 +20,12 @@ export const revalidate = 180;
 
 export default async function ShopPage({ params, searchParams }: ShopPageProps) {
   const { lang } = await params;
-  const { category: categorySlug, sort: sortParam } = await searchParams;
+  const { category: categorySlug, sort: sortParam, page: pageParam } = await searchParams;
 
-  const [products, categories, dictionary] = await Promise.all([
-    getProducts(lang, categorySlug, sortParam as ProductSortBy | undefined),
-    getProductCategories(),
+  const currentPage = parseInt(pageParam || '1', 10);
+
+  const [productsData, dictionary] = await Promise.all([
+    getProducts(lang, categorySlug, sortParam as ProductSortBy | undefined, currentPage),
     getDictionary(lang),
   ]);
 
@@ -31,8 +33,8 @@ export default async function ShopPage({ params, searchParams }: ShopPageProps) 
     <ShopPageComponent
       lang={lang}
       dictionary={dictionary}
-      initialProducts={products}
-      initialCategories={categories}
+      initialProducts={productsData.products}
+      initialTotal={productsData.total}
     />
   );
 }

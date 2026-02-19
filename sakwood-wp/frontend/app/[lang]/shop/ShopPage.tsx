@@ -5,71 +5,74 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import type { Locale } from '@/i18n-config';
 import type { Dictionary } from '@/lib/types';
-import { ProductCard } from '@/components/ui';
+import { ProductCard, Pagination } from '@/components/ui';
 import type { ProductCategory, ProductSortBy } from '@/lib/types';
-import { getProductsClient } from '@/lib/services/productServiceClient';
+import { getProductsClient, type ProductsResponse } from '@/lib/services/productServiceClient';
 
 import type { Product } from '@/lib/types';
+import { getProductCategories } from '@/lib/services/productServiceCategories';
+
+const PRODUCTS_PER_PAGE = 12;
 
 interface ShopPageProps {
   lang: Locale;
   dictionary: Dictionary;
   initialProducts: Product[];
-  initialCategories: ProductCategory[];
+  initialTotal: number;
 }
 
 export function ShopPage({
   lang,
   dictionary,
   initialProducts,
-  initialCategories,
+  initialTotal,
 }: ShopPageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get('category');
   const sortParam = searchParams.get('sort') as ProductSortBy | null;
+  const pageParam = searchParams.get('page');
 
   const [products, setProducts] = useState(initialProducts);
+  const [totalProducts, setTotalProducts] = useState(initialTotal);
+  const [currentPage, setCurrentPage] = useState(parseInt(pageParam || '1', 10));
+  const [categories, setCategories] = useState<ProductCategory[]>([]);
 
-  // Extract unique categories from products (since /categories endpoint doesn't exist)
-  const categories = useMemo(() => {
-    const categoryMap = new Map<number, ProductCategory>();
-
-    // Add initial categories (from server-side GraphQL)
-    initialCategories.forEach(cat => {
-      categoryMap.set(cat.id, cat);
-    });
-
-    // Add categories from products
-    products.forEach(product => {
-      product.categories?.forEach(cat => {
-        if (!categoryMap.has(cat.id)) {
-          categoryMap.set(cat.id, cat);
-        }
-      });
-    });
-
-    return Array.from(categoryMap.values()).sort((a, b) => a.name.localeCompare(b.name, 'th'));
-  }, [products, initialCategories]);
+  // Fetch categories from REST API (bypasses GraphQL language field issue)
+  useEffect(() => {
+    async function fetchCategories() {
+      const cats = await getProductCategories(lang);
+      setCategories(cats);
+    }
+    fetchCategories();
+  }, [lang]);
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(categoryParam);
   const [sortBy, setSortBy] = useState<ProductSortBy | null>(sortParam);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Update products when category or sort changes
+  // Update products when category, sort, or page changes
   useEffect(() => {
     async function loadProducts() {
       setIsLoading(true);
-      const fetchedProducts = await getProductsClient(lang, selectedCategory || undefined, sortBy || undefined);
-      setProducts(fetchedProducts);
+      const result: ProductsResponse = await getProductsClient(
+        lang,
+        selectedCategory || undefined,
+        sortBy || undefined,
+        currentPage,
+        PRODUCTS_PER_PAGE
+      );
+      setProducts(result.products);
+      setTotalProducts(result.total);
       setIsLoading(false);
     }
 
     loadProducts();
-  }, [selectedCategory, sortBy, lang]);
+  }, [selectedCategory, sortBy, currentPage, lang]);
 
   const handleCategoryChange = (categorySlug: string | null) => {
     setSelectedCategory(categorySlug);
+    setCurrentPage(1); // Reset to page 1 when category changes
 
     // Update URL
     const params = new URLSearchParams();
@@ -81,6 +84,7 @@ export function ShopPage({
 
   const handleSortChange = (newSortBy: ProductSortBy) => {
     setSortBy(newSortBy);
+    setCurrentPage(1); // Reset to page 1 when sort changes
 
     // Update URL
     const params = new URLSearchParams();
@@ -88,6 +92,21 @@ export function ShopPage({
     params.set('sort', newSortBy);
 
     router.push(`/${lang}/shop${params.toString() ? '?' + params.toString() : ''}`);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+
+    // Update URL
+    const params = new URLSearchParams();
+    if (selectedCategory) params.set('category', selectedCategory);
+    if (sortBy) params.set('sort', sortBy);
+    params.set('page', page.toString());
+
+    router.push(`/${lang}/shop${params.toString() ? '?' + params.toString() : ''}`);
+
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -100,6 +119,9 @@ export function ShopPage({
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             {dictionary.shop.subtitle}
+          </p>
+          <p className="text-lg text-blue-600 font-semibold mt-2">
+            {totalProducts} {dictionary.shop.products || 'products'}
           </p>
         </div>
 
@@ -189,11 +211,22 @@ export function ShopPage({
             <p className="mt-4 text-gray-600">{dictionary.shop.loading}</p>
           </div>
         ) : products.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} lang={lang} dictionary={dictionary} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+              {products.map((product) => (
+                <ProductCard key={product.id} product={product} lang={lang} dictionary={dictionary} />
+              ))}
+            </div>
+
+            {/* Pagination */}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={Math.ceil(totalProducts / PRODUCTS_PER_PAGE)}
+              totalItems={totalProducts}
+              itemsPerPage={PRODUCTS_PER_PAGE}
+              onPageChange={handlePageChange}
+            />
+          </>
         ) : (
           <div className="text-center py-16">
             <div className="text-gray-400 text-6xl mb-4">

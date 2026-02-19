@@ -42,7 +42,7 @@ export const GET_HERO_SLIDES_QUERY = `
 `;
 
 export const GET_PRODUCTS_QUERY = `
-  query GetProducts($first: Int) {
+  query GetProducts($first: Int = 100) {
     products(first: $first) {
       nodes {
         id
