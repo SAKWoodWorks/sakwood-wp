@@ -122,6 +122,9 @@ class Sakwood_Integration {
         // Load Product Bulk Import
         require_once SAKWOOD_PLUGIN_DIR . 'product-bulk-import.php';
 
+        // Load PHP Upload Limits Fix
+        require_once SAKWOOD_PLUGIN_DIR . 'fix-php-upload-limits.php';
+
         // Load Product Categories API
         require_once SAKWOOD_PLUGIN_DIR . 'product-categories-api.php';
 
