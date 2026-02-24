@@ -117,9 +117,9 @@ export async function SaleProductsSection({ lang, dictionary }: SaleProductsSect
               <Link
                 href={`/${lang}/shop`}
                 className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-red-600 hover:bg-red-700 text-white font-bold uppercase tracking-wide rounded-lg shadow-lg hover:shadow-xl transition-all text-sm sm:text-base"
-                aria-label={dict.products_view_all}
+                aria-label={lang === 'th' ? 'ดูสินค้าทั้งหมด' : 'View All Products'}
               >
-                {dict.products_view_all}
+                {lang === 'th' ? 'ดูสินค้าทั้งหมด' : 'View All Products'}
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
