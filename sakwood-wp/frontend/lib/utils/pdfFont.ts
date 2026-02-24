@@ -1,16 +1,44 @@
 /**
  * PDF Font utilities for multi-language support
+ *
+ * For Thai language, we dynamically load the font from a reliable CDN.
+ * This avoids embedding large base64 strings in the code.
  */
 
-// Base64 encoded Sarabun font for Thai language support
-// This is a minimal font subset for Thai characters
-const SARABUN_FONT_BASE64 = ""; // To be populated with actual font data
+const FONT_CACHE = new Map<string, string>();
 
-export async function loadThaiFont(): Promise<string | null> {
-  // For now, return null to use default font
-  // Thai text may not display perfectly but PDF will generate
-  console.warn('⚠️ Using default PDF font - Thai text may have display issues');
-  return null;
+/**
+ * Load Thai font for jsPDF from our API route
+ * Returns base64 encoded font data
+ */
+export async function loadThaiFont(): Promise<string> {
+  // Check cache first
+  if (FONT_CACHE.has('Sarabun')) {
+    return FONT_CACHE.get('Sarabun')!;
+  }
+
+  try {
+    // Use our API route which proxies the font from CDN (bypasses CORS)
+    const response = await fetch('/api/font/thai');
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch font: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+
+    if (!data.fontData) {
+      throw new Error('No font data received');
+    }
+
+    // Cache the result
+    FONT_CACHE.set('Sarabun', data.fontData);
+
+    return data.fontData;
+  } catch (error) {
+    console.error('Failed to load Thai font:', error);
+    throw error;
+  }
 }
 
 /**
@@ -24,6 +52,5 @@ export function needsCustomFont(lang: string): boolean {
  * Get font name for jsPDF based on language
  */
 export function getFontName(lang: string): string {
-  // Always use helvetica for now
-  return 'helvetica';
+  return needsCustomFont(lang) ? 'Sarabun' : 'helvetica';
 }

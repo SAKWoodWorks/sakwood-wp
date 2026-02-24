@@ -18,6 +18,9 @@ export interface Dictionary {
     products_title: string;
     products_view_all: string;
     loading: string;
+    sale_products?: string;
+    sale_products_title?: string;
+    sale_products_subtitle?: string;
     cta_title: string;
     cta_desc: string;
     cta_placeholder: string;

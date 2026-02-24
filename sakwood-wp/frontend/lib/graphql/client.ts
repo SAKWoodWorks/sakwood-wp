@@ -5,11 +5,18 @@ export async function graphqlRequest<T>(
   variables?: Record<string, any>
 ): Promise<T | null> {
   try {
+    // Add cache-busting timestamp to prevent stale data after Quick Edit
+    const cacheBuster = { _cache: Date.now() };
+    const mergedVariables = { ...variables, ...cacheBuster };
+
     const res = await fetch(API_CONFIG.endpoint, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query, variables }),
-      cache: API_CONFIG.cache,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+      },
+      body: JSON.stringify({ query, variables: mergedVariables }),
+      cache: 'no-store',
     });
 
     if (!res.ok) {

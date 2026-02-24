@@ -13,30 +13,46 @@ function QuickEditModal({ product, onClose, onSave }) {
         setSaving(true);
 
         try {
+            console.log('Saving product:', product.slug);
+            console.log('Data being sent:', {
+                regular_price: formData.regularPrice,
+                sale_price: formData.price,
+                stock_status: formData.stockStatus
+            });
+
+            // Use custom Sakwood endpoint instead of WooCommerce REST API
             const response = await fetch(
-                `/wp-json/wc/v3/products/${product.databaseId}`,
+                `/wp-json/sakwood/v1/products/${product.slug}`,
                 {
-                    method: 'PUT',
+                    method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-WP-Nonce': window.sakwoodDashboard?.nonce || ''
                     },
                     body: JSON.stringify({
                         regular_price: formData.regularPrice,
-                        price: formData.price,
+                        sale_price: formData.price,
                         stock_status: formData.stockStatus
                     })
                 }
             );
 
-            if (response.ok) {
-                onSave(product.id, formData);
-            } else {
-                alert('Failed to update product. Please try again.');
+            console.log('Response status:', response.status);
+            console.log('Response ok:', response.ok);
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Error response:', errorText);
+                return;
             }
+
+            const result = await response.json();
+            console.log('Success response:', result);
+
+            onSave(product.id, result);
+            onClose();
         } catch (error) {
             console.error('Update failed:', error);
-            alert('Failed to update product. Please try again.');
         } finally {
             setSaving(false);
         }

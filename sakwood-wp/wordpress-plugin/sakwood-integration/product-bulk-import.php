@@ -526,9 +526,43 @@ class Sakwood_Product_Bulk_Import {
 
         $file = $_FILES['zip_file'];
 
-        // Validate ZIP
-        if ($file['type'] !== 'application/zip' && $file['type'] !== 'application/x-zip-compressed') {
-            wp_send_json_error(array('message' => __('Invalid file type. Please upload a ZIP file.', 'sakwood-integration')));
+        // Check for upload errors
+        if ($file['error'] !== UPLOAD_ERR_OK) {
+            $error_messages = array(
+                UPLOAD_ERR_INI_SIZE => __('File exceeds upload_max_filesize directive in php.ini', 'sakwood-integration'),
+                UPLOAD_ERR_FORM_SIZE => __('File exceeds MAX_FILE_SIZE directive in HTML form', 'sakwood-integration'),
+                UPLOAD_ERR_PARTIAL => __('File was only partially uploaded', 'sakwood-integration'),
+                UPLOAD_ERR_NO_FILE => __('No file was uploaded', 'sakwood-integration'),
+                UPLOAD_ERR_NO_TMP_DIR => __('Missing temporary folder', 'sakwood-integration'),
+                UPLOAD_ERR_CANT_WRITE => __('Failed to write file to disk', 'sakwood-integration'),
+                UPLOAD_ERR_EXTENSION => __('A PHP extension stopped the file upload', 'sakwood-integration'),
+            );
+            $error_msg = isset($error_messages[$file['error']]) ? $error_messages[$file['error']] : __('Unknown upload error', 'sakwood-integration');
+            wp_send_json_error(array('message' => $error_msg));
+        }
+
+        // Check file size (128MB = 134217728 bytes)
+        $max_size = 134217728; // 128MB
+        if ($file['size'] > $max_size) {
+            wp_send_json_error(array('message' => sprintf(__('File is too large (%s). Maximum size is 128MB.', 'sakwood-integration'), size_format($file['size']))));
+        }
+
+        // Check if ZipArchive class is available
+        if (!class_exists('ZipArchive')) {
+            wp_send_json_error(array('message' => __('ZipArchive class is not available. Please install PHP zip extension.', 'sakwood-integration')));
+        }
+
+        // Validate ZIP by extension first (more reliable than MIME type)
+        $file_ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        if ($file_ext !== 'zip') {
+            wp_send_json_error(array('message' => __('Invalid file extension. Please upload a .zip file.', 'sakwood-integration')));
+        }
+
+        // MIME type check (more lenient - browsers may send different types)
+        $allowed_mime_types = array('application/zip', 'application/x-zip-compressed', 'application/octet-stream', 'multipart/x-zip');
+        if (!in_array($file['type'], $allowed_mime_types)) {
+            // Don't fail on MIME type alone - let ZipArchive validate the actual file
+            error_log(sprintf('ZIP upload: Unexpected MIME type "%s" for file "%s"', $file['type'], $file['name']));
         }
 
         // Create temp directory
@@ -543,7 +577,9 @@ class Sakwood_Product_Bulk_Import {
         $zip = new ZipArchive;
         $zip_file = $file['tmp_name'];
 
-        if ($zip->open($zip_file) === TRUE) {
+        // Check if ZIP can be opened (this validates it's a real ZIP file)
+        $open_result = $zip->open($zip_file);
+        if ($open_result === TRUE) {
             // Extract to temp directory
             if ($zip->extractTo($temp_dir) === TRUE) {
                 $zip->close();
@@ -558,10 +594,22 @@ class Sakwood_Product_Bulk_Import {
                 wp_send_json_success(array('image_mapping' => $image_mapping));
             } else {
                 $zip->close();
-                wp_send_json_error(array('message' => __('Failed to extract ZIP file', 'sakwood-integration')));
+                wp_send_json_error(array('message' => __('Failed to extract ZIP file. Check if the ZIP is corrupted.', 'sakwood-integration')));
             }
         } else {
-            wp_send_json_error(array('message' => __('Failed to open ZIP file', 'sakwood-integration')));
+            $zip_errors = array(
+                ZipArchive::ER_EXISTS => __('File already exists', 'sakwood-integration'),
+                ZipArchive::ER_INCONS => __('Zip archive inconsistent', 'sakwood-integration'),
+                ZipArchive::ER_INVAL => __('Invalid argument', 'sakwood-integration'),
+                ZipArchive::ER_MEMORY => __('Malloc failure', 'sakwood-integration'),
+                ZipArchive::ER_NOENT => __('No such file', 'sakwood-integration'),
+                ZipArchive::ER_NOZIP => __('Not a zip archive', 'sakwood-integration'),
+                ZipArchive::ER_OPEN => __('Can\'t open file', 'sakwood-integration'),
+                ZipArchive::ER_READ => __('Read error', 'sakwood-integration'),
+                ZipArchive::ER_SEEK => __('Seek error', 'sakwood-integration'),
+            );
+            $error_msg = isset($zip_errors[$open_result]) ? $zip_errors[$open_result] : sprintf(__('Failed to open ZIP file (Error code: %d)', 'sakwood-integration'), $open_result);
+            wp_send_json_error(array('message' => $error_msg));
         }
     }
 

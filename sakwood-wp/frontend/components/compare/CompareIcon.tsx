@@ -9,20 +9,20 @@
 
 import { useCompare } from '@/context/CompareContext';
 import Link from 'next/link';
-import { useLocale } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
+import type { Locale } from '@/i18n-config';
 
 interface CompareIconProps {
+  lang: Locale;
   className?: string;
 }
 
-export function CompareIcon({ className = '' }: CompareIconProps) {
+export function CompareIcon({ lang, className = '' }: CompareIconProps) {
   const { productCount } = useCompare();
-  const locale = useLocale();
 
   return (
     <Link
-      href={`/${locale}/compare`}
+      href={`/${lang}/compare`}
       className={`relative flex items-center justify-center p-2 hover:bg-accent rounded-md transition-colors ${className}`}
       aria-label={`Compare products (${productCount} selected)`}
     >

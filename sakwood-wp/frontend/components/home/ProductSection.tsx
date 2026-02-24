@@ -21,7 +21,8 @@ interface ProductSectionProps {
 }
 
 export async function ProductSection({ lang, dictionary }: ProductSectionProps) {
-  const products = await getProducts(lang);
+  const productsData = await getProducts(lang);
+  const products = productsData.products;
   const { home } = dictionary;
 
   return (

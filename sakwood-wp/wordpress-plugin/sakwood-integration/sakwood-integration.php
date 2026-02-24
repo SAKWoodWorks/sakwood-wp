@@ -116,6 +116,9 @@ class Sakwood_Integration {
         // Load Product API
         require_once SAKWOOD_PLUGIN_DIR . 'product-api.php';
 
+        // Load Product Update API for Dashboard
+        require_once SAKWOOD_PLUGIN_DIR . 'product-update-api.php';
+
         // Load Product Price Types
         require_once SAKWOOD_PLUGIN_DIR . 'product-price-types.php';
 
@@ -182,6 +185,9 @@ class Sakwood_Integration {
 
         // Load Unified Dashboard
         require_once SAKWOOD_PLUGIN_DIR . 'dashboard/sakwood-dashboard.php';
+
+        // Load Quick Edit Fix for WooCommerce sale prices
+        require_once SAKWOOD_PLUGIN_DIR . 'quick-edit-fix.php';
 
         // Initialize CRM database
         $crm_db = new Sakwood_CRM_Database();

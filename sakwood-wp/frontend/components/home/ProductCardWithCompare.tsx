@@ -25,6 +25,11 @@ export function ProductCardWithCompare({ product, lang, index, dictionary }: Pro
     setIsQuickViewOpen(true);
   };
 
+  // Check if product is on sale
+  const isOnSale = product.price && product.regularPrice &&
+    parseFloat(product.price.replace(/[^\d.]/g, '')) <
+    parseFloat(product.regularPrice.replace(/[^\d.]/g, ''));
+
   return (
     <>
     <article
@@ -59,6 +64,12 @@ export function ProductCardWithCompare({ product, lang, index, dictionary }: Pro
           <div className="absolute top-3 right-3 z-20 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase transform scale-0 group-hover:scale-100 transition-transform duration-300">
             In Stock
           </div>
+          {/* Sale Badge */}
+          {isOnSale && (
+            <div className="absolute top-3 left-3 z-20 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase shadow-lg animate-pulse">
+              {lang === 'th' ? 'ลดราคา' : 'SALE'}
+            </div>
+          )}
           {/* Quick View Overlay */}
           <div className="absolute inset-0 bg-blue-900/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center z-20">
             <button
@@ -87,9 +98,24 @@ export function ProductCardWithCompare({ product, lang, index, dictionary }: Pro
           </div>
           <div className="flex justify-between items-center mt-4">
             <span className="text-slate-500 text-sm">{lang === 'th' ? 'เริ่มต้นที่' : 'Starting at'}</span>
-            <span className="text-xl font-bold text-blue-900">
-              {product.price ? `${product.price}${lang === 'th' ? ' บาท' : ' THB'}` : (lang === 'th' ? 'ติดต่อ' : 'Contact')}
-            </span>
+            <div className="text-right">
+              {isOnSale ? (
+                <>
+                  {/* Regular Price (strikethrough) */}
+                  <div className="text-sm text-slate-400 line-through">
+                    {product.regularPrice}{lang === 'th' ? ' บาท' : ' THB'}
+                  </div>
+                  {/* Sale Price (prominent) */}
+                  <div className="text-xl font-bold text-red-600">
+                    {product.price}{lang === 'th' ? ' บาท' : ' THB'}
+                  </div>
+                </>
+              ) : (
+                <span className="text-xl font-bold text-blue-900">
+                  {product.price ? `${product.price}${lang === 'th' ? ' บาท' : ' THB'}` : (lang === 'th' ? 'ติดต่อ' : 'Contact')}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>

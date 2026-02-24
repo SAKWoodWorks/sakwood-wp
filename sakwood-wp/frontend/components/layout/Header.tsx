@@ -22,8 +22,8 @@ interface HeaderProps {
 // Client-side menu fetching function
 async function fetchMenu(locale: string): Promise<MenuItem[]> {
   try {
-    const baseUrl = '/wp-json/sakwood/v1';
-    const response = await fetch(`${baseUrl}/menu?lang=${locale}`, {
+    // MUST use language prefix to avoid middleware stripping query parameters
+    const response = await fetch(`/${locale}/wp-json/sakwood/v1/menu?lang=${locale}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

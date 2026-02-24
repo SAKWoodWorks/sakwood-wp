@@ -56,6 +56,7 @@ class Sakwood_Product_API {
             ),
         ));
 
+        // GET route for retrieving a single product
         register_rest_route('sakwood/v1', '/products/(?P<slug>[^/]+)', array(
             'methods' => 'GET',
             'callback' => array($this, 'get_product_by_slug'),
@@ -67,6 +68,34 @@ class Sakwood_Product_API {
                 ),
                 'language' => array(
                     'default' => 'th',
+                    'sanitize_callback' => 'sanitize_text_field',
+                ),
+            ),
+        ));
+
+        // POST route for updating a product
+        register_rest_route('sakwood/v1', '/products/(?P<slug>[^/]+)', array(
+            'methods' => 'POST',
+            'callback' => array($this, 'update_product'),
+            'permission_callback' => '__return_true', // TODO: Add proper authentication
+            'args' => array(
+                'slug' => array(
+                    'required' => true,
+                    'sanitize_callback' => array($this, 'sanitize_slug_preserve_thai'),
+                ),
+                'regular_price' => array(
+                    'required' => false,
+                    'sanitize_callback' => 'sanitize_text_field',
+                ),
+                'sale_price' => array(
+                    'required' => false,
+                    'sanitize_callback' => 'sanitize_text_field',
+                ),
+                'stock_status' => array(
+                    'required' => false,
+                    'validate_callback' => function($param) {
+                        return in_array($param, array('instock', 'outofstock', 'onbackorder'));
+                    },
                     'sanitize_callback' => 'sanitize_text_field',
                 ),
             ),
@@ -165,14 +194,23 @@ class Sakwood_Product_API {
         $length = get_post_meta($product->get_id(), '_product_length', true);
         $thickness = get_post_meta($product->get_id(), '_product_thickness', true);
 
-        // Get product categories
+        // Get product categories with language support
         $category_terms = get_the_terms($product->get_id(), 'product_cat');
         $categories = array();
         if ($category_terms && !is_wp_error($category_terms)) {
             foreach ($category_terms as $term) {
+                // Get category name in requested language
+                $cat_name = $term->name;
+                if ($language === 'en') {
+                    $name_en = get_term_meta($term->term_id, 'category_name_en', true);
+                    if (!empty($name_en)) {
+                        $cat_name = $name_en;
+                    }
+                }
+
                 $categories[] = array(
                     'id' => $term->term_id,
-                    'name' => $term->name,
+                    'name' => $cat_name,
                     'slug' => $term->slug,
                 );
             }
@@ -217,6 +255,98 @@ class Sakwood_Product_API {
 
         // Apply filter to allow other plugins to modify product data (e.g., price types)
         return apply_filters('sakwood_product_api_format', $formatted_product, $product);
+    }
+
+    /**
+     * Update product (Quick Edit for Dashboard)
+     */
+    public function update_product($request) {
+        $slug = $request->get_param('slug');
+        $params = $request->get_params();
+
+        // Log for debugging
+        error_log('Sakwood Product Update: Slug = ' . $slug);
+        error_log('Sakwood Product Update: Params = ' . print_r($params, true));
+
+        // Get product by slug
+        $args = array(
+            'name' => $slug,
+            'post_type' => 'product',
+            'post_status' => 'any',
+            'numberposts' => 1
+        );
+
+        $posts = get_posts($args);
+
+        if (empty($posts)) {
+            error_log('Sakwood Product Update: Product not found for slug = ' . $slug);
+            return new WP_Error(
+                'product_not_found',
+                'Product not found',
+                array('status' => 404)
+            );
+        }
+
+        $product = wc_get_product($posts[0]->ID);
+
+        if (!$product) {
+            error_log('Sakwood Product Update: Cannot create WC product for slug = ' . $slug);
+            return new WP_Error(
+                'product_not_found',
+                'Product not found',
+                array('status' => 404)
+            );
+        }
+
+        error_log('Sakwood Product Update: Product found = ' . $product->get_name() . ' (ID: ' . $product->get_id() . ')');
+
+        // Update regular price
+        if (isset($params['regular_price']) && !empty($params['regular_price'])) {
+            $product->set_regular_price($params['regular_price']);
+            error_log('Sakwood Product Update: Set regular_price = ' . $params['regular_price']);
+        }
+
+        // Update sale price
+        if (isset($params['sale_price'])) {
+            $sale_price = $params['sale_price'];
+
+            // If sale price is empty, remove it
+            if (empty($sale_price) || $sale_price === '') {
+                $product->set_sale_price('');
+                error_log('Sakwood Product Update: Removed sale price');
+            } else {
+                $product->set_sale_price($sale_price);
+                error_log('Sakwood Product Update: Set sale_price = ' . $sale_price);
+            }
+        }
+
+        // Update stock status
+        if (isset($params['stock_status'])) {
+            $product->set_stock_status($params['stock_status']);
+            error_log('Sakwood Product Update: Set stock_status = ' . $params['stock_status']);
+        }
+
+        // Save the product
+        $result = $product->save();
+        error_log('Sakwood Product Update: Save result = ' . print_r($result, true));
+
+        // Clear product transients
+        wc_delete_product_transients($product->get_id());
+
+        error_log('Sakwood Product Update: Product updated successfully');
+
+        // Get updated product data
+        $updated_product = array(
+            'id' => $product->get_id(),
+            'databaseId' => $product->get_id(),
+            'name' => $product->get_name(),
+            'slug' => $product->get_slug(),
+            'price' => $product->get_price(),
+            'regularPrice' => $product->get_regular_price(),
+            'stockStatus' => $product->get_stock_status(),
+        );
+
+        return rest_ensure_response($updated_product);
     }
 }
 

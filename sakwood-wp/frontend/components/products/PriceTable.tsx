@@ -9,6 +9,7 @@ import { ArrowUpDown, Filter, Eye, ShoppingCart, GitCompare, Download } from 'lu
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { getPriceLabel, getAllPrices } from '@/lib/utils/priceTypes';
+import { loadThaiFont, needsCustomFont, getFontName } from '@/lib/utils/pdfFont';
 
 interface PriceTableProps {
   products: Product[];
@@ -89,11 +90,19 @@ export function PriceTable({ products, lang, dictionary }: PriceTableProps) {
   const exportToPDF = async () => {
     const doc = new jsPDF();
 
-    // Note: Thai font support is limited in client-side PDF generation
-    // For production use with proper Thai support, consider server-side PDF generation
-    // Thai characters may display as squares or question marks
-    if (lang === 'th') {
-      console.warn('⚠️ Thai characters may not display correctly in PDF - consider using print stylesheet or server-side PDF generation');
+    // Register Thai font for Thai language
+    if (needsCustomFont(lang)) {
+      try {
+        const thaiFontBase64 = await loadThaiFont();
+        doc.addFileToVFS('Sarabun.woff2', thaiFontBase64);
+        doc.addFont('Sarabun.woff2', 'Sarabun', 'normal');
+        doc.setFont('Sarabun');
+      } catch (error) {
+        console.error('Failed to load Thai font, falling back to default:', error);
+        doc.setFont('helvetica');
+      }
+    } else {
+      doc.setFont('helvetica');
     }
 
     // Add title
@@ -119,10 +128,22 @@ export function PriceTable({ products, lang, dictionary }: PriceTableProps) {
       const allPrices = getAllPrices(product);
       const pricesMap = new Map(allPrices.map(p => [p.type, p.amount]));
 
-      // Map each price type column to its price or "-"
+      // Check if product is on sale
+      const onSale = isOnSale(product);
+
+      // Map each price type column to its price, sale price, or "-"
       const priceColumns = allPriceTypes.map(type => {
         const price = pricesMap.get(type);
-        return price ? formatPrice(price, type) : '-';
+        if (!price) return '-';
+
+        // Format price based on sale status
+        if (onSale) {
+          // Show regular price (crossed out) and sale price
+          const regularPriceFormatted = product.regularPrice || '-';
+          return `${regularPriceFormatted} → ${price}`;
+        }
+
+        return formatPrice(price, type);
       });
 
       return [
@@ -156,7 +177,7 @@ export function PriceTable({ products, lang, dictionary }: PriceTableProps) {
     // Add stock column style
     columnStyles[1 + allPriceTypes.length] = { cellWidth: baseColumnWidths.stock };
 
-    // Add table
+    // Add table with font setting
     autoTable(doc, {
       startY: 44,
       head: [headers],
@@ -165,6 +186,7 @@ export function PriceTable({ products, lang, dictionary }: PriceTableProps) {
       styles: {
         fontSize: 9,
         cellPadding: 2,
+        font: getFontName(lang),
       },
       headStyles: {
         fillColor: [30, 58, 138],
@@ -306,6 +328,51 @@ export function PriceTable({ products, lang, dictionary }: PriceTableProps) {
     // Extract the part after "/" for the label
     const labelPart = label.includes('/') ? label.split('/')[1] : priceType;
     return `${cleanAmount}${currency}/${labelPart}`;
+  };
+
+  // Helper function to check if product is on sale
+  const isOnSale = (product: Product): boolean => {
+    if (!product.price || !product.regularPrice) return false;
+    const price = parseFloat(product.price.replace(/[^\d.]/g, '') || '0');
+    const regularPrice = parseFloat(product.regularPrice.replace(/[^\d.]/g, '') || '0');
+    return regularPrice > price && price > 0;
+  };
+
+  // Helper function to format both regular and sale price
+  const formatPriceDisplay = (product: Product, priceType: PriceType): React.ReactNode => {
+    const allPrices = getAllPrices(product);
+    const pricesMap = new Map(allPrices.map(p => [p.type, p.amount]));
+    const price = pricesMap.get(priceType);
+
+    if (!price) {
+      return <span className="text-gray-400">-</span>;
+    }
+
+    // Check if product is on sale
+    const onSale = isOnSale(product);
+
+    if (onSale) {
+      // Extract numeric value for display
+      const cleanSalePrice = price.replace(/[฿THB\s,]/g, '');
+      const currency = lang === 'th' ? '฿' : 'THB';
+
+      return (
+        <div className="flex flex-col">
+          <span className="text-xs text-gray-400 line-through">
+            {product.regularPrice}{currency}
+          </span>
+          <span className="font-semibold text-red-600">
+            {price}
+          </span>
+        </div>
+      );
+    }
+
+    return (
+      <span className="font-semibold text-blue-900">
+        {formatPrice(price, priceType)}
+      </span>
+    );
   };
 
   return (
@@ -451,9 +518,7 @@ export function PriceTable({ products, lang, dictionary }: PriceTableProps) {
                       </td>
                       {allPriceTypes.map(type => (
                         <td key={type} className="px-4 py-4 text-sm">
-                          <span className="font-semibold text-blue-900">
-                            {pricesMap.get(type) ? formatPrice(pricesMap.get(type)!, type) : '-'}
-                          </span>
+                          {formatPriceDisplay(product, type)}
                         </td>
                       ))}
                       <td className="px-4 py-4">
@@ -543,8 +608,8 @@ export function PriceTable({ products, lang, dictionary }: PriceTableProps) {
                         <div className="text-xs text-gray-500">
                           {getPriceLabel(type, lang, dictionary)}
                         </div>
-                        <div className="text-sm font-semibold text-blue-900">
-                          {pricesMap.get(type) ? formatPrice(pricesMap.get(type)!, type) : '-'}
+                        <div className="text-sm">
+                          {formatPriceDisplay(product, type)}
                         </div>
                       </div>
                     ))}

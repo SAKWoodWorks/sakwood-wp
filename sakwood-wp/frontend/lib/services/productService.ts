@@ -154,8 +154,139 @@ export async function getProducts(
   page: number = 1,
   perPage: number = 12
 ): Promise<ProductsResponse> {
-  // Use GraphQL directly - REST API endpoint not implemented
-  return getProductsViaGraphQL(language, categorySlug, sortBy, page, perPage);
+  // Use REST API with proper language filtering
+  return getProductsViaREST(language, categorySlug, sortBy, page, perPage);
+}
+
+/**
+ * Get products via REST API with language filtering
+ * Uses custom endpoint: /wp-json/sakwood/v1/products?language=en&category=battens
+ */
+async function getProductsViaREST(
+  language: string = 'th',
+  categorySlug?: string,
+  sortBy?: ProductSortBy,
+  page: number = 1,
+  perPage: number = 12
+): Promise<ProductsResponse> {
+  try {
+    // Use WordPress API URL directly (no language prefix needed for REST API)
+    const baseUrl = process.env.WORDPRESS_API_URL || process.env.NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL?.replace('/graphql', '') || 'http://localhost:8006';
+
+    // Build query parameters
+    const params = new URLSearchParams({
+      language,
+      per_page: perPage.toString(),
+      page: page.toString(),
+    });
+
+    if (categorySlug) {
+      params.append('category', categorySlug);
+    }
+
+    // Direct URL to WordPress REST API (not through Next.js middleware)
+    const url = `${baseUrl}/wp-json/sakwood/v1/products?${params.toString()}`;
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      console.error('REST API failed:', response.status);
+      // Fall back to GraphQL
+      return getProductsViaGraphQL(language, categorySlug, sortBy, page, perPage);
+    }
+
+    const products: RestProduct[] = await response.json();
+
+    // Transform to Product format
+    const transformedProducts = products.map((product) => {
+      // Use price from API
+      const price = product.price || '';
+
+      // Use priceTypes from API if available, otherwise generate defaults
+      const apiPriceTypes = product.priceTypes || [];
+      // Handle case where API returns empty array instead of object
+      const apiPrices = product.prices && !Array.isArray(product.prices) ? product.prices : {};
+
+      const priceTypes: PriceType[] = apiPriceTypes.length > 0
+        ? apiPriceTypes as PriceType[]
+        : ['piece'];
+
+      const prices: Partial<Record<PriceType, string>> = { ...apiPrices };
+
+      // Ensure at least 'piece' price exists (fallback to main price)
+      if (!prices.piece && price) {
+        prices.piece = price;
+      }
+
+      // For other price types, if not set in API, use main price as fallback
+      priceTypes.forEach(type => {
+        if (!prices[type] && price) {
+          prices[type] = price;
+        }
+      });
+
+      // If no priceTypes provided but product has dimensions, add meter
+      if (apiPriceTypes.length === 0 && product.length && product.width && product.thickness) {
+        if (!priceTypes.includes('meter')) {
+          priceTypes.push('meter');
+        }
+        if (!prices.meter) {
+          prices.meter = price; // Use same price as fallback if not set
+        }
+      }
+
+      return {
+        id: String(product.id),
+        databaseId: product.databaseId,
+        name: product.name,
+        slug: product.slug,
+        sku: product.sku,
+        language: product.language || language,
+        price,
+        regularPrice: product.regularPrice,
+        priceTypes,
+        prices,
+        image: product.image ? { sourceUrl: transformImageUrl(product.image.sourceUrl) } : undefined,
+        description: product.description || '',
+        galleryImages: product.galleryImages
+          ? {
+              nodes: (product.galleryImages.nodes || []).map((img) => ({
+                ...img,
+                sourceUrl: transformImageUrl(img.sourceUrl),
+              })),
+            }
+          : undefined,
+        thickness: product.thickness,
+        width: product.width,
+        length: product.length,
+        stockStatus: product.stockStatus || 'instock',
+        categories: product.categories?.map((cat) => ({
+          id: cat.id,
+          name: cat.name,
+          slug: cat.slug,
+        })),
+      };
+    });
+
+    // Sort if requested
+    let sortedProducts = transformedProducts;
+    if (sortBy) {
+      sortedProducts = sortProducts(transformedProducts, sortBy);
+    }
+
+    return {
+      products: sortedProducts,
+      total: sortedProducts.length,
+    };
+  } catch (error) {
+    console.error('Error fetching products via REST API:', error);
+    // Fall back to GraphQL
+    return getProductsViaGraphQL(language, categorySlug, sortBy, page, perPage);
+  }
 }
 
 /**
@@ -195,17 +326,26 @@ async function getProductsViaGraphQL(
   const transformedProducts = products.map((product) => {
     // Generate default priceTypes and prices from the single price field
     const price = product.price || '';
-    const priceTypes: PriceType[] = ['piece'];
+    const apiPriceTypes = product.priceTypes || ['piece'];
+    // Handle case where API returns empty array instead of object
+    const apiPrices = product.prices && !Array.isArray(product.prices) ? product.prices : {};
+
+    const priceTypes: PriceType[] = apiPriceTypes as PriceType[];
     const prices: Partial<Record<PriceType, string>> = {
       piece: price,
+      ...apiPrices,
     };
 
     // If product has dimensions, add additional price types
     if (product.length && product.width && product.thickness) {
       // For dimensional lumber, we can calculate or add other price types
       // For now, just add the piece price
-      priceTypes.push('meter');
-      prices.meter = price; // Use same price for now - can be customized later
+      if (!priceTypes.includes('meter')) {
+        priceTypes.push('meter');
+      }
+      if (!prices.meter) {
+        prices.meter = price; // Use same price for now - can be customized later
+      }
     }
 
     return {
@@ -271,9 +411,14 @@ export async function getProductBySlug(slug: string, language: string = 'th'): P
 
     // Generate default priceTypes and prices from the single price field
     const price = product.price || product.prices?.piece || '';
-    const priceTypes: PriceType[] = (product.priceTypes || ['piece']) as PriceType[];
-    const prices: Partial<Record<PriceType, string>> = product.prices || {
+    const apiPriceTypes = product.priceTypes || ['piece'];
+    // Handle case where API returns empty array instead of object
+    const apiPrices = product.prices && !Array.isArray(product.prices) ? product.prices : {};
+
+    const priceTypes: PriceType[] = apiPriceTypes as PriceType[];
+    const prices: Partial<Record<PriceType, string>> = {
       piece: price,
+      ...apiPrices,
     };
 
     // If product has dimensions, add additional price types
@@ -331,15 +476,24 @@ async function getProductBySlugViaGraphQL(slug: string): Promise<Product | null>
 
   // Generate default priceTypes and prices from the single price field
   const price = product.price || '';
-  const priceTypes: PriceType[] = ['piece'];
+  const apiPriceTypes = product.priceTypes || ['piece'];
+  // Handle case where API returns empty array instead of object
+  const apiPrices = product.prices && !Array.isArray(product.prices) ? product.prices : {};
+
+  const priceTypes: PriceType[] = apiPriceTypes as PriceType[];
   const prices: Partial<Record<PriceType, string>> = {
     piece: price,
+    ...apiPrices,
   };
 
   // If product has dimensions, add additional price types
   if (product.length && product.width && product.thickness) {
-    priceTypes.push('meter');
-    prices.meter = price;
+    if (!priceTypes.includes('meter')) {
+      priceTypes.push('meter');
+    }
+    if (!prices.meter) {
+      prices.meter = price;
+    }
   }
 
   // Transform image URLs
@@ -409,15 +563,24 @@ export async function getFeaturedProducts(lang: string, limit: number = 6): Prom
     return products.map((product: any) => {
       // Generate default priceTypes and prices from the single price field
       const price = product.price || '';
-      const priceTypes: PriceType[] = ['piece'];
+      const apiPriceTypes = product.priceTypes || ['piece'];
+      // Handle case where API returns empty array instead of object
+      const apiPrices = product.prices && !Array.isArray(product.prices) ? product.prices : {};
+
+      const priceTypes: PriceType[] = apiPriceTypes as PriceType[];
       const prices: Partial<Record<PriceType, string>> = {
         piece: price,
+        ...apiPrices,
       };
 
       // If product has dimensions, add additional price types
       if (product.length && product.width && product.thickness) {
-        priceTypes.push('meter');
-        prices.meter = price;
+        if (!priceTypes.includes('meter')) {
+          priceTypes.push('meter');
+        }
+        if (!prices.meter) {
+          prices.meter = price;
+        }
       }
 
       return {

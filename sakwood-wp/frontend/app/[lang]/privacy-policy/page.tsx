@@ -92,7 +92,7 @@ export default async function PrivacyPolicyPage({ params }: PrivacyPolicyPagePro
                 <ul className="list-disc pl-6 text-gray-600 space-y-2">
                   <li>
                     {isThai
-                      : 'คุกกี้ที่จำเป็น - จำเป็นสำหรับการทำงานของเว็บไซต์'
+                      ? 'คุกกี้ที่จำเป็น - จำเป็นสำหรับการทำงานของเว็บไซต์'
                       : 'Necessary Cookies - Required for the website to function'}
                   </li>
                   <li>

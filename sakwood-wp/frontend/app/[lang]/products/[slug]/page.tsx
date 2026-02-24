@@ -5,7 +5,6 @@ import { ProductImageGallery } from '@/components/products/ProductImageGallery';
 import { ProductInfo } from '@/components/products/ProductInfo';
 import { ProductSpecifications } from '@/components/products/ProductSpecifications';
 import { RelatedProductsCarousel } from '@/components/products/RelatedProductsCarousel';
-import { PromotionalPopup } from '@/components/ui/PromotionalPopup';
 import { ProductStructuredData } from '@/components/products/ProductStructuredData';
 import { getProductBySlug, getProducts } from '@/lib/services/productService';
 import { getDictionary } from '@/lib/get-dictionary';
@@ -134,9 +133,6 @@ export default async function ProductPage({ params }: PageProps) {
           dictionary={dictionary}
         />
       </div>
-
-      {/* Promotional Popup */}
-      <PromotionalPopup />
     </main>
   );
 }

@@ -10,7 +10,7 @@ This is a **headless WordPress e-commerce application** for SAK WoodWorks, a pre
 - **Frontend:** Next.js 16 (React 19) with App Router - Customer-facing website
 - **Backend:** WordPress 6.4+ + WooCommerce - Product/content management
 - **API Layer:** WPGraphQL + Custom WordPress REST endpoints (`/wp-json/sakwood/v1/*`)
-- **Database:** MySQL 8.0
+- **Database:** MySQL 5.7 (Docker), MySQL 8.0 (Production)
 - **Deployment:** Docker containers (development & production)
 - **Payment:** PromptPay QR code generation (EMVCo CRC-16/CCITT-FALSE)
 - **Languages:** TypeScript (frontend), PHP 8.3 (WordPress plugin)
@@ -23,7 +23,8 @@ sakwood-wp/
 │   ├── components/       # React components (ui/, layout/, feature-specific)
 │   ├── lib/              # Services, utilities, GraphQL queries, types
 │   ├── dictionaries/     # i18n files (en.json, th.json)
-│   └── public/           # Static assets
+│   ├── e2e/              # Playwright E2E tests (checkout.spec.ts, compare.spec.ts)
+│   └── public/           # Static assets (fonts, images)
 ├── wordpress-plugin/     # WordPress/WooCommerce integration
 │   └── sakwood-integration/  # Custom plugin with REST API endpoints
 ├── nginx/                # Production Nginx configuration
@@ -36,18 +37,25 @@ sakwood-wp/
 This project uses a custom agent system defined in `.claude/agents/` for specialized workflows:
 
 **Available Agents:**
-- `feature-orchestrator` - Manages complete feature lifecycle from planning through implementation
-- `nextjs-wpgraphql-builder` - Creates/modifies Next.js components that consume WordPress GraphQL data
-- `nextjs-debugger` - Diagnoses hydration errors, API failures, caching issues, or server-client mismatches
-- `code-quality-auditor` - Reviews code for security, performance, SEO, and accessibility compliance
-- `docs-writer` - Creates/updates technical documentation
+- `@TechLead` - Technical Lead for architecture decisions and guidance
+- `@Planner` - Implementation Planner for task breakdown and requirements
+- `@Developer` - Full-Stack Developer for code implementation
+- `@Reviewer` - Code Reviewer for quality standards and best practices
+- `@Tester` - QA Engineer for testing and bug identification
+- `@DocWriter` - Technical Writer for documentation and guides
 
-**When to use agents:**
-- Building new features → `feature-orchestrator`
-- Creating product/blog pages → `nextjs-wpgraphql-builder`
-- Debugging Next.js issues → `nextjs-debugger`
-- After major code changes → `code-quality-auditor`
-- Updating documentation → `docs-writer`
+**Skills:**
+- `frontend-code-review` - Reviews frontend code (.tsx, .ts, .js) against code quality, performance, and business logic checklists
+
+**Standard Workflow:**
+1. **@Planner** creates implementation plan
+2. **@TechLead** reviews and approves
+3. **@Developer** implements code
+4. **@Reviewer** reviews code quality
+5. **@Tester** tests implementation
+6. **@DocWriter** creates documentation
+
+**Quick Reference:** See `.claude/agents/team-guide.md` for detailed agent workflows and interaction patterns.
 
 ## Development Commands
 
@@ -77,6 +85,8 @@ npm run test:coverage # Coverage report
 npm run test:e2e      # E2E tests with Playwright
 npm run test:e2e:ui   # E2E tests with UI
 ```
+
+**Note:** E2E tests with Playwright are currently disabled (see `playwright.config.ts`).
 
 ### Docker Environment (Development)
 ```bash
@@ -192,18 +202,75 @@ rewrites() {
 }
 ```
 
+### Middleware and Locale Routing
+
+**Critical Behavior - Query Parameter Loss:**
+The middleware (`middleware.ts`) intercepts ALL requests without a locale prefix and redirects them. This redirect strips query parameters from URLs that don't match the rewrite patterns.
+
+**Why this matters:**
+```typescript
+// ❌ Wrong - Query params get stripped by middleware redirect
+fetch('/wp-json/sakwood/v1/categories?language=en')
+// Middleware sees /wp-json/*, redirects to /th/wp-json/..., loses ?language=en
+
+// ✅ Correct - Language prefix bypasses middleware
+fetch(`/${language}/wp-json/sakwood/v1/categories?language=${language}`)
+// Matches rewrite rule /:lang(en|th)/wp-json/:path*, query params preserved
+```
+
+**Locale Configuration:**
+- Supported locales: `th` (default), `en`
+- Type-safe locales via `i18n-config.ts`: `type Locale = 'en' | 'th'`
+- Middleware auto-redirects: `/products` → `/th/products`
+- Browser language detection via `@formatjs/intl-localematcher` + `negotiator`
+
 ### Component & Page Structure
 
 **App Router Pattern:**
 ```
 app/[lang]/              # Dynamic locale routing (th, en)
-├── (page)/              # Homepage group
-├── shop/
-│   ├── page.tsx        # Server Component: fetches initial data with pagination
-│   └── ShopPage.tsx    # Client Component: filters, pagination, categories
+├── page.tsx            # Homepage
+├── shop/page.tsx       # Shop page with Server + Client components
 ├── products/[slug]/    # Dynamic product pages
 ├── blog/[slug]/        # Blog post pages
-└── account/            # Customer portal (protected routes)
+├── blog/page.tsx       # Blog listing
+├── account/            # Customer portal (protected routes)
+│   ├── page.tsx        # Account dashboard
+│   └── orders/page.tsx # Order history
+├── cart/page.tsx       # Shopping cart
+├── checkout/           # Checkout flow
+│   ├── page.tsx        # Checkout page
+│   └── success/page.tsx# Order success
+├── orders/[orderId]/   # Order tracking page
+├── compare/page.tsx    # Product comparison
+├── search/page.tsx     # Search results
+├── wholesale/          # Wholesale application
+│   ├── page.tsx        # Wholesale info
+│   ├── apply/page.tsx  # Application form
+│   └── status/page.tsx # Application status
+├── dealer/             # Dealer program
+│   ├── apply/page.tsx  # Dealer application
+│   └── status/page.tsx # Application status
+├── calculator/page.tsx # Material calculator
+├── room-calculator/page.tsx # Room calculator
+├── quick-shop/page.tsx # Quick ordering
+├── price-list/page.tsx # Price list
+├── contact/page.tsx    # Contact form
+├── faq/page.tsx        # FAQ
+├── knowledge/          # Knowledge base
+│   ├── page.tsx        # Knowledge listing
+│   ├── [slug]/page.tsx # Article page
+│   ├── category/[slug]/ # Category page
+│   └── search/page.tsx # Search
+├── videos/             # Video gallery
+│   ├── page.tsx        # Video listing
+│   └── [slug]/page.tsx # Video page
+├── about/page.tsx      # About page
+├── terms-of-service/page.tsx
+├── privacy-policy/page.tsx
+├── login/page.tsx      # User login
+├── register/page.tsx   # User registration
+└── quote/page.tsx      # Request quote
 ```
 
 **Data Flow Example (Shop Page):**
@@ -228,13 +295,34 @@ if (!mounted) return null;  // Prevents hydration mismatches
 - `CompareContext` - Product comparison
 - `ChatContext` - Live chat platform configuration
 
-### Internationalization (i18n)
+### TypeScript Configuration
 
-**Configuration:**
-- Supported locales: `th` (default), `en`
-- Middleware: `@formatjs/intl-localematcher` + `negotiator`
-- Auto-redirect: `/products` → `/th/products`
-- Type-safe translations via `lib/types/dictionary.ts`
+**Path Aliases:**
+- `@/*` maps to `frontend/` root directory
+- Example: `import { Button } from '@/components/ui/button'`
+- Defined in `tsconfig.json`: `"paths": { "@/*": ["./*"] }`
+
+**Type Safety:**
+- Strict mode enabled
+- Use `Locale` type from `i18n-config.ts` for type-safe locale handling
+- All WordPress API responses have TypeScript interfaces in `lib/types/`
+
+### Testing Setup
+
+**Unit Tests (Vitest):**
+- Config file: `vitest.config.ts`
+- Setup file: `vitest.setup.ts` (must exist for proper configuration)
+- Environment: jsdom
+- Coverage provider: v8
+- Path alias: `@/*` resolves to `./` (frontend root)
+
+**E2E Tests (Playwright):**
+- Config file: `playwright.config.ts`
+- **Status:** Currently disabled/empty due to TypeScript configuration issues
+- Test files exist in `e2e/` folder: `checkout.spec.ts`, `compare.spec.ts`
+- Tests cover: checkout flow, validation, cart management, search, login, comparison
+
+### Internationalization (i18n)
 
 **Accessing translations:**
 ```typescript
@@ -243,6 +331,11 @@ import { getDictionary } from '@/lib/get-dictionary';
 const dict = await getDictionary(lang);
 return <h1>{dict.shop.title}</h1>;
 ```
+
+**Translation files:**
+- `dictionaries/en.json` - English translations
+- `dictionaries/th.json` - Thai translations
+- Type definitions in `lib/types/dictionary.ts`
 
 ## Critical Architecture Decisions
 
@@ -305,6 +398,17 @@ export async function getProductCategories(language: string = 'th'): Promise<Pro
 }
 ```
 
+### 4. Thai Font PDF Generation (2026-02-20)
+
+**Problem:** Thai characters rendered as squares/garbage in jsPDF-generated invoices.
+
+**Solution:** Custom font embedding with Sarabun font (Google Fonts).
+
+**Files:**
+- `frontend/lib/utils/pdfFont.ts` - Font embedding utilities
+- Font files: `frontend/public/fonts/Sarabun-Regular.woff2`, `Sarabun-Regular.ttf`
+- Documentation: `docs/thai-font-pdf-fix-summary.md`
+
 ## Key Services Reference
 
 **WordPress Services** (`lib/services/`):
@@ -322,8 +426,18 @@ export async function getProductCategories(language: string = 'th'): Promise<Pro
 - `wholesaleService.ts` - Wholesale application flow
 - `customerAddressService.ts` - Customer address CRUD
 - `customerOrderService.ts` - Customer order history
+- `invoiceService.ts` - PDF invoice generation with Thai font support
 - `popupService.ts` / `heroSlideService.ts` / `chatService.ts` - Content management
 - `sliderSettingsService.ts` - Hero slider CRUD
+- `promotionalBannerService.ts` - Promotional banners with analytics
+- `faqService.ts` - FAQ content
+- `videoService.ts` - Video gallery
+- `knowledgeBaseService.ts` - Knowledge base articles
+- `dealerService.ts` - Dealer information, tiers, and territories
+- `dealerPricingService.ts` - Dealer-specific pricing
+- `dealerApplicationService.ts` - Dealer application flow
+- `crmService.ts` - Customer relationship management
+- `chatServiceClient.ts` - Live chat platform configuration
 
 **GraphQL Queries** (`lib/graphql/queries.ts`):
 - `GET_PRODUCTS_QUERY` - Product listing (NO categories - triggers language error)
@@ -336,12 +450,41 @@ export async function getProductCategories(language: string = 'th'): Promise<Pro
 - `GET /products` - Product listing with language/category filter
 - `GET /products/{slug}` - Single product details
 - `POST /create-order` - Create new order
-- `GET /categories` - All product categories (NEW - bypasses GraphQL)
+- `GET /categories` - All product categories (bypasses GraphQL)
 - `GET /menu` - Navigation menu by language
 - `GET /posts` - Blog posts
 - `POST /wholesale/apply` - Wholesale application
 - `GET /customer/addresses` - Customer address CRUD
 - `GET /customer/orders` - Customer order history
+- `GET /customer/profile` - Customer profile management
+- `POST /customer/password` - Password change
+- `POST /password-reset` - Password reset request
+- `POST /password-reset/confirm` - Password reset confirmation
+- `GET /faq` - FAQ listing
+- `GET /faq/categories` - FAQ categories
+- `GET /faq/search` - FAQ search
+- `GET /faq/{slug}` - Single FAQ
+- `GET /knowledge` - Knowledge base articles
+- `GET /knowledge/categories` - Knowledge base categories
+- `GET /knowledge/search` - Knowledge base search
+- `GET /knowledge/featured` - Featured knowledge base articles
+- `GET /knowledge/{slug}` - Single knowledge base article
+- `GET /videos` - Video gallery
+- `GET /videos/categories` - Video categories
+- `GET /videos/search` - Video search
+- `GET /videos/{slug}` - Single video
+- `GET /dealer/apply` - Dealer application
+- `GET /dealer/info` - Dealer information
+- `GET /dealer/orders` - Dealer orders
+- `GET /dealer/territories` - Dealer territories
+- `POST /contact` - Contact form submission
+- `GET /popup` - Promotional popup settings
+- `GET /chat` - Live chat platform settings
+- `GET /slider-settings` - Hero slider CRUD
+- `GET /banners/analytics` - Promotional banner analytics
+- `GET /customer-crm/profile` - CRM customer profile
+- `GET /customer-crm/tasks` - CRM tasks
+- `GET /customer-crm/interactions` - CRM interactions
 
 **Custom Post Types:**
 - Hero Slides - Homepage slider content
@@ -360,6 +503,18 @@ export async function getProductCategories(language: string = 'th'): Promise<Pro
 - `product-language.php` - Product language meta fields (TH/EN on single product)
 - `category-language.php` - Category language meta fields (TH/EN on single category)
 - `product-price-types.php` - Multiple price types (piece, meter, etc.)
+
+**Plugin Module Organization:**
+- **CRM System:** `crm-database.php`, `crm-customers.php`, `crm-interactions.php`, `crm-tasks.php`, `crm-admin.php`, `crm-*-api.php`
+- **Wholesale System:** `wholesale-database.php`, `wholesale-admin.php`, `wholesale-api.php`
+- **Dealer System:** `dealer-api.php`, `includes/database/dealer-database.php`
+- **Content Types:** `hero-slides-cpt.php`, `faq-cpt.php`, `knowledge-base-cpt.php`, `video-gallery-cpt.php`
+- **Blog Language:** `blog-language-translation.php`, `blog-language-meta-box.php`, `blog-language-graphql.php`, `blog-rest-api.php`
+- **User Management:** `user-roles.php`, `user-management.php`, `password-management.php`, `password-reset-api.php`, `bulk-user-import.php`
+- **Security:** `block-admin-access.php`, `restrict-admin-login.php`
+- **Upload Limits:** `fix-php-upload-limits.php` - PHP upload configuration fix
+- **Demo Data:** `demo-data.php` - Test data generation
+- **Dashboard:** `dashboard/sakwood-dashboard.php` - React admin dashboard
 
 ### Category Language System (2026-02-19)
 
@@ -464,6 +619,14 @@ fetch(`${process.env.WORDPRESS_API_URL}/categories`)  // ❌ Broken in browser
 - Session: localStorage (`sakwood-user`, `sakwood-token`)
 - **API Pattern:** Pass `user_id` explicitly in request body to avoid cookie issues
 
+**Dealer System:**
+- Tiers: `silver`, `gold`, `platinum`
+- Each tier has: discount percentage, min order amount, min order quantity, credit multiplier
+- Dealer territories assigned by province
+- Application flow: `pending` → `approved`/`rejected` → `active`
+- Dealer-specific pricing with automatic discount calculation
+- Sales capacity tracking and performance metrics
+
 **Shipping Zones (Thailand):**
 - Zone 1: Bangkok Metropolitan (1-2 days, 5,000-6,500 THB)
 - Zone 2: Central Region (2-3 days, 2,000-3,000 THB)
@@ -550,6 +713,12 @@ npm run lint                                       # Check TypeScript
 - WooCommerce `wc_get_products()` uses category slug, not name or ID
 - API filter example: `?category=battens&per_page=100` returns only battens products
 
+**E2E Tests Not Running:**
+- Playwright is currently disabled due to TypeScript config issues
+- Check `playwright.config.ts` - should be empty/temporarily disabled
+- Test files exist at `frontend/e2e/checkout.spec.ts` and `frontend/e2e/compare.spec.ts`
+- To re-enable, fix TypeScript configuration and update Playwright config
+
 ## Feature Implementation Pattern
 
 When adding new features:
@@ -595,12 +764,181 @@ const wpUrl = userId ? `${WORDPRESS_API}/customer/feature?user_id=${userId}` : `
 
 **Architecture:** `frontend/plans/code-structure-improvement-plan.md`
 
-**Recent Major Changes (2026-02-19):**
+## Language System Architecture
+
+### Product Language System (Single Product, Two Languages)
+
+**Key Concept:** One WordPress product entity stores both Thai and English content.
+
+**Meta Fields:**
+- `_product_title_en` - English product name
+- `_product_description_en` - English full description
+- `_product_short_description_en` - English short description
+
+**Thai Content:** Stored in default WordPress fields (`post_title`, `post_content`, `post_excerpt`)
+
+**How It Works:**
+1. Admin creates product in WordPress with Thai content in main fields
+2. Admin fills in English translations in "English Translation" meta box
+3. API returns correct language based on `?language=` parameter
+4. Frontend uses `language` parameter to get TH or EN content
+
+**Files:**
+- `wordpress-plugin/sakwood-integration/product-language.php` - Meta box and save handler
+- `wordpress-plugin/sakwood-integration/product-language-graphql.php` - GraphQL field registration
+- `wordpress-plugin/sakwood-integration/product-language-meta-box.php` - Admin UI
+
+**API Usage:**
+```bash
+# Get product in Thai
+curl "http://localhost:8006/wp-json/sakwood/v1/products/wood-batten?language=th"
+
+# Get product in English
+curl "http://localhost:8006/wp-json/sakwood/v1/products/wood-batten?language=en"
+```
+
+### Category Language System
+
+**Key Concept:** One product category entity with both Thai and English names.
+
+**Meta Fields:**
+- `category_name_en` - English category name
+- `name` (default) - Thai category name
+
+**Adding Categories:**
+1. Go to Products → Categories in WordPress Admin
+2. Enter Thai name in "Name" field (primary)
+3. Enter English translation in "Category Name (English)" field
+4. Click "Add New Category"
+
+**Files:**
+- `wordpress-plugin/sakwood-integration/category-language.php` - Meta box and save handler
+- `wordpress-plugin/sakwood-integration/product-categories-api.php` - REST endpoint
+
+**API Response Format:**
+```json
+{
+  "id": 39,
+  "name": "Battens",              // Localized based on ?language=
+  "slug": "battens",
+  "name_th": "ไม้โครงสน",          // Always included
+  "name_en": "Battens"            // Always included
+}
+```
+
+### Blog Language System
+
+**Similar pattern to products:** Single blog post with TH/EN meta fields.
+
+**Meta Fields:**
+- `_blog_title_en` - English title
+- `_blog_content_en` - English content
+- `_blog_excerpt_en` - English excerpt
+- `_blog_language` - Language identifier (th/en)
+
+**Files:**
+- `wordpress-plugin/sakwood-integration/blog-language-translation.php`
+- `wordpress-plugin/sakwood-integration/blog-language-meta-box.php`
+- `wordpress-plugin/sakwood-integration/blog-language-graphql.php`
+- `wordpress-plugin/sakwood-integration/blog-rest-api.php`
+
+## Dashboard Quick Edit System
+
+**Quick Edit Fix for WooCommerce Sale Prices:**
+
+The plugin includes a custom Quick Edit implementation to fix WooCommerce's broken sale price handling.
+
+**Files:**
+- `wordpress-plugin/sakwood-integration/quick-edit-fix.php`
+
+**Features:**
+- Adds regular price and sale price fields to Quick Edit
+- Properly saves sale prices (WooCommerce default is broken)
+- Clears sale price when empty
+- Clears product transients after save
+- Adds price column to products list showing strikethrough for sales
+
+**How It Works:**
+1. Hooks into `woocommerce_product_quick_edit_end` to add fields
+2. Hooks into `woocommerce_product_quick_edit_save` to save values
+3. Uses AJAX to load current prices when opening Quick Edit
+4. Clears WooCommerce cache with `wc_delete_product_transients()`
+
+**Admin Display:**
+- Products list shows "Price" column with sale pricing
+- "Languages" column shows TH/EN flags for products with translations
+- Sale products show: ~~original price~~ sale price
+
+## PHP Upload Limits Configuration
+
+**Docker PHP Configuration** (`Dockerfile`):
+- `memory_limit = 256M`
+- `upload_max_filesize = 128M`
+- `post_max_size = 128M`
+- `max_execution_time = 600` (10 minutes)
+- `max_input_time = 600`
+
+**Plugin Helper:** `fix-php-upload-limits.php` adds admin button to fix limits via WP-CLI.
+
+## Database Recovery & Backup
+
+**Development Database:**
+- MySQL 5.7 running in Docker container (`sak_db`)
+- Connection: `db:3306` (from WordPress container)
+- Root password: `sakWW099` (see `.env` or `docker-compose.yml`)
+
+**Database Access:**
+```bash
+# Access MySQL CLI in container
+docker exec -it sak_db mysql -uroot -psakWW099
+
+# Export database
+docker exec sak_db mysqldump -uroot -psakWW099 wordpress > backup.sql
+
+# Import database
+docker exec -i sak_db mysql -uroot -psakWW099 wordpress < backup.sql
+
+# Access via phpMyAdmin
+# URL: http://localhost:8888
+# User: root
+# Password: sakWW099
+```
+
+**WP-CLI in Container:**
+```bash
+# Run WP-CLI commands
+docker exec -it sak_wp wp plugin list
+docker exec -it sak_wp wp user list
+docker exec -it sak_wp wp post list --post_type=product
+```
+
+## Recent Major Changes (2026-02-19 to 2026-02-23)
+
+**Language & Localization:**
+- Implemented product language system (single product with TH/EN meta fields)
 - Implemented category language system (single category with TH/EN names)
+- Fixed GraphQL language field issue by using REST API for categories
+- Added English translations to 6 main categories (Battens, Timber, Cladding, Flooring, Corner, Pole)
+- Blog language system with TH/EN content
+
+**Shop & Product Features:**
 - Fixed pagination on shop page (12 products per page)
 - Removed duplicate products (45 → 40 unique products)
-- Fixed GraphQL language field issue by using REST API for categories
+- Fixed category filtering - Added `category` parameter to products API
+- Renamed category slugs from `pine-*` to clean names (battens, timber, etc.)
+- Fixed WooCommerce Quick Edit for sale prices
+- Products now properly filterable by category on shop page
+- Sale badges display correctly without duplication
+
+**Business Features:**
+- Added dealer system with tiers (silver/gold/platinum), territories, and applications
+- Implemented CRM system for customer interactions, tasks, and profiles
+- Added invoice PDF generation with Thai font support (Sarabun)
+- Added FAQ, Knowledge Base, and Video Gallery custom post types
+- Implemented promotional banners with analytics tracking
+- Added password reset functionality with email confirmation
+
+**Technical Improvements:**
 - Established language-prefixed URL pattern for client-side fetches
-- Added English translations to 6 main categories (Battens, Timber, Cladding, Flooring, Corner, Pole)
-- **Fixed category filtering** - Added `category` parameter to products API, renamed category slugs from `pine-*` to clean names
-- All products now properly filterable by category on shop page
+- PHP upload limits configuration for bulk import
+- Mobile compatibility fixes for images and API access

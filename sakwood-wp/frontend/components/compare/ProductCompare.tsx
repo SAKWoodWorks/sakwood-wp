@@ -10,7 +10,7 @@
 import { useMemo } from 'react';
 import { useCompare } from '@/context/CompareContext';
 import type { CompareProduct } from '@/lib/types/compare';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui';
 import { Card, CardContent } from '@/components/ui/card';
 import Image from 'next/image';
 

@@ -8,19 +8,19 @@
  */
 
 import { useCompare } from '@/context/CompareContext';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui';
 
 interface CompareButtonProps {
   productId: string;
-  variant?: 'default' | 'outline' | 'ghost';
-  size?: 'default' | 'sm' | 'lg' | 'icon';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
   className?: string;
 }
 
 export function CompareButton({
   productId,
   variant = 'outline',
-  size = 'default',
+  size = 'md',
   className = '',
 }: CompareButtonProps) {
   const { hasProduct, addProduct, removeProduct } = useCompare();
@@ -37,7 +37,7 @@ export function CompareButton({
 
   return (
     <Button
-      variant={isAdded ? 'default' : variant}
+      variant={isAdded ? 'primary' : variant}
       size={size}
       onClick={handleClick}
       className={className}

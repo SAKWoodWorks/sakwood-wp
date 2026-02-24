@@ -28,7 +28,9 @@ export async function generateMetadata({ params }: PriceListPageProps): Promise<
 export default async function PriceListPage({ params }: PriceListPageProps) {
   const { lang } = await params;
   const dictionary = await getDictionary(lang as Locale);
-  const products = await getProducts(lang as Locale);
+  // Fetch all products (no pagination limit) for price list
+  const productsData = await getProducts(lang as Locale, undefined, undefined, 1, 100);
+  const products = productsData.products;
 
   const breadcrumbItems = [
     { name: dictionary.common.home, href: `/${lang}` },
