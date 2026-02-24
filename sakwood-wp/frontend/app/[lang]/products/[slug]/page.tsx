@@ -128,7 +128,7 @@ export default async function ProductPage({ params }: PageProps) {
 
         {/* Related Products */}
         <RelatedProductsCarousel
-          products={relatedProducts.filter(p => p.id !== productData.id).slice(0, 8)}
+          products={relatedProducts.products.filter(p => p.id !== productData.id).slice(0, 8)}
           lang={lang as Locale}
           dictionary={dictionary}
         />
