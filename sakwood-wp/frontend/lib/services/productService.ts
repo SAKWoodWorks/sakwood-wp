@@ -203,7 +203,7 @@ async function getProductsViaREST(
     const products: RestProduct[] = await response.json();
 
     // Transform to Product format
-    const transformedProducts = products.map((product) => {
+    const transformedProducts: Product[] = products.map((product) => {
       // Use price from API
       const price = product.price || '';
 
