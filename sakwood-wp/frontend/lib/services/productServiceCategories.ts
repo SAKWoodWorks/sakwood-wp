@@ -1,3 +1,5 @@
+import type { ProductCategory } from '@/lib/types';
+
 /**
  * Fetch product categories from WordPress REST API
  *
