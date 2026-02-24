@@ -30,9 +30,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Add product pages
   try {
-    const products = await getProducts();
+    const productsData = await getProducts();
 
-    products.forEach((product) => {
+    productsData.products.forEach((product) => {
       languages.forEach((lang) => {
         sitemapEntries.push({
           url: `${siteUrl}/${lang}/products/${product.slug}`,
