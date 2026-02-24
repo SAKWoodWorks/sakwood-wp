@@ -324,7 +324,7 @@ async function getProductsViaGraphQL(
   const totalProducts = products.length;
 
   // Transform image URLs and add price types
-  const transformedProducts = products.map((product) => {
+  const transformedProducts: Product[] = products.map((product) => {
     // Generate default priceTypes and prices from the single price field
     const price = product.price || '';
     const apiPriceTypes = product.priceTypes || ['piece'];
