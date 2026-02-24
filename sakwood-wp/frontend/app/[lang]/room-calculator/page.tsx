@@ -56,7 +56,7 @@ export default async function RoomCalculatorPage({ params }: PageProps) {
 
       {/* Calculator Section */}
       <div className="max-w-5xl mx-auto px-6 py-12">
-        <RoomCalculator lang={lang} dictionary={dictionary} products={products} />
+        <RoomCalculator lang={lang} dictionary={dictionary} products={products.products} />
       </div>
 
       {/* Additional Information */}
