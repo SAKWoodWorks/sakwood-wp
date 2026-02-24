@@ -121,7 +121,7 @@ export function ShopPage({
             {dictionary.shop.subtitle}
           </p>
           <p className="text-lg text-blue-600 font-semibold mt-2">
-            {totalProducts} {dictionary.shop.products || 'products'}
+            {totalProducts} {lang === 'th' ? 'สินค้า' : 'products'}
           </p>
         </div>
 
