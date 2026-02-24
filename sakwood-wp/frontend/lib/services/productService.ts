@@ -34,6 +34,7 @@ interface RestProduct {
   galleryImages?: {
     nodes?: Array<{ sourceUrl: string } & Record<string, unknown>>;
   };
+  stockStatus?: string;
 }
 
 /**
