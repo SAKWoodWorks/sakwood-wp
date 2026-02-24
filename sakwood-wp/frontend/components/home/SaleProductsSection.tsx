@@ -83,20 +83,19 @@ export async function SaleProductsSection({ lang, dictionary }: SaleProductsSect
                 <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M5 2a2 2 0 00-2 2v14l3.5-2 3.5 2 3.5-2 3.5 2V4a2 2 0 00-2-2H5zm2.5 3a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm6.207.293a1 1 0 00-1.414 0l-6 6a1 1 0 101.414 1.414l6-6a1 1 0 000-1.414zM12.5 10a1.5 1.5 0 100 3 1.5 1.5 0 000-3z" clipRule="evenodd" />
                 </svg>
-                {dict.sale_products || (lang === 'th' ? 'โปรโมชั่น' : 'Special Offer')}
+                {lang === 'th' ? 'โปรโมชั่น' : 'Special Offer'}
               </div>
               <h2
                 id="sale-products-heading"
                 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 mb-3 sm:mb-4"
               >
-                {dict.sale_products_title || (lang === 'th' ? 'สินค้าราคาพิเศษ' : 'Sale Products')}
+                {lang === 'th' ? 'สินค้าราคาพิเศษ' : 'Sale Products'}
               </h2>
               <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">
-                {dict.sale_products_subtitle || (
-                  lang === 'th'
-                    ? 'สินค้าคุณภาพดีในราคาพิเศษเพื่อลูกค้าคนสำคัญ'
-                    : 'High-quality products at special prices for our valued customers'
-                )}
+                {lang === 'th'
+                  ? 'สินค้าคุณภาพดีในราคาพิเศษเพื่อลูกค้าคนสำคัญ'
+                  : 'High-quality products at special prices for our valued customers'
+                }
               </p>
             </header>
 
