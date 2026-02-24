@@ -5,8 +5,6 @@ RUN apt-get update && apt-get install -y \
     curl \
     sudo \
     less \
-    php-cli \
-    php-xml \
     && rm -rf /var/www/html \
     && curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar /tmp/wp-cli.phar \
     && php /tmp/wp-cli.phar --version \
