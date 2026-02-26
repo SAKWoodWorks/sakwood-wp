@@ -190,8 +190,9 @@ NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL=https://wp.sakww.com/graphql
 NEXT_PUBLIC_WORDPRESS_API_URL=https://wp.sakww.com/wp-json/sakwood/v1
 
 # Server-side (Node.js - set in docker-compose.prod.yml)
-WORDPRESS_GRAPHQL_URL=http://sak_wp:80/graphql
-WORDPRESS_API_URL=http://sak_wp:80/wp-json
+# CRITICAL: Do NOT include /wp-json or /graphql - code adds these paths
+WORDPRESS_GRAPHQL_URL=http://sak_wp:80
+WORDPRESS_API_URL=http://sak_wp:80
 ```
 
 **Smart Fallback Pattern (`lib/config/constants.ts`):**
@@ -316,16 +317,28 @@ services:
       - sakwood_network
 ```
 
-**Solution 2: Use Correct Internal URLs:**
+**Solution 2: Use Correct Internal URLs (CRITICAL - No trailing `/wp-json`):**
 ```yaml
 # docker-compose.prod.yml
 frontend:
   environment:
-    # Server-side: Use Docker hostname
-    - WORDPRESS_API_URL=http://sak_wp:80/wp-json
-    # Client-side: Use external URL
+    # Server-side: Use Docker hostname WITHOUT /wp-json path!
+    # The code adds /wp-json/sakwood/v1 automatically
+    - WORDPRESS_API_URL=http://sak_wp:80
+    # Client-side: Use external URL with full path
     - NEXT_PUBLIC_WORDPRESS_API_URL=https://wp.sakww.com/wp-json/sakwood/v1
 ```
+
+**⚠️ CRITICAL BUG PREVENTION:**
+Never include `/wp-json` in `WORDPRESS_API_URL`. The code constructs the full API path as:
+```typescript
+const url = `${WORDPRESS_API_URL}/wp-json/sakwood/v1/products`;
+```
+If `WORDPRESS_API_URL=http://sak_wp:80/wp-json`, it creates:
+- `http://sak_wp:80/wp-json/wp-json/sakwood/v1/products` ❌ (404 error)
+
+Correct configuration (`WORDPRESS_API_URL=http://sak_wp:80`) creates:
+- `http://sak_wp:80/wp-json/sakwood/v1/products` ✅ (works)
 
 **Solution 3: Restart All Services on Same Network:**
 ```bash
@@ -347,14 +360,39 @@ docker-compose -f docker-compose.prod.yml logs wordpress | grep -i error
 
 ### Common Production Issues
 
-**Issue: Frontend shows "Failed to fetch" errors**
-```bash
-# Check if WORDPRESS_API_URL is set correctly
-docker exec sak_frontend env | grep WORDPRESS
+**Issue: Frontend shows "Failed to fetch" errors or "REST API failed: 404"**
 
-# Should show:
-# WORDPRESS_API_URL=http://sak_wp:80/wp-json  (server-side)
-# NEXT_PUBLIC_WORDPRESS_API_URL=https://wp.sakww.com/... (client-side)
+**Quick Diagnosis:**
+```bash
+# 1. Check WORDPRESS_API_URL is correct (NO /wp-json suffix!)
+docker exec sak_frontend env | grep WORDPRESS_API_URL
+
+# 2. Test WordPress API from WordPress container
+docker exec sak_wp sh -c "php -r 'echo json_encode(json_decode(file_get_contents(\"http://localhost/wp-json/sakwood/v1/products?language=th&per_page=1\")), JSON_PRETTY_PRINT);'"
+
+# 3. Test connectivity from frontend to WordPress
+docker exec sak_frontend node -e "require('http').get('http://sak_wp:80/wp-json/sakwood/v1/products?language=th&per_page=1', (res) => { let data = ''; res.on('data', (d) => { data += d; }); res.on('end', () => { console.log(data.substring(0, 500)); }); }).on('error', (e) => { console.error('Error:', e.message); });"
+
+# 4. Check frontend logs for specific errors
+docker logs sak_frontend 2>&1 | grep -E "REST API" | tail -10
+```
+
+**Expected Correct Values:**
+```bash
+WORDPRESS_API_URL=http://sak_wp:80  # ✅ Correct - NO /wp-json
+NEXT_PUBLIC_WORDPRESS_API_URL=https://wp.sakww.com/wp-json/sakwood/v1  # ✅ Correct
+```
+
+**Common Fix:**
+If `WORDPRESS_API_URL=http://sak_wp:80/wp-json` (wrong!), edit `/var/www/sakwood/docker-compose.prod.yml`:
+```bash
+nano /var/www/sakwood/docker-compose.prod.yml
+# Change: WORDPRESS_API_URL=http://sak_wp:80/wp-json
+# To: WORDPRESS_API_URL=http://sak_wp:80
+
+# Restart frontend
+cd /var/www/sakwood
+docker compose -f docker-compose.prod.yml up -d frontend
 ```
 
 **Issue: Images broken in production**
@@ -453,6 +491,19 @@ fetch('/wp-json/sakwood/v1/categories')  // ❌ Loses query params
 - **Blog:** `blog-language-translation.php`, `blog-language-meta-box.php`
 - **Users:** `user-roles.php`, `password-reset-api.php`, `bulk-user-import.php`
 - **Upload:** `fix-php-upload-limits.php`
+- **Admin Dashboard:** `dashboard/sakwood-dashboard.php` - React-based admin interface
+
+**Admin Dashboard (React App):**
+- Location: `wordpress-plugin/sakwood-integration/dashboard/`
+- Build command: `npm run build` (from dashboard directory)
+- Built files: `dashboard/assets/js/build/dashboard.js`
+- If dashboard shows blank/404, the React app needs to be built:
+  ```bash
+  cd wordpress-plugin/sakwood-integration/dashboard
+  npm install
+  npm run build
+  # Commit the built files to deploy
+  ```
 
 ---
 
