@@ -20,7 +20,7 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { lang, slug } = await params;
   const productData = await getProductBySlug(slug, lang);
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://sakwood.com";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://wp.sakww.com";
   const isThai = lang === 'th';
 
   if (!productData) {
@@ -78,7 +78,7 @@ export default async function ProductPage({ params }: PageProps) {
   const { lang, slug } = await params;
   const dictionary = await getDictionary(lang as Locale);
   const { common, product, popup } = dictionary;
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://sakwood.com";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://wp.sakww.com";
 
   const productData = await getProductBySlug(slug, lang);
   const relatedProducts = await getProducts(lang);

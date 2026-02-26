@@ -28,7 +28,7 @@ export function ArticleStructuredData({ article, url }: ArticleStructuredDataPro
       "name": "Sakwood",
       "logo": {
         "@type": "ImageObject",
-        "url": `${process.env.NEXT_PUBLIC_SITE_URL || 'https://sakwood.com'}/logo.png`
+        "url": `${process.env.NEXT_PUBLIC_SITE_URL || 'https://wp.sakww.com'}/logo.png`
       }
     },
     "mainEntityOfPage": {

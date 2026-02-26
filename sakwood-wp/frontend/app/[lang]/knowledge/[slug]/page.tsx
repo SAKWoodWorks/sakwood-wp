@@ -63,7 +63,7 @@ export default async function KnowledgeArticlePage({
     { name: article.title, href: `/${lang}/knowledge/${slug}` },
   ];
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://sakwood.com';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://wp.sakww.com';
   const articleUrl = `${siteUrl}/${lang}/knowledge/${slug}`;
 
   return (

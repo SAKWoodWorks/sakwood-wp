@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Sakwood Product Bulk Import
- * Plugin URI: https://sakwood.com
+ * Plugin URI: https://wp.sakww.com
  * Description: Bulk import products from CSV with images
  * Version: 1.0.0
  * Author: Sakwood

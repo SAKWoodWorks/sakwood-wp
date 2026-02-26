@@ -113,7 +113,7 @@ export function generateUrl(
   path: string,
   lang: 'th' | 'en' = 'th'
 ): string {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://sakwood.com';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://wp.sakww.com';
   return `${siteUrl}/${lang}${path.startsWith('/') ? path : `/${path}`}`;
 }
 
@@ -133,7 +133,7 @@ export function generateCanonicalUrl(
 export function generateOgImageUrl(
   imagePath?: string
 ): string {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://sakwood.com';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://wp.sakww.com';
   if (imagePath) {
     return imagePath.startsWith('http') ? imagePath : `${siteUrl}${imagePath}`;
   }

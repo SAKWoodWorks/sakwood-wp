@@ -14,4 +14,4 @@ Disallow: /checkout/
 Disallow: /my-account/
 
 # Allow sitemap
-Sitemap: https://sakwood.com/sitemap.xml
+Sitemap: https://wp.sakww.com/sitemap.xml

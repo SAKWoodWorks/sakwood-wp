@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name: Sakwood Integration
- * Plugin URI: https://sakwood.com
+ * Plugin URI: https://wp.sakww.com
  * Description: Integration plugin for Sakwood Next.js frontend - adds custom post types, REST API endpoints, and admin functionality
  * Version: 1.0.0
  * Author: Sakwood
- * Author URI: https://sakwood.com
+ * Author URI: https://wp.sakww.com
  * Text Domain: sakwood-integration
  * Requires at least: 5.8
  * Requires PHP: 7.4

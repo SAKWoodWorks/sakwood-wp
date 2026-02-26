@@ -2,7 +2,7 @@ interface OrganizationStructuredDataProps {
   siteUrl?: string;
 }
 
-export function OrganizationStructuredData({ siteUrl = 'https://sakwood.com' }: OrganizationStructuredDataProps) {
+export function OrganizationStructuredData({ siteUrl = 'https://wp.sakww.com' }: OrganizationStructuredDataProps) {
   const organizationSchema = {
     "@context": "https://schema.org",
     "@type": "Organization",

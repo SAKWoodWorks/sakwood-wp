@@ -20,7 +20,7 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { lang, slug } = await params;
   const post = await getBlogPostBySlug(slug, lang);
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://sakwood.com";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://wp.sakww.com";
 
   if (!post) {
     return {
@@ -91,7 +91,7 @@ export default async function BlogPostPage({ params }: PageProps) {
     { name: post.title, href: `/${lang}/blog/${slug}` },
   ];
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://sakwood.com';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://wp.sakww.com';
   const articleUrl = `${siteUrl}/${lang}/blog/${slug}`;
 
   return (

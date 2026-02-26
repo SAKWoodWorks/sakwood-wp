@@ -217,11 +217,11 @@ export default async function TermsOfServicePage({ params }: TermsOfServicePageP
                 </ul>
                 {isThai ? (
                   <p className="text-gray-600 mt-4">
-                    กรุณาติดต่อเราที่ info@sakwood.com สำหรับการคืนสินค้า
+                    กรุณาติดต่อเราที่ info@sakww.com สำหรับการคืนสินค้า
                   </p>
                 ) : (
                   <p className="text-gray-600 mt-4">
-                    Please contact us at info@sakwood.com for returns.
+                    Please contact us at info@sakww.com for returns.
                   </p>
                 )}
               </section>

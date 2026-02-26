@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 import { getProducts } from '@/lib/services/productService';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://sakwood.com';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://wp.sakww.com';
 const languages = ['th', 'en'];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

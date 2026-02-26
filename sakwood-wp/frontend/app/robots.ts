@@ -5,7 +5,7 @@ import type { MetadataRoute } from 'next';
  * Blocks API routes, admin, checkout, and account pages from indexing
  */
 export default function robots(): MetadataRoute.Robots {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://sakwood.com';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://wp.sakww.com';
 
   return {
     rules: [

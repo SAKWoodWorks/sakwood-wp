@@ -211,11 +211,11 @@ export default async function PrivacyPolicyPage({ params }: PrivacyPolicyPagePro
                 </h2>
                 {isThai ? (
                   <p className="text-gray-600">
-                    หากคุณมีคำถามเกี่ยวกับนโยบายความเป็นส่วนตัวของเรา โปรดติดต่อเราที่ info@sakwood.com
+                    หากคุณมีคำถามเกี่ยวกับนโยบายความเป็นส่วนตัวของเรา โปรดติดต่อเราที่ info@sakww.com
                   </p>
                 ) : (
                   <p className="text-gray-600">
-                    If you have questions about our Privacy Policy, please contact us at info@sakwood.com
+                    If you have questions about our Privacy Policy, please contact us at info@sakww.com
                   </p>
                 )}
               </section>

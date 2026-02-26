@@ -4,7 +4,7 @@ interface ProductStructuredDataProps {
   siteUrl?: string;
 }
 
-export function ProductStructuredData({ product, lang, siteUrl = 'https://sakwood.com' }: ProductStructuredDataProps) {
+export function ProductStructuredData({ product, lang, siteUrl = 'https://wp.sakww.com' }: ProductStructuredDataProps) {
   if (!product) return null;
 
   const productSchema = {

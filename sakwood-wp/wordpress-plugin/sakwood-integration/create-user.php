@@ -15,7 +15,7 @@ if (!defined('WP_ADMIN')) {
         if (isset($_GET['create_test_user']) && current_user_can('manage_options')) {
             $username = 'testuser';
             $password = 'test123';
-            $email = 'test@sakwood.com';
+            $email = 'test@sakww.com';
 
             // Check if user exists
             if (username_exists($username)) {

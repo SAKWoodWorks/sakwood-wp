@@ -25,7 +25,7 @@ interface LayoutProps {
 
 export async function generateMetadata({ params }: LayoutProps): Promise<Metadata> {
   const { lang } = await params;
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://sakwood.com";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://wp.sakww.com";
   const isThai = lang === 'th';
 
   return {
@@ -129,7 +129,7 @@ export async function generateMetadata({ params }: LayoutProps): Promise<Metadat
 
 export default async function RootLayout({ children, params }: LayoutProps) {
   const { lang } = await params;
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://sakwood.com";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://wp.sakww.com";
 
   // Fetch primary menu from WordPress based on current language and dictionary
   const menuItems = await getMenu(lang);

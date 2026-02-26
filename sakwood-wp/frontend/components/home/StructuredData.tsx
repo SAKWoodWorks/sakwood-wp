@@ -3,13 +3,13 @@ export function StructuredData() {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "Sakwood",
-    "url": "https://sakwood.com",
+    "url": "https://wp.sakww.com",
     "description": "Thailand's trusted supplier of structural pine, marine plywood, and engineering timber. Quality wood products for construction, wholesale, and industrial use.",
     "potentialAction": {
       "@type": "SearchAction",
       "target": {
         "@type": "EntryPoint",
-        "urlTemplate": "https://sakwood.com/search?q={search_term_string}"
+        "urlTemplate": "https://wp.sakww.com/search?q={search_term_string}"
       },
       "query-input": "required name=search_term_string"
     },
@@ -18,7 +18,7 @@ export function StructuredData() {
       "name": "Sakwood",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://sakwood.com/logo.png"
+        "url": "https://wp.sakww.com/logo.png"
       },
       "contactPoint": {
         "@type": "ContactPoint",
@@ -39,8 +39,8 @@ export function StructuredData() {
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": "Sakwood",
-    "url": "https://sakwood.com",
-    "logo": "https://sakwood.com/logo.png",
+    "url": "https://wp.sakww.com",
+    "logo": "https://wp.sakww.com/logo.png",
     "description": "Thailand's trusted supplier of structural pine, marine plywood, and engineering timber.",
     "address": {
       "@type": "PostalAddress",
@@ -76,7 +76,7 @@ export function StructuredData() {
           "@type": "Offer",
           "availability": "https://schema.org/InStock",
           "priceCurrency": "THB",
-          "url": "https://sakwood.com/shop"
+          "url": "https://wp.sakww.com/shop"
         }
       },
       {
@@ -89,7 +89,7 @@ export function StructuredData() {
           "@type": "Offer",
           "availability": "https://schema.org/InStock",
           "priceCurrency": "THB",
-          "url": "https://sakwood.com/shop"
+          "url": "https://wp.sakww.com/shop"
         }
       },
       {
@@ -102,7 +102,7 @@ export function StructuredData() {
           "@type": "Offer",
           "availability": "https://schema.org/InStock",
           "priceCurrency": "THB",
-          "url": "https://sakwood.com/shop"
+          "url": "https://wp.sakww.com/shop"
         }
       },
       {
@@ -115,7 +115,7 @@ export function StructuredData() {
           "@type": "Offer",
           "availability": "https://schema.org/InStock",
           "priceCurrency": "THB",
-          "url": "https://sakwood.com/shop"
+          "url": "https://wp.sakww.com/shop"
         }
       }
     ]
@@ -129,7 +129,7 @@ export function StructuredData() {
         "@type": "ListItem",
         "position": 1,
         "name": "Home",
-        "item": "https://sakwood.com"
+        "item": "https://wp.sakww.com"
       }
     ]
   };
