@@ -29,7 +29,26 @@ function transformImageUrl(url: string | undefined): string | undefined {
 
 export async function GET() {
   try {
-    const response = await fetch(`${WORDPRESS_API_URL}/popup`, {
+    // Construct the full popup API URL
+    // Handle different URL formats:
+    // - http://localhost:8006/wp-json/sakwood/v1 (has full path)
+    // - http://sak_wp:80/wp-json (missing /sakwood/v1)
+    // - http://sak_wp:80 (missing /wp-json)
+    const baseUrl = WORDPRESS_API_URL;
+
+    let apiUrl;
+    if (baseUrl.includes('/sakwood/v1')) {
+      // Already has full path, just add /popup
+      apiUrl = `${baseUrl}/popup`;
+    } else if (baseUrl.includes('/wp-json')) {
+      // Has /wp-json but missing /sakwood/v1
+      apiUrl = `${baseUrl}/sakwood/v1/popup`;
+    } else {
+      // Missing both /wp-json and /sakwood/v1
+      apiUrl = `${baseUrl}/wp-json/sakwood/v1/popup`;
+    }
+
+    const response = await fetch(apiUrl, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
