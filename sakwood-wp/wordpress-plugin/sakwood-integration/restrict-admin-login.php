@@ -12,7 +12,7 @@ if (!defined('ABSPATH')) {
 class Sakwood_Login_Restriction {
 
     private static $instance = null;
-    private $allowed_domain = 'sakww.com';
+    private $allowed_domains = array('sakww.com', 'sakwood.com'); // Add more domains: array('sakww.com', 'sakwood.com', 'another-domain.com')
 
     public static function get_instance() {
         if (null === self::$instance) {
@@ -33,43 +33,41 @@ class Sakwood_Login_Restriction {
      * Restrict login to @sakww.com email addresses only
      */
     public function restrict_login_by_email_domain($user, $username, $password) {
-        // Don't block if already an error (wrong password, etc.)
-        if (is_wp_error($user)) {
-            return $user;
-        }
+        // Check email domain FIRST, before other authentication
+        $allowed = false;
+        $email_to_check = '';
 
-        // Check if logging in with email
+        // Determine email to check
         if (is_email($username)) {
-            $domain = substr(strrchr($username, "@"), 1);
-
-            if ($domain !== $this->allowed_domain) {
-                return new WP_Error(
-                    'invalid_email_domain',
-                    sprintf(
-                        '<strong>Error:</strong> Only company email addresses (@%s) are allowed to access this admin area.',
-                        esc_html($this->allowed_domain)
-                    )
-                );
-            }
+            // Logging in with email address
+            $email_to_check = $username;
         } else {
-            // If logging in with username, get the user's email
+            // Logging in with username - get user's email
             $user_obj = get_user_by('login', $username);
-
             if ($user_obj && !empty($user_obj->user_email)) {
-                $domain = substr(strrchr($user_obj->user_email, "@"), 1);
-
-                if ($domain !== $this->allowed_domain) {
-                    return new WP_Error(
-                        'invalid_email_domain',
-                        sprintf(
-                            '<strong>Error:</strong> Your account email must be from @%s to access this admin area. Please contact your administrator.',
-                            esc_html($this->allowed_domain)
-                        )
-                    );
-                }
+                $email_to_check = $user_obj->user_email;
             }
         }
 
+        // Check if email domain is allowed
+        if (!empty($email_to_check)) {
+            $domain = substr(strrchr($email_to_check, "@"), 1);
+
+            if (in_array($domain, $this->allowed_domains)) {
+                $allowed = true;
+            }
+        }
+
+        // If domain is NOT allowed, block immediately
+        if (!$allowed && !empty($email_to_check)) {
+            return new WP_Error(
+                'invalid_email_domain',
+                '<strong>Error:</strong> Only company email addresses are allowed to access this admin area.'
+            );
+        }
+
+        // Domain is allowed (or no email found), proceed with normal authentication
+        // Return the user result (might be WP_Error for wrong password, etc.)
         return $user;
     }
 

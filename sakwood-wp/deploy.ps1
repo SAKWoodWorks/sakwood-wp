@@ -6,10 +6,10 @@ $ErrorActionPreference = "Stop"
 
 # Configuration
 # IMPORTANT: Update these variables before running the script
-$DROPLET_IP = "your-droplet-ip"
+$DROPLET_IP = "YOUR_SERVER_IP"  # TODO: Update with your server IP
 $DROPLET_USER = "root"
-$DOMAIN = "yourdomain.com"
-$API_SUBDOMAIN = "api.yourdomain.com"
+$DOMAIN = "wp.sakww.com"
+$API_SUBDOMAIN = "wp.sakww.com"
 
 # Local paths
 $PROJECT_DIR = Split-Path -Parent $MyInvocation.MyCommand.Path
