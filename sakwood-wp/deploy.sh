@@ -13,10 +13,10 @@ NC='\033[0m' # No Color
 
 # Configuration
 # IMPORTANT: Update these variables before running the script
-DROPLET_IP="your-droplet-ip"
+DROPLET_IP="your-droplet-ip"  # TODO: Update with your DigitalOcean droplet IP
 DROPLET_USER="root"
-DOMAIN="yourdomain.com"
-API_SUBDOMAIN="api.yourdomain.com"
+DOMAIN="sakwood.com"
+API_SUBDOMAIN="wp.sakww.com"
 
 # Local paths
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
