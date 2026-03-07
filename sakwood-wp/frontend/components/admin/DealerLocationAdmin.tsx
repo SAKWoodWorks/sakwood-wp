@@ -150,10 +150,10 @@ export function DealerLocationAdmin({ lang, dictionary }: DealerLocationAdminPro
                   {location.tier && (
                     <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold ${
                       location.tier === 'platinum'
-                        ? 'bg-purple-100 text-purple-800'
+                        ? 'bg-purple-700 text-white'
                         : location.tier === 'gold'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-gray-100 text-gray-800'
+                        ? 'bg-yellow-600 text-white'
+                        : 'bg-gray-600 text-white'
                     }`}>
                       <Star className="w-3.5 h-3.5" />
                       {location.tierDisplayName}

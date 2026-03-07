@@ -4,6 +4,9 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { MapPin, Navigation, Search, Store, Clock, Phone, Mail, Star } from 'lucide-react';
 import type { Locale } from '@/i18n-config';
 import { getDealerLocations, getThailandProvinces, type DealerLocation } from '@/lib/services/dealerLocationService';
+import { useFocusTrap } from '@/lib/hooks/useFocusTrap';
+import { generateDealerJsonLd } from '@/lib/utils/generateDealerJsonLd';
+import { useToast } from '@/components/ui/Toast';
 
 interface DealerLocatorProps {
   lang: Locale;
@@ -66,9 +69,14 @@ export function DealerLocator({ lang, dictionary }: DealerLocatorProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
+  const modalRef = useRef<HTMLDivElement>(null);
 
   const dict = dictionary.dealer_locator || {};
   const provinces = getThailandProvinces();
+  const { show, ToastContainer } = useToast();
+
+  // Focus trap for modal accessibility
+  useFocusTrap(selectedDealer !== null, modalRef);
 
   // Load Google Maps API
   useEffect(() => {
@@ -177,6 +185,32 @@ export function DealerLocator({ lang, dictionary }: DealerLocatorProps) {
     loadDealers();
   }, []);
 
+  // Inject JSON-LD structured data for SEO
+  useEffect(() => {
+    if (typeof window === 'undefined' || dealers.length === 0) return;
+
+    // Remove existing JSON-LD if present
+    const existingScript = document.getElementById('dealer-jsonld');
+    if (existingScript) {
+      existingScript.remove();
+    }
+
+    // Create and inject new JSON-LD
+    const jsonLd = generateDealerJsonLd(dealers);
+    const script = document.createElement('script');
+    script.id = 'dealer-jsonld';
+    script.type = 'application/ld+json';
+    script.text = jsonLd;
+    document.head.appendChild(script);
+
+    return () => {
+      const scriptToRemove = document.getElementById('dealer-jsonld');
+      if (scriptToRemove) {
+        scriptToRemove.remove();
+      }
+    };
+  }, [dealers]);
+
   // Filter by province
   const handleProvinceChange = (province: string) => {
     setSelectedProvince(province);
@@ -203,7 +237,7 @@ export function DealerLocator({ lang, dictionary }: DealerLocatorProps) {
   // Find nearest dealers
   const handleFindNearest = () => {
     if (!navigator.geolocation) {
-      alert(lang === 'th' ? 'เบราว์เซอร์ไม่รองรับการระบุตำแหน่ง' : 'Geolocation is not supported by your browser');
+      show(lang === 'th' ? 'เบราว์เซอร์ไม่รองรับการระบุตำแหน่ง' : 'Geolocation is not supported by your browser', 'error');
       return;
     }
 
@@ -238,12 +272,12 @@ export function DealerLocator({ lang, dictionary }: DealerLocatorProps) {
           });
           markersRef.current.push(userMarker);
         } else {
-          alert(lang === 'th' ? `ไม่พบตัวแทนจำหน่ายในรัศมี ${searchRadius} กม.` : `No dealers found within ${searchRadius} km`);
+          show(lang === 'th' ? `ไม่พบตัวแทนจำหน่ายในรัศมี ${searchRadius} กม.` : `No dealers found within ${searchRadius} km`, 'error');
         }
       },
       (error) => {
         console.error('Geolocation error:', error);
-        alert(lang === 'th' ? 'ไม่สามารถระบุตำแหน่งได้' : 'Unable to get your location');
+        show(lang === 'th' ? 'ไม่สามารถระบุตำแหน่งได้' : 'Unable to get your location', 'error');
       }
     );
   };
@@ -334,10 +368,10 @@ export function DealerLocator({ lang, dictionary }: DealerLocatorProps) {
                       <div className="flex items-center gap-2 mb-2">
                         <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${
                           dealer.tier === 'platinum'
-                            ? 'bg-purple-100 text-purple-800'
+                            ? 'bg-purple-700 text-white'
                             : dealer.tier === 'gold'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-gray-100 text-gray-800'
+                            ? 'bg-yellow-600 text-white'
+                            : 'bg-gray-600 text-white'
                         }`}>
                           <Star className="w-3 h-3" />
                           {dealer.tierDisplayName}
@@ -375,8 +409,12 @@ export function DealerLocator({ lang, dictionary }: DealerLocatorProps) {
         <div
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
           onClick={() => setSelectedDealer(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="dealer-modal-title"
         >
           <div
+            ref={modalRef}
             className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[80vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
@@ -384,13 +422,13 @@ export function DealerLocator({ lang, dictionary }: DealerLocatorProps) {
               {/* Header */}
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <h3 className="text-xl font-bold text-blue-900 mb-1">{selectedDealer.business_name}</h3>
+                  <h3 id="dealer-modal-title" className="text-xl font-bold text-blue-900 mb-1">{selectedDealer.business_name}</h3>
                   <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold ${
                     selectedDealer.tier === 'platinum'
-                      ? 'bg-purple-100 text-purple-800'
+                      ? 'bg-purple-700 text-white'
                       : selectedDealer.tier === 'gold'
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : 'bg-gray-100 text-gray-800'
+                      ? 'bg-yellow-600 text-white'
+                      : 'bg-gray-600 text-white'
                   }`}>
                     <Star className="w-4 h-4" />
                     {selectedDealer.tierDisplayName} Dealer
@@ -399,6 +437,7 @@ export function DealerLocator({ lang, dictionary }: DealerLocatorProps) {
                 <button
                   onClick={() => setSelectedDealer(null)}
                   className="text-gray-400 hover:text-gray-600"
+                  aria-label={lang === 'th' ? 'ปิด' : 'Close'}
                 >
                   ✕
                 </button>
@@ -493,6 +532,7 @@ export function DealerLocator({ lang, dictionary }: DealerLocatorProps) {
           </div>
         </div>
       )}
+      <ToastContainer />
     </div>
   );
 }

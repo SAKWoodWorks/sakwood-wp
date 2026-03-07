@@ -619,14 +619,16 @@ class Sakwood_Dealer_API {
         if (!empty($territories)) {
             $table_territories = $wpdb->prefix . 'sakwood_dealer_territories';
             foreach ($territories as $province) {
+                $sanitized_province = sanitize_text_field($province);
                 $wpdb->insert(
                     $table_territories,
                     array(
                         'dealer_id' => $user_id,
                         'user_id' => $user_id,
-                        'province' => $province,
+                        'province' => $sanitized_province,
                         'is_exclusive' => false
-                    )
+                    ),
+                    array('%d', '%d', '%s', '%d')
                 );
             }
         }

@@ -1,15 +1,58 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+
+/**
+ * Generate CSRF token for session
+ */
+function generateCSRFToken(sessionId: string): string {
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substring(2);
+  return Buffer.from(`${sessionId}-${timestamp}-${random}`).toString('base64');
+}
+
+/**
+ * Verify CSRF token
+ */
+function verifyCSRFToken(token: string, sessionId: string): boolean {
+  try {
+    const decoded = Buffer.from(token, 'base64').toString();
+    return decoded.startsWith(sessionId);
+  } catch {
+    return false;
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { userId, locationData } = body;
+    const { userId, locationData, csrfToken } = body;
 
-    if (!userId || !locationData) {
+    if (!locationData) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       );
+    }
+
+    // CSRF protection
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get('sakwood-user');
+
+    if (!sessionCookie) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    if (csrfToken) {
+      const sessionId = sessionCookie.value;
+      if (!verifyCSRFToken(csrfToken, sessionId)) {
+        return NextResponse.json(
+          { error: 'Invalid CSRF token' },
+          { status: 403 }
+        );
+      }
     }
 
     // Forward to WordPress API
@@ -19,7 +62,6 @@ export async function POST(request: NextRequest) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        // Forward cookies for authentication
         cookie: request.headers.get('cookie') || '',
       },
       body: JSON.stringify(locationData),
