@@ -6,7 +6,10 @@ import { useEffect, RefObject } from 'react';
  * Focus trap hook for modal accessibility
  * Traps keyboard focus within a modal element
  */
-export function useFocusTrap(isActive: boolean, containerRef: RefObject<HTMLElement>) {
+export function useFocusTrap(
+  isActive: boolean,
+  containerRef: RefObject<HTMLElement | null>
+) {
   useEffect(() => {
     if (!isActive || !containerRef.current) return;
 
