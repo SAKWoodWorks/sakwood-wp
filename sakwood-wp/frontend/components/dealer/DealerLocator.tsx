@@ -184,9 +184,18 @@ export function DealerLocator({ lang, dictionary }: DealerLocatorProps) {
     if (province === '') {
       setFilteredDealers(dealers);
     } else {
-      const filtered = dealers.filter(
-        (d) => d.province === province || d.territories.includes(province)
-      );
+      // Find the Thai name for the selected English province name
+      const selectedProvinceObj = provinces.find(p => p.name_en === province);
+      const thaiName = selectedProvinceObj?.name;
+
+      const filtered = dealers.filter((d) => {
+        // Check if dealer's province matches (either Thai or English name)
+        const provinceMatches = d.province === province || d.province === thaiName;
+        // Check if territories contain the province
+        const territoryMatches = d.territories?.includes(province) || d.territories?.includes(thaiName || '');
+        return provinceMatches || territoryMatches;
+      });
+
       setFilteredDealers(filtered);
     }
   };
@@ -268,7 +277,7 @@ export function DealerLocator({ lang, dictionary }: DealerLocatorProps) {
             >
               <option value="">{dict.all_provinces || (lang === 'th' ? 'ทุกจังหวัด' : 'All Provinces')}</option>
               {provinces.map((province) => (
-                <option key={province.name_en} value={province.name}>
+                <option key={province.name_en} value={province.name_en}>
                   {lang === 'th' ? province.name : province.name_en}
                 </option>
               ))}
