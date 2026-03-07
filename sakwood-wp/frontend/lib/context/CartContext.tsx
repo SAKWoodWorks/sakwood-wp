@@ -29,11 +29,15 @@ import { Announcer } from '@/components/ui/Announcer';
 
 export interface CartItem extends Product {
   quantity: number;
+  name_th?: string;  // Store Thai name
+  name_en?: string;  // Store English name
+  shortDescription_th?: string;  // Store Thai short description
+  shortDescription_en?: string;  // Store English short description
 }
 
 interface CartContextType {
   items: CartItem[];
-  addToCart: (product: Product) => void;
+  addToCart: (product: Product, lang?: string) => void;  // Add optional lang parameter
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
@@ -127,13 +131,27 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [items]);
 
-  const addToCart = useCallback((product: Product) => {
+  const addToCart = useCallback((product: Product, lang = 'th') => {
     // Transform image URLs before adding to cart
     const transformedProduct = transformCartImageUrls({ ...product, quantity: 1 });
+
+    // Store both language versions for display
+    // The WordPress API returns BOTH name_th and name_en regardless of requested language
+    // So we should use those fields directly without fallback
+    const cartItem: CartItem = {
+      ...transformedProduct,
+      // Use API's bilingual fields - these are now always provided by WordPress
+      // No fallback needed - if missing, leave undefined and CartItems will handle it
+      name_th: product.name_th,
+      name_en: product.name_en,
+      shortDescription_th: product.shortDescription_th,
+      shortDescription_en: product.shortDescription_en,
+    };
 
     setItems(prevItems => {
       const existingItem = prevItems.find(item => item.id === product.id);
       if (existingItem) {
+        // Preserve existing language data when updating quantity
         setAnnouncement(`Updated ${product.name}: quantity increased to ${existingItem.quantity + 1}`);
         return prevItems.map(item =>
           item.id === product.id
@@ -142,7 +160,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         );
       }
       setAnnouncement(`Added ${product.name} to cart`);
-      return [...prevItems, transformedProduct];
+      return [...prevItems, cartItem];
     });
   }, []);
 

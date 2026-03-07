@@ -35,6 +35,11 @@ interface RestProduct {
     nodes?: Array<{ sourceUrl: string } & Record<string, unknown>>;
   };
   stockStatus?: string;
+  // Bilingual fields for cart support
+  name_th?: string;
+  name_en?: string;
+  shortDescription_th?: string;
+  shortDescription_en?: string;
 }
 
 /**
@@ -270,6 +275,11 @@ async function getProductsViaREST(
           name: cat.name,
           slug: cat.slug,
         })),
+        // Include bilingual fields for cart language switching
+        name_th: product.name_th,
+        name_en: product.name_en,
+        shortDescription_th: product.shortDescription_th,
+        shortDescription_en: product.shortDescription_en,
       };
     });
 
@@ -456,6 +466,11 @@ export async function getProductBySlug(slug: string, language: string = 'th'): P
       width: product.width || undefined,
       length: product.length || undefined,
       stockStatus: product.stockStatus || 'instock',
+      // Include bilingual fields for cart language switching
+      name_th: product.name_th,
+      name_en: product.name_en,
+      shortDescription_th: product.shortDescription_th,
+      shortDescription_en: product.shortDescription_en,
     };
   } catch (error) {
     console.error('Error fetching product via REST API:', error);
