@@ -2,9 +2,10 @@
 
 import { useState, useMemo } from 'react';
 import { useCart } from '@/lib/context/CartContext';
-import { getAllProvinces } from '@/lib/services/deliveryService';
+import { getAllProvinces, normalizeProvinceName } from '@/lib/services/deliveryService';
 import { generateCartLineMessage } from '@/lib/utils/lineMessage';
 import type { Locale } from '@/i18n-config';
+import type { CartItem } from '@/lib/context/CartContext';
 
 interface CartSummaryProps {
   lang: Locale;
@@ -41,6 +42,16 @@ interface ShippingBreakdown {
   estimatedDays: string;
 }
 
+/**
+ * Get product display name based on current locale
+ */
+function getProductName(item: CartItem, lang: Locale): string {
+  if (lang === 'th') {
+    return item.name_th || item.name_en || item.name;
+  }
+  return item.name_en || item.name_th || item.name;
+}
+
 export function CartSummary({ lang, dictionary }: CartSummaryProps) {
   const { cart: dict, common } = dictionary;
   const { items, getCartTotal } = useCart();
@@ -49,10 +60,17 @@ export function CartSummary({ lang, dictionary }: CartSummaryProps) {
 
   const subtotal = getCartTotal();
 
-  // Generate LINE URL with cart details
+  // Generate LINE URL with cart details (using localized names)
   const lineUrl = useMemo(() => {
     if (items.length === 0) return '';
-    return generateCartLineMessage(items, subtotal, lang);
+
+    // Transform items to use localized names for LINE message
+    const localizedItems = items.map(item => ({
+      ...item,
+      name: getProductName(item, lang),
+    }));
+
+    return generateCartLineMessage(localizedItems, subtotal, lang);
   }, [items, subtotal, lang]);
 
   // Calculate detailed shipping breakdown
@@ -72,8 +90,9 @@ export function CartSummary({ lang, dictionary }: CartSummaryProps) {
       };
     }
 
-    // Get province base rate
+    // Get province base rate (convert Thai to English for lookup)
     const getProvinceRate = (province: string): number => {
+      const englishProvince = normalizeProvinceName(province);
       const rates: { [key: string]: number } = {
         'Pathumtani': 5000, 'Nonthaburi': 5000, 'Samut Prakan': 5000, 'Nakhon Pathom': 5000, 'Samut Sakhon': 5000,
         'Phra Nakhon Si Ayutthaya': 6500,
@@ -169,7 +188,7 @@ export function CartSummary({ lang, dictionary }: CartSummaryProps) {
   const shippingCost = shippingBreakdown?.finalCost || 0;
   const total = subtotal + shippingCost;
 
-  const provinces = getAllProvinces();
+  const provinces = getAllProvinces(lang);
 
   if (items.length === 0) {
     return null;
@@ -301,7 +320,7 @@ export function CartSummary({ lang, dictionary }: CartSummaryProps) {
             <ul className="text-sm space-y-1">
               {items.slice(0, 5).map(item => (
                 <li key={item.id} className="text-gray-600">
-                  • {item.name} (x{item.quantity}) - {item.price}
+                  • {getProductName(item, lang)} (x{item.quantity}) - {item.price}
                 </li>
               ))}
               {items.length > 5 && (

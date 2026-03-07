@@ -4,6 +4,7 @@ import { useCart } from '@/lib/context/CartContext';
 import type { Locale } from '@/i18n-config';
 import Link from 'next/link';
 import { Trash2 } from 'lucide-react';
+import type { CartItem } from '@/lib/context/CartContext';
 
 interface CartItemsProps {
   lang: Locale;
@@ -16,6 +17,26 @@ interface CartItemsProps {
       subtotal: string;
     };
   };
+}
+
+/**
+ * Get product display name based on current locale
+ */
+function getProductName(item: CartItem, lang: Locale): string {
+  if (lang === 'th') {
+    return item.name_th || item.name_en || item.name;
+  }
+  return item.name_en || item.name_th || item.name;
+}
+
+/**
+ * Get product display short description based on current locale
+ */
+function getProductShortDescription(item: CartItem, lang: Locale): string | undefined {
+  if (lang === 'th') {
+    return item.shortDescription_th || item.shortDescription_en || item.shortDescription;
+  }
+  return item.shortDescription_en || item.shortDescription_th || item.shortDescription;
 }
 
 export function CartItems({ lang, dictionary }: CartItemsProps) {
@@ -68,7 +89,7 @@ export function CartItems({ lang, dictionary }: CartItemsProps) {
                         <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded overflow-hidden flex-shrink-0">
                           <img
                             src={item.image.sourceUrl}
-                            alt={item.name}
+                            alt={getProductName(item, lang)}
                             className="w-full h-full object-cover"
                           />
                         </div>
@@ -78,7 +99,7 @@ export function CartItems({ lang, dictionary }: CartItemsProps) {
                           href={`/${lang}/products/${item.slug}`}
                           className="font-semibold text-blue-900 hover:text-blue-700 transition-colors text-sm sm:text-base"
                         >
-                          {item.name}
+                          {getProductName(item, lang)}
                         </Link>
                         <p className="text-xs sm:text-sm text-gray-500">SKU: {item.id}</p>
                       </div>
@@ -140,7 +161,7 @@ export function CartItems({ lang, dictionary }: CartItemsProps) {
                   <div className="w-20 h-20 bg-gray-100 rounded overflow-hidden flex-shrink-0">
                     <img
                       src={item.image.sourceUrl}
-                      alt={item.name}
+                      alt={getProductName(item, lang)}
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -150,7 +171,7 @@ export function CartItems({ lang, dictionary }: CartItemsProps) {
                     href={`/${lang}/products/${item.slug}`}
                     className="font-semibold text-blue-900 hover:text-blue-700 transition-colors text-sm line-clamp-2"
                   >
-                    {item.name}
+                    {getProductName(item, lang)}
                   </Link>
                   <p className="text-xs text-gray-500">SKU: {item.id}</p>
                   <p className="text-blue-900 font-bold text-base mt-1">{item.price}</p>

@@ -2,10 +2,96 @@
 // Warehouse location: Pathumtani, Thailand
 // Rates are loaded from DeliveryRate.csv
 
+import type { Locale } from '@/i18n-config';
+
 export enum TruckType {
   SMALL = 'small',
   MEDIUM = 'medium',
   LARGE = 'large',
+}
+
+// Province name translations (English -> Thai)
+const PROVINCE_TRANSLATIONS: Record<string, string> = {
+  'Pathumtani': 'ปทุมธานี',
+  'Nonthaburi': 'นนทบุรี',
+  'Samut Prakan': 'สมุทรปราการ',
+  'Nakhon Pathom': 'นครปฐม',
+  'Samut Sakhon': 'สมุทรสาคร',
+  'Phra Nakhon Si Ayutthaya': 'พระนครศรีอยุธยา',
+  'Ang Thong': 'อ่างทอง',
+  'Lopburi': 'ลพบุรี',
+  'Saraburi': 'สระบุรี',
+  'Sing Buri': 'สิงห์บุรี',
+  'Chai Nat': 'ชัยนาท',
+  'Suphan Buri': 'สุพรรณบุรี',
+  'Kanchanaburi': 'กาญจนบุรี',
+  'Ratchaburi': 'ราชบุรี',
+  'Phetchaburi': 'เพชรบุรี',
+  'Prachuap Khiri Khan': 'ประจวบคีรีขันธ์',
+  'Chonburi': 'ชลบุรี',
+  'Rayong': 'ระยอง',
+  'Chanthaburi': 'จันทบุรี',
+  'Trat': 'ตราด',
+  'Chachoengsao': 'ฉะเชิงเทรา',
+  'Prachinburi': 'ปราจีนบุรี',
+  'Sa Kaeo': 'สระแก้ว',
+  'Nakhon Nayok': 'นครนายก',
+  'Kamphaeng Phet': 'กำแพงเพชร',
+  'Tak': 'ตาก',
+  'Uthai Thani': 'อุทัยธานี',
+  'Nakhon Sawan': 'นครสวรรค์',
+  'Phichit': 'พิจิตร',
+  'Phitsanulok': 'พิษณุโลก',
+  'Phichai': 'พิชัย',
+  'Phetchabun': 'เพชรบูรณ์',
+  'Chiang Mai': 'เชียงใหม่',
+  'Lamphun': 'ลำพูน',
+  'Lampang': 'ลำปาง',
+  'Uttaradit': 'อุตรดิตถ์',
+  'Phrae': 'แพร่',
+  'Nan': 'น่าน',
+  'Phayao': 'พะเยา',
+  'Chiang Rai': 'เชียงราย',
+  'Mae Hong Son': 'แม่ฮ่องสอน',
+  'Nakhon Ratchasima': 'นครราชสีมา',
+  'Buri Ram': 'บุรีรัมย์',
+  'Surin': 'สุรินทร์',
+  'Sisaket': 'ศรีสะเกษ',
+  'Ubon Ratchathani': 'อุบลราชธานี',
+  'Yasothon': 'ยโสธร',
+  'Chaiyaphum': 'ชัยภูมิ',
+  'Amnat Charoen': 'อำนาจเจริญ',
+  'Nong Bua Lamphu': 'หนองบัวลำภู',
+  'Khon Kaen': 'ขอนแก่น',
+  'Udon Thani': 'อุดรธานี',
+  'Loei': 'เลย',
+  'Nong Khai': 'หนองคาย',
+  'Maha Sarakham': 'มหาสารคาม',
+  'Roi Et': 'ร้อยเอ็ด',
+  'Kalasin': 'กาฬสินธุ์',
+  'Sakon Nakhon': 'สกลนคร',
+  'Nakhon Phanom': 'นครพนม',
+  'Mukdahan': 'มุกดาหาร',
+  'Chumphon': 'ชุมพร',
+  'Ranong': 'ระนอง',
+  'Surat Thani': 'สุราษฎร์ธานี',
+  'Phangnga': 'พังงา',
+  'Phuket': 'ภูเก็ต',
+  'Krabi': 'กระบี่',
+  'Phatthalung': 'พัทลุง',
+  'Trang': 'ตรัง',
+  'Satun': 'สตูล',
+  'Songkhla': 'สงขลา',
+  'Yala': 'ยะลา',
+  'Narathiwat': 'นราธิวาสร',
+  'Pattani': 'ปัตตานี',
+  'Nakhon Si Thammarat': 'นครศรีธรรมราช',
+};
+
+// Reverse mapping (Thai -> English) for lookup
+const THAI_TO_ENGLISH_PROVINCE: Record<string, string> = {};
+for (const [en, th] of Object.entries(PROVINCE_TRANSLATIONS)) {
+  THAI_TO_ENGLISH_PROVINCE[th] = en;
 }
 
 export interface ShippingRate {
@@ -151,10 +237,37 @@ export function getShippingRate(province: string): ShippingRate {
 
 /**
  * Get all available provinces
- * @returns Array of province names
+ * @param lang - Language code ('en' or 'th')
+ * @returns Array of province names in the specified language
  */
-export function getAllProvinces(): string[] {
-  return DELIVERY_RATES.map((rate) => rate.province).sort();
+export function getAllProvinces(lang: Locale = 'en'): string[] {
+  const provinces = DELIVERY_RATES.map((rate) => rate.province);
+
+  if (lang === 'th') {
+    // Return Thai names
+    return provinces
+      .map((en) => PROVINCE_TRANSLATIONS[en] || en)
+      .sort((a, b) => a.localeCompare(b, 'th'));
+  }
+
+  // Return English names (default)
+  return provinces.sort();
+}
+
+/**
+ * Normalize province name to English for internal lookups
+ * @param province - Province name in English or Thai
+ * @returns English province name
+ */
+export function normalizeProvinceName(province: string): string {
+  // If it's already in English (exists in DELIVERY_RATES), return as is
+  const isEnglish = DELIVERY_RATES.some(
+    (r) => r.province.toLowerCase() === province.toLowerCase()
+  );
+  if (isEnglish) return province;
+
+  // If it's Thai, convert to English
+  return THAI_TO_ENGLISH_PROVINCE[province] || province;
 }
 
 /**

@@ -50,6 +50,11 @@ export interface Product {
   volume?: number; // Calculated volume in cubic meters
   surfaceArea?: string | number; // Surface area in square meters
   categories?: ProductCategory[];
+  // Translation fields (from WordPress meta)
+  name_en?: string;  // English product name
+  name_th?: string;  // Thai product name (when viewing in EN)
+  shortDescription_en?: string;  // English short description
+  shortDescription_th?: string;  // Thai short description (when viewing in EN)
 }
 
 export interface ProductsResponse {

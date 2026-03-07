@@ -55,14 +55,14 @@ export function ProductInfo({ product, lang, dictionary }: ProductInfoProps) {
   }, [product, lang]);
 
   const handleAddToCart = () => {
-    addToCart(product);
+    addToCart(product, lang);
     setMessage(dict.added_to_cart);
     setMessageType('success');
     setTimeout(() => setMessage(''), 3000);
   };
 
   const handleAddToQuote = () => {
-    addToCart(product);
+    addToCart(product, lang);
     setMessage(dict.added_to_quote);
     setMessageType('info');
     setTimeout(() => {

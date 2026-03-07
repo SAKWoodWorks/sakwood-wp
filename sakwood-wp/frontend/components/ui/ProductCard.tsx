@@ -41,7 +41,7 @@ export function ProductCard({ product, lang = 'th', dictionary }: ProductCardPro
     // Simulate animation delay
     await new Promise(resolve => setTimeout(resolve, 600));
 
-    addToCart(product);
+    addToCart(product, lang);
     setIsAddingToCart(false);
     setShowCartSuccess(true);
 

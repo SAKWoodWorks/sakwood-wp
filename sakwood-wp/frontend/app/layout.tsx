@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Sarabun } from "next/font/google";
 import "./globals.css";
+import { CartProvider } from "@/lib/context/CartContext";
 
 const sarabun = Sarabun({
   subsets: ["thai", "latin"],
@@ -22,7 +23,9 @@ export default function RootLayout({
   return (
     <html lang="th" className={`${sarabun.variable} scroll-smooth`}>
       <body className="font-sans">
-        {children}
+        <CartProvider>
+          {children}
+        </CartProvider>
       </body>
     </html>
   );

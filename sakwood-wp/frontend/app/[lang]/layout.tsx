@@ -5,7 +5,6 @@ import { SkipLink } from "@/components/ui/SkipLink";
 import { getMenu } from "@/lib/services/menuService";
 import { getDictionary } from "@/lib/get-dictionary";
 import type { Locale } from "@/i18n-config";
-import { CartProvider } from "@/lib/context/CartContext";
 import { AuthProvider } from "@/lib/context/AuthContext";
 import { CompareProvider } from "@/lib/context/CompareContext";
 import { ChatProvider } from "@/lib/context/ChatContext";
@@ -142,18 +141,16 @@ export default async function RootLayout({ children, params }: LayoutProps) {
       <SkipLink />
       <CookieProvider>
         <AuthProvider>
-          <CartProvider>
-            <CompareProvider>
-              <ChatProvider>
-                <Header menuItems={menuItems} lang={lang as Locale} dictionary={dictionary} />
-                <main id="main-content" className="bg-transparent">{children}</main>
-                <Footer lang={lang as Locale} />
-                <ChatButtons dictionary={dictionary} />
-                <PromotionalPopup />
-                <CookieConsentBanner lang={lang as 'th' | 'en'} />
-              </ChatProvider>
-            </CompareProvider>
-          </CartProvider>
+          <CompareProvider>
+            <ChatProvider>
+              <Header menuItems={menuItems} lang={lang as Locale} dictionary={dictionary} />
+              <main id="main-content" className="bg-transparent">{children}</main>
+              <Footer lang={lang as Locale} />
+              <ChatButtons dictionary={dictionary} />
+              <PromotionalPopup />
+              <CookieConsentBanner lang={lang as 'th' | 'en'} />
+            </ChatProvider>
+          </CompareProvider>
         </AuthProvider>
       </CookieProvider>
     </>

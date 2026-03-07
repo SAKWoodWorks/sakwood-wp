@@ -137,7 +137,7 @@ export function QuickViewModal({ product, isOpen, onClose, lang = 'th', dictiona
   const handleAddToCart = async () => {
     setLoading(true);
     try {
-      await addToCart(product);
+      await addToCart(product, lang);
       setAddedToCart(true);
       setTimeout(() => setAddedToCart(false), 2000);
     } catch (error) {

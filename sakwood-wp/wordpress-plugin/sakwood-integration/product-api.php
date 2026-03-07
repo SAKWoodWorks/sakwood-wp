@@ -229,6 +229,12 @@ class Sakwood_Product_API {
             $short_description = $product->get_short_description() ?: '';
         }
 
+        // Get BOTH language versions for cart support
+        $name_th = $product->get_title();
+        $name_en = get_post_meta($product->get_id(), '_product_title_en', true);
+        $short_description_th = $product->get_short_description() ?: '';
+        $short_description_en = get_post_meta($product->get_id(), '_product_short_description_en', true);
+
         $formatted_product = array(
             'id' => $product->get_id(),
             'databaseId' => $product->get_id(),
@@ -247,6 +253,11 @@ class Sakwood_Product_API {
                 'nodes' => $gallery_images,
             ),
             'stockStatus' => $product->get_stock_status(),
+            // Always include both language versions
+            'name_th' => $name_th,
+            'name_en' => $name_en ?: null,
+            'shortDescription_th' => $short_description_th,
+            'shortDescription_en' => $short_description_en ?: null,
             'width' => $width,
             'length' => $length,
             'thickness' => $thickness,
