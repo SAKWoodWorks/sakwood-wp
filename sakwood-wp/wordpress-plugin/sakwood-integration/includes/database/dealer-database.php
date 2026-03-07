@@ -24,9 +24,9 @@ class Sakwood_Dealer_Database {
      * Check and create database tables if they don't exist
      */
     public function check_database_tables() {
-        if (get_option('sakwood_dealer_db_version') !== '1.0') {
+        if (get_option('sakwood_dealer_db_version') !== '1.1') {
             $this->create_tables();
-            update_option('sakwood_dealer_db_version', '1.0');
+            update_option('sakwood_dealer_db_version', '1.1');
         }
     }
 
@@ -115,6 +115,28 @@ class Sakwood_Dealer_Database {
             FOREIGN KEY (dealer_tier_id) REFERENCES {$wpdb->prefix}sakwood_dealer_tiers(id)
         ) $charset_collate;";
         dbDelta($sql_orders);
+
+        // Table 5: Dealer Locations (for public map locator)
+        $table_locations = $wpdb->prefix . 'sakwood_dealer_locations';
+        $sql_locations = "CREATE TABLE $table_locations (
+            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+            user_id BIGINT NOT NULL UNIQUE,
+            business_name VARCHAR(255) NOT NULL,
+            address TEXT NOT NULL,
+            province VARCHAR(100) NOT NULL,
+            district VARCHAR(100),
+            postal_code VARCHAR(10),
+            phone VARCHAR(50),
+            email VARCHAR(255),
+            latitude DECIMAL(10, 8) NOT NULL,
+            longitude DECIMAL(11, 8) NOT NULL,
+            business_hours TEXT,
+            is_active BOOLEAN NOT NULL DEFAULT TRUE,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES {$wpdb->users}(ID) ON DELETE CASCADE
+        ) $charset_collate;";
+        dbDelta($sql_locations);
 
         // Extend wholesale applications table to support dealer tier
         $this->extend_wholesale_table();
@@ -398,6 +420,89 @@ class Sakwood_Dealer_Database {
             ),
             ARRAY_A
         );
+    }
+
+    /**
+     * Get all active dealer locations for public map
+     */
+    public static function get_all_dealer_locations() {
+        global $wpdb;
+        $table_locations = $wpdb->prefix . 'sakwood_dealer_locations';
+        $usermeta_table = $wpdb->usermeta;
+
+        $locations = $wpdb->get_results(
+            "SELECT l.*, u.user_email, u.display_name,
+                    GROUP_CONCAT(DISTINCT t.province SEPARATOR ',') as territories
+            FROM $table_locations l
+            INNER JOIN {$wpdb->users} u ON l.user_id = u.ID
+            LEFT JOIN {$wpdb->prefix}sakwood_dealer_territories t ON l.user_id = t.user_id
+            WHERE l.is_active = 1
+            AND (t.expiry_date IS NULL OR t.expiry_date > NOW())
+            GROUP BY l.id
+            ORDER BY l.business_name ASC",
+            ARRAY_A
+        );
+
+        return $locations;
+    }
+
+    /**
+     * Get dealer location by user ID
+     */
+    public static function get_dealer_location($user_id) {
+        global $wpdb;
+        $table_locations = $wpdb->prefix . 'sakwood_dealer_locations';
+
+        return $wpdb->get_row(
+            $wpdb->prepare(
+                "SELECT * FROM $table_locations WHERE user_id = %d",
+                $user_id
+            ),
+            ARRAY_A
+        );
+    }
+
+    /**
+     * Save or update dealer location
+     */
+    public static function save_dealer_location($user_id, $location_data) {
+        global $wpdb;
+        $table_locations = $wpdb->prefix . 'sakwood_dealer_locations';
+
+        $existing = self::get_dealer_location($user_id);
+
+        $data = array(
+            'business_name' => sanitize_text_field($location_data['business_name']),
+            'address' => sanitize_textarea_field($location_data['address']),
+            'province' => sanitize_text_field($location_data['province']),
+            'district' => isset($location_data['district']) ? sanitize_text_field($location_data['district']) : null,
+            'postal_code' => isset($location_data['postal_code']) ? sanitize_text_field($location_data['postal_code']) : null,
+            'phone' => sanitize_text_field($location_data['phone']),
+            'email' => sanitize_email($location_data['email']),
+            'latitude' => floatval($location_data['latitude']),
+            'longitude' => floatval($location_data['longitude']),
+            'business_hours' => isset($location_data['business_hours']) ? sanitize_textarea_field($location_data['business_hours']) : null,
+            'is_active' => isset($location_data['is_active']) ? boolval($location_data['is_active']) : true,
+        );
+
+        if ($existing) {
+            $result = $wpdb->update(
+                $table_locations,
+                $data,
+                array('user_id' => $user_id),
+                array('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%f', '%f', '%s', '%d'),
+                array('%d')
+            );
+        } else {
+            $data['user_id'] = $user_id;
+            $result = $wpdb->insert(
+                $table_locations,
+                $data,
+                array('%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%f', '%f', '%s', '%d')
+            );
+        }
+
+        return $result !== false;
     }
 }
 

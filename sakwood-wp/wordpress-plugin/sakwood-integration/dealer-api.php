@@ -117,6 +117,43 @@ class Sakwood_Dealer_API {
             'callback' => array($this, 'get_dealer_tiers'),
             'permission_callback' => '__return_true',
         ));
+
+        // Get all active dealer locations (public - for map)
+        register_rest_route('sakwood/v1', '/dealer/locations', array(
+            'methods' => 'GET',
+            'callback' => array($this, 'get_dealer_locations'),
+            'permission_callback' => '__return_true',
+        ));
+
+        // ========== ADMIN ENDPOINTS FOR LOCATIONS ==========
+
+        // Get all dealer locations (admin)
+        register_rest_route('sakwood/v1', '/admin/dealer/locations', array(
+            'methods' => 'GET',
+            'callback' => array($this, 'admin_get_all_locations'),
+            'permission_callback' => array($this, 'check_admin_permission'),
+        ));
+
+        // Delete dealer location (admin)
+        register_rest_route('sakwood/v1', '/admin/dealer/locations/(?P<id>\d+)', array(
+            'methods' => 'DELETE',
+            'callback' => array($this, 'admin_delete_location'),
+            'permission_callback' => array($this, 'check_admin_permission'),
+        ));
+
+        // Save/update dealer location (dealer only)
+        register_rest_route('sakwood/v1', '/dealer/location', array(
+            'methods' => 'POST',
+            'callback' => array($this, 'save_dealer_location'),
+            'permission_callback' => array($this, 'check_dealer_permission'),
+        ));
+
+        // Get dealer's own location (dealer only)
+        register_rest_route('sakwood/v1', '/dealer/location', array(
+            'methods' => 'GET',
+            'callback' => array($this, 'get_dealer_own_location'),
+            'permission_callback' => array($this, 'check_dealer_permission'),
+        ));
     }
 
     /**
@@ -774,6 +811,197 @@ class Sakwood_Dealer_API {
         $message .= "We appreciate your understanding.";
 
         wp_mail($user_email, $subject, $message);
+    }
+
+    /**
+     * Get all active dealer locations (public endpoint for map)
+     */
+    public function get_dealer_locations($request) {
+        $province = $request->get_param('province');
+        $lat = $request->get_param('lat');
+        $lng = $request->get_param('lng');
+        $radius = intval($request->get_param('radius')) ?: 100; // Default 100km radius
+
+        $locations = Sakwood_Dealer_Database::get_all_dealer_locations();
+
+        // Enrich with dealer tier information
+        foreach ($locations as &$location) {
+            $user_id = $location['user_id'];
+            $tier_id = get_user_meta($user_id, 'dealer_tier_id', true);
+            $tier = $tier_id ? Sakwood_Dealer_Database::get_dealer_tier($tier_id) : null;
+
+            $location['tier'] = $tier ? $tier['tier_name'] : '';
+            $location['tierDisplayName'] = $tier ? ucfirst($tier['tier_name']) : '';
+            $location['discountPercentage'] = $tier ? floatval($tier['discount_percentage']) : 0;
+
+            // Parse territories from comma-separated string
+            $location['territories'] = $location['territories'] ? explode(',', $location['territories']) : array();
+
+            // Calculate distance if lat/lng provided
+            if ($lat && $lng) {
+                $location['distance'] = $this->calculate_distance(
+                    floatval($lat),
+                    floatval($lng),
+                    floatval($location['latitude']),
+                    floatval($location['longitude'])
+                );
+            }
+        }
+
+        // Filter by province if specified
+        if ($province) {
+            $locations = array_filter($locations, function($loc) use ($province) {
+                return in_array($province, $loc['territories']) || $loc['province'] === $province;
+            });
+            $locations = array_values($locations); // Re-index array
+        }
+
+        // Filter by radius and sort by distance if lat/lng provided
+        if ($lat && $lng) {
+            $locations = array_filter($locations, function($loc) use ($radius) {
+                return $loc['distance'] <= $radius;
+            });
+            $locations = array_values($locations);
+
+            // Sort by distance
+            usort($locations, function($a, $b) {
+                return $a['distance'] <=> $b['distance'];
+            });
+        }
+
+        return rest_ensure_response($locations);
+    }
+
+    /**
+     * Save/update dealer location
+     */
+    public function save_dealer_location($request) {
+        $user_id = get_current_user_id();
+        $params = $request->get_json_params();
+
+        // Validate required fields
+        $required_fields = array('business_name', 'address', 'province', 'phone', 'email', 'latitude', 'longitude');
+        foreach ($required_fields as $field) {
+            if (empty($params[$field])) {
+                return new WP_Error('missing_field', "Missing required field: $field", array('status' => 400));
+            }
+        }
+
+        // Validate coordinates
+        $lat = floatval($params['latitude']);
+        $lng = floatval($params['longitude']);
+        if ($lat < -90 || $lat > 90 || $lng < -180 || $lng > 180) {
+            return new WP_Error('invalid_coords', 'Invalid latitude or longitude', array('status' => 400));
+        }
+
+        // Save location
+        $result = Sakwood_Dealer_Database::save_dealer_location($user_id, $params);
+
+        if ($result) {
+            return rest_ensure_response(array(
+                'success' => true,
+                'message' => 'Location saved successfully'
+            ));
+        } else {
+            return new WP_Error('save_failed', 'Failed to save location', array('status' => 500));
+        }
+    }
+
+    /**
+     * Calculate distance between two coordinates (in kilometers)
+     * Uses Haversine formula
+     */
+    private function calculate_distance($lat1, $lng1, $lat2, $lng2) {
+        $earthRadius = 6371; // Earth's radius in kilometers
+
+        $latDiff = deg2rad($lat2 - $lat1);
+        $lngDiff = deg2rad($lng2 - $lng1);
+
+        $a = sin($latDiff / 2) * sin($latDiff / 2) +
+             cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+             sin($lngDiff / 2) * sin($lngDiff / 2);
+
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+
+        return $earthRadius * $c;
+    }
+
+    /**
+     * Get dealer's own location
+     */
+    public function get_dealer_own_location($request) {
+        $user_id = get_current_user_id();
+        $location = Sakwood_Dealer_Database::get_dealer_location($user_id);
+
+        if (!$location) {
+            return rest_ensure_response(array(
+                'location' => null,
+                'hasLocation' => false
+            ));
+        }
+
+        return rest_ensure_response(array(
+            'location' => $location,
+            'hasLocation' => true
+        ));
+    }
+
+    /**
+     * Get all dealer locations (admin)
+     */
+    public function admin_get_all_locations($request) {
+        global $wpdb;
+        $table_locations = $wpdb->prefix . 'sakwood_dealer_locations';
+
+        $locations = $wpdb->get_results(
+            "SELECT l.*, u.user_email, u.display_name,
+                    GROUP_CONCAT(DISTINCT t.province SEPARATOR ',') as territories
+            FROM $table_locations l
+            INNER JOIN {$wpdb->users} u ON l.user_id = u.ID
+            LEFT JOIN {$wpdb->prefix}sakwood_dealer_territories t ON l.user_id = t.user_id
+            GROUP BY l.id
+            ORDER BY l.business_name ASC",
+            ARRAY_A
+        );
+
+        // Enrich with dealer tier information
+        foreach ($locations as &$location) {
+            $user_id = $location['user_id'];
+            $tier_id = get_user_meta($user_id, 'dealer_tier_id', true);
+            $tier = $tier_id ? Sakwood_Dealer_Database::get_dealer_tier($tier_id) : null;
+
+            $location['tier'] = $tier ? $tier['tier_name'] : '';
+            $location['tierDisplayName'] = $tier ? ucfirst($tier['tier_name']) : '';
+            $location['discountPercentage'] = $tier ? floatval($tier['discount_percentage']) : 0;
+            $location['territories'] = $location['territories'] ? explode(',', $location['territories']) : array();
+        }
+
+        return rest_ensure_response($locations);
+    }
+
+    /**
+     * Delete dealer location (admin)
+     */
+    public function admin_delete_location($request) {
+        $id = intval($request['id']);
+
+        global $wpdb;
+        $table_locations = $wpdb->prefix . 'sakwood_dealer_locations';
+
+        $result = $wpdb->delete(
+            $table_locations,
+            array('id' => $id),
+            array('%d')
+        );
+
+        if ($result === false) {
+            return new WP_Error('delete_failed', 'Failed to delete location', array('status' => 500));
+        }
+
+        return rest_ensure_response(array(
+            'success' => true,
+            'message' => 'Location deleted successfully'
+        ));
     }
 }
 

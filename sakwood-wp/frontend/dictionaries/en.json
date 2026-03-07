@@ -954,5 +954,29 @@
     "become_dealer": "Become a Dealer",
     "dealer_only": "Dealer Only",
     "upgrade_tier": "Upgrade Your Tier"
+  },
+  "dealer_locator": {
+    "page_title": "Find a Dealer",
+    "subtitle": "Locate our authorized dealers near you",
+    "filter_by_province": "Filter by Province",
+    "all_provinces": "All Provinces",
+    "find_nearest": "Find Nearest Dealers",
+    "dealer_info": {
+      "name": "Dealer Name",
+      "tier": "Tier",
+      "address": "Address",
+      "phone": "Phone",
+      "email": "Email",
+      "hours": "Business Hours",
+      "territories": "Service Areas",
+      "distance": "Distance"
+    },
+    "no_dealers": "No dealers found",
+    "loading": "Loading dealers...",
+    "found_count": "Found {count} dealers",
+    "your_location": "Your Location",
+    "get_directions": "Get Directions",
+    "view_details": "View Details",
+    "close": "Close"
   }
 }

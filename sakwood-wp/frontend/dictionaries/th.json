@@ -953,5 +953,29 @@
     "become_dealer": "เป็นดีลเลอร์",
     "dealer_only": "ดีลเลอร์เท่านั้น",
     "upgrade_tier": "อัปเกรดระดับ"
+  },
+  "dealer_locator": {
+    "page_title": "ค้นหาตัวแทนจำหน่าย",
+    "subtitle": "ค้นหาตัวแทนจำหน่ายที่ได้รับอนุญาตใกล้คุณ",
+    "filter_by_province": "กรองตามจังหวัด",
+    "all_provinces": "ทุกจังหวัด",
+    "find_nearest": "ค้นหาตัวแทนจำหน่ายใกล้ฉัน",
+    "dealer_info": {
+      "name": "ชื่อตัวแทนจำหน่าย",
+      "tier": "ระดับ",
+      "address": "ที่อยู่",
+      "phone": "โทรศัพท์",
+      "email": "อีเมล",
+      "hours": "เวลาทำการ",
+      "territories": "พื้นที่ให้บริการ",
+      "distance": "ระยะทาง"
+    },
+    "no_dealers": "ไม่พบตัวแทนจำหน่าย",
+    "loading": "กำลังโหลด...",
+    "found_count": "พบ {count} รายการ",
+    "your_location": "ตำแหน่งของคุณ",
+    "get_directions": "เส้นทาง",
+    "view_details": "ดูรายละเอียด",
+    "close": "ปิด"
   }
 }
