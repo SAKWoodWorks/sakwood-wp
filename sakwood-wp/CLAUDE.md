@@ -55,13 +55,17 @@ npm start
 npm run lint
 
 # Testing (Vitest)
-npm test              # Run unit tests
-npm run test:ui       # Vitest UI
-npm run test:coverage # Coverage report
+npm test                        # Run unit tests
+npm run test:ui                 # Vitest UI
+npm run test:coverage           # Coverage report
+npm test -- productService.test # Run single test file
+npm test -t "getProducts"       # Run tests matching pattern
 
 # E2E Testing (Playwright)
 npm run test:e2e      # Run E2E tests
 npm run test:e2e:ui   # Playwright UI
+npx playwright test products.spec.ts # Run single E2E test file
+npx playwright show-report # View test report
 ```
 
 ### Docker Development
@@ -177,6 +181,18 @@ useEffect(() => {
 
 ### Environment Variables Strategy
 
+**IMPORTANT:** There are TWO different URL patterns used in this codebase:
+
+1. **Base URL with `/wp-json` included:** Used by `menuService.ts` and similar services
+   - Format: `http://sak_wp:80/wp-json` or `http://localhost:8006/wp-json`
+   - Service constructs: `${BASE_URL}/menu` → `http://sak_wp:80/wp-json/menu` ✅
+   - Environment variable: `WORDPRESS_API_URL` (fallback only, not used in production docker-compose)
+
+2. **Full API path to `/sakwood/v1`:** Used by most other services
+   - Format: `https://wp.sakww.com/wp-json/sakwood/v1`
+   - Service constructs: `${BASE_URL}/products` → `https://wp.sakww.com/wp-json/sakwood/v1/products` ✅
+   - Environment variable: `NEXT_PUBLIC_WORDPRESS_API_URL`
+
 **Development (`.env.local`):**
 ```env
 NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL=http://localhost:8006/graphql
@@ -188,11 +204,19 @@ NEXT_PUBLIC_WORDPRESS_API_URL=http://localhost:8006/wp-json/sakwood/v1
 # Client-side (browser)
 NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL=https://wp.sakww.com/graphql
 NEXT_PUBLIC_WORDPRESS_API_URL=https://wp.sakww.com/wp-json/sakwood/v1
+```
 
-# Server-side (Node.js - set in docker-compose.prod.yml)
-# CRITICAL: Do NOT include /wp-json or /graphql - code adds these paths
-WORDPRESS_GRAPHQL_URL=http://sak_wp:80
-WORDPRESS_API_URL=http://sak_wp:80
+**Production (`docker-compose.prod.yml`):**
+```yaml
+frontend:
+  environment:
+    # NOTE: WORDPRESS_API_URL with /wp-json is used ONLY by menuService.ts as fallback
+    # Most services use NEXT_PUBLIC_WORDPRESS_API_URL (full path to /sakwood/v1)
+    - WORDPRESS_API_URL=http://sak_wp:80/wp-json
+    - WORDPRESS_GRAPHQL_URL=http://sak_wp:80/graphql
+    # Client-side URLs (full paths)
+    - NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL=${WORDPRESS_GRAPHQL_URL}
+    - NEXT_PUBLIC_WORDPRESS_API_URL=${WORDPRESS_API_URL}
 ```
 
 **Smart Fallback Pattern (`lib/config/constants.ts`):**
@@ -280,6 +304,13 @@ if (!mounted) return null;  // Prevents hydration mismatches
 - `CompareContext` - Product comparison
 - `ChatContext` - Live chat platform configuration
 
+**Error Tracking:**
+- **Sentry Integration** (`@sentry/nextjs`) - Production error monitoring
+- Configured in `frontend/sentry.*.ts` files
+- Captures frontend errors and performance data
+- DSN configured via environment variable `NEXT_PUBLIC_SENTRY_DSN`
+- Sample rate: 100% for performance tracing in production
+
 ---
 
 ## Critical Production Troubleshooting
@@ -317,28 +348,22 @@ services:
       - sakwood_network
 ```
 
-**Solution 2: Use Correct Internal URLs (CRITICAL - No trailing `/wp-json`):**
+**Solution 2: Verify Environment Variables in `docker-compose.prod.yml`:**
 ```yaml
 # docker-compose.prod.yml
 frontend:
   environment:
-    # Server-side: Use Docker hostname WITHOUT /wp-json path!
-    # The code adds /wp-json/sakwood/v1 automatically
-    - WORDPRESS_API_URL=http://sak_wp:80
-    # Client-side: Use external URL with full path
+    # Server-side: Base URL WITH /wp-json (used by menuService.ts)
+    - WORDPRESS_API_URL=http://sak_wp:80/wp-json
+    - WORDPRESS_GRAPHQL_URL=http://sak_wp:80/graphql
+    # Client-side: Full path to /sakwood/v1 API (used by most services)
     - NEXT_PUBLIC_WORDPRESS_API_URL=https://wp.sakww.com/wp-json/sakwood/v1
+    - NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL=https://wp.sakww.com/graphql
 ```
 
-**⚠️ CRITICAL BUG PREVENTION:**
-Never include `/wp-json` in `WORDPRESS_API_URL`. The code constructs the full API path as:
-```typescript
-const url = `${WORDPRESS_API_URL}/wp-json/sakwood/v1/products`;
-```
-If `WORDPRESS_API_URL=http://sak_wp:80/wp-json`, it creates:
-- `http://sak_wp:80/wp-json/wp-json/sakwood/v1/products` ❌ (404 error)
-
-Correct configuration (`WORDPRESS_API_URL=http://sak_wp:80`) creates:
-- `http://sak_wp:80/wp-json/sakwood/v1/products` ✅ (works)
+**URL Construction Pattern:**
+- `menuService.ts`: Uses `WORDPRESS_API_URL` and constructs `${BASE_URL}/menu` → `http://sak_wp:80/wp-json/menu`
+- Most services: Use `NEXT_PUBLIC_WORDPRESS_API_URL` and construct `${BASE_URL}/products` → `https://wp.sakww.com/wp-json/sakwood/v1/products`
 
 **Solution 3: Restart All Services on Same Network:**
 ```bash
@@ -379,20 +404,10 @@ docker logs sak_frontend 2>&1 | grep -E "REST API" | tail -10
 
 **Expected Correct Values:**
 ```bash
-WORDPRESS_API_URL=http://sak_wp:80  # ✅ Correct - NO /wp-json
+WORDPRESS_API_URL=http://sak_wp:80/wp-json  # ✅ Correct - includes /wp-json for menuService.ts
+WORDPRESS_GRAPHQL_URL=http://sak_wp:80/graphql  # ✅ Correct
 NEXT_PUBLIC_WORDPRESS_API_URL=https://wp.sakww.com/wp-json/sakwood/v1  # ✅ Correct
-```
-
-**Common Fix:**
-If `WORDPRESS_API_URL=http://sak_wp:80/wp-json` (wrong!), edit `/var/www/sakwood/docker-compose.prod.yml`:
-```bash
-nano /var/www/sakwood/docker-compose.prod.yml
-# Change: WORDPRESS_API_URL=http://sak_wp:80/wp-json
-# To: WORDPRESS_API_URL=http://sak_wp:80
-
-# Restart frontend
-cd /var/www/sakwood
-docker compose -f docker-compose.prod.yml up -d frontend
+NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL=https://wp.sakww.com/graphql  # ✅ Correct
 ```
 
 **Issue: Images broken in production**
@@ -484,6 +499,7 @@ fetch('/wp-json/sakwood/v1/categories')  // ❌ Loses query params
 - `category-language.php` - Category TH/EN names
 
 **Key Plugin Systems:**
+- **Security:** `restrict-admin-login.php` - Limits WordPress admin access to @sakww.com email addresses only
 - **CRM:** `crm-database.php`, `crm-customers.php`, `crm-interactions.php`, `crm-tasks.php`
 - **Wholesale:** `wholesale-database.php`, `wholesale-api.php`
 - **Dealer:** `dealer-api.php`, `includes/database/dealer-database.php`
@@ -504,6 +520,8 @@ fetch('/wp-json/sakwood/v1/categories')  // ❌ Loses query params
   npm run build
   # Commit the built files to deploy
   ```
+- Development mode: `npm start` runs webpack dev server for hot-reloading
+- Uses `@wordpress/scripts` for WordPress Gutenberg-compatible React builds
 
 ---
 
@@ -689,3 +707,37 @@ cd frontend && rm -rf .next
 rm -rf node_modules && npm install
 npm run lint
 ```
+
+**Git Workflow:**
+- Main branch: `main` (used for PRs)
+- Recent commits tracked via `git log` for debugging
+- Use `git status` to check modified files before committing
+- Production deployment commits `.next` directory (built Next.js app)
+
+**Deployment Script Details:**
+- `deploy.sh` / `deploy.ps1` automate the entire deployment process
+- Scripts handle: SSH connection, Docker login, git pull, docker-compose rebuild, container restart
+- Production environment variables are set in `docker-compose.prod.yml`, not `.env` files
+- Frontend container is only built in production (not in development docker-compose)
+- Deployment requires SSH access to DigitalOcean droplet with Docker installed
+
+**Performance Considerations:**
+- Next.js image optimization disabled (`unoptimized: true`) due to proxy issues
+- Server-side rendering reduces client-side JavaScript
+- Static generation where possible, dynamic rendering for user-specific content
+- WordPress plugin volume-mounted in dev (auto-reloads), built into production image
+- GraphQL queries should specify only required fields to reduce payload size
+
+**Security Notes:**
+- WordPress admin restricted to `@sakww.com` email addresses only (`restrict-admin-login.php`)
+- Custom REST API endpoints bypass WordPress authentication (using custom user session system)
+- CORS handled by Next.js API routes and WordPress headers
+- Environment variables never committed to git (use `.env.local` for local overrides)
+- Database passwords in docker-compose files (use secrets in production)
+
+**Recent Production Debugging Learnings:**
+1. **WordPress API URL in production** must be `http://sak_wp:80/wp-json` (includes `/wp-json` path)
+2. **Frontend container networking** - verify containers share `sakwood_network`
+3. **Next.js image optimization disabled** - WordPress images served directly through proxy
+4. **Language-prefixed API calls** required to avoid middleware query param stripping
+5. **Dual-service pattern** - server-side services use `WORDPRESS_API_URL`, client-side use language-prefixed paths
