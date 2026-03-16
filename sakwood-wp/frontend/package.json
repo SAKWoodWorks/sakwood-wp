@@ -16,6 +16,7 @@
   "dependencies": {
     "@fontsource/sarabun": "^5.2.8",
     "@formatjs/intl-localematcher": "^0.7.5",
+    "@google/generative-ai": "^0.24.1",
     "@radix-ui/react-slot": "^1.2.4",
     "@sentry/nextjs": "^10.37.0",
     "@types/dompurify": "^3.0.5",
