@@ -1,3 +1,6 @@
+import type { Product } from './product';
+import type { Locale } from '@/i18n-config';
+
 export interface ChatMessage {
   role: 'user' | 'assistant' | 'system';
   content: string;
@@ -5,8 +8,8 @@ export interface ChatMessage {
 }
 
 export interface ChatContext {
-  language: 'en' | 'th';
-  products?: any[];
+  language: Locale;
+  products?: Product[];
   shipping?: {
     province: string;
     cost: number;
@@ -16,7 +19,7 @@ export interface ChatContext {
 
 export interface AIChatRequest {
   message: string;
-  language: 'en' | 'th';
+  language: Locale;
   history: ChatMessage[];
 }
 
