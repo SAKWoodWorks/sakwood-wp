@@ -74,7 +74,7 @@ export function AIChatButton({ language }: AIChatButtonProps) {
       {isOpen && (
         <div
           ref={chatWindowRef}
-          className="fixed bottom-6 left-6 z-[9999] w-full max-w-md h-[600px] shadow-2xl"
+          className="fixed bottom-6 left-4 right-4 sm:left-6 sm:right-auto z-[9999] w-full max-w-md h-[600px] shadow-2xl"
         >
           <AIChatInterface
             language={language}
