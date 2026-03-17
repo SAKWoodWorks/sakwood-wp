@@ -21,7 +21,7 @@ export const defaultChatConfig: ChatConfig = {
     line: {
       id: 'line',
       name: 'LINE',
-      url: '@sakww', // LINE Official Account ID
+      url: 'https://lin.ee/ucIAvEC', // LINE URL
       color: 'green',
       icon: '/line-logo.png',
       enabled: true,
