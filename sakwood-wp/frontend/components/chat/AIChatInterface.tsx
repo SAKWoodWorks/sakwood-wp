@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from 'react';
 import type { ChatMessage } from '@/lib/types/ai-chat';
-import { QUICK_ACTIONS } from '@/lib/prompts/systemPrompts';
 
 interface AIChatInterfaceProps {
   language: 'en' | 'th';
@@ -87,14 +86,6 @@ export function AIChatInterface({ language, onClose }: AIChatInterfaceProps) {
     }
   };
 
-  const handleQuickAction = (action: string) => {
-    const actionText = QUICK_ACTIONS[action as keyof typeof QUICK_ACTIONS];
-    if (actionText) {
-      const text = language === 'th' ? actionText.descriptionTh : actionText.descriptionEn;
-      setInputMessage(text);
-    }
-  };
-
   if (!mounted) return null;
 
   return (
@@ -164,24 +155,6 @@ export function AIChatInterface({ language, onClose }: AIChatInterfaceProps) {
 
         <div ref={messagesEndRef} />
       </div>
-
-      {/* Quick Actions */}
-      {messages.length === 0 && (
-        <div className="p-4 border-t grid grid-cols-2 gap-2">
-          {Object.entries(QUICK_ACTIONS).map(([key, action]) => (
-            <button
-              key={key}
-              onClick={() => handleQuickAction(key)}
-              className="p-3 text-left border rounded-lg hover:bg-gray-50 transition"
-            >
-              <span className="text-xl">{action.icon}</span>
-              <p className="font-medium text-sm">
-                {language === 'th' ? action.titleTh : action.titleEn}
-              </p>
-            </button>
-          ))}
-        </div>
-      )}
 
       {/* Input */}
       <div className="p-4 border-t">
