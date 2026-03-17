@@ -102,7 +102,7 @@ export function ChatButtons({ dictionary, lang = 'th' }: ChatButtonsProps) {
   }
 
   // Check if AI chat is enabled
-  const isAIChatEnabled = config.aiChatEnabled ?? true;
+  const isAIChatEnabled = config.aiChatEnabled ?? false;
 
   return (
     <div className="fixed right-4 bottom-4 sm:right-8 sm:bottom-8 z-[9999] flex flex-col items-end gap-3">
