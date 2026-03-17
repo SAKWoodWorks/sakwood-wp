@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-const WORDPRESS_API_URL = process.env.WORDPRESS_API_URL || process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'http://localhost:8006/wp-json/sakwood/v1';
+const WORDPRESS_API_URL = process.env.WORDPRESS_API_URL || process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'http://localhost:8006/wp-json';
 
 /**
  * GET /api/chat
@@ -8,7 +8,16 @@ const WORDPRESS_API_URL = process.env.WORDPRESS_API_URL || process.env.NEXT_PUBL
  */
 export async function GET() {
   try {
-    const response = await fetch(`${WORDPRESS_API_URL}/chat`, {
+    // Build the full chat endpoint URL
+    // WORDPRESS_API_URL can be either:
+    // - http://sak_wp:80/wp-json (from docker-compose)
+    // - http://localhost:8006/wp-json/sakwood/v1 (from .env.local)
+    const baseUrl = WORDPRESS_API_URL;
+    const chatEndpoint = baseUrl.includes('/sakwood/v1')
+      ? `${baseUrl}/chat`
+      : `${baseUrl}/sakwood/v1/chat`;
+
+    const response = await fetch(chatEndpoint, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
