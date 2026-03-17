@@ -20,9 +20,8 @@ export async function getAIChatResponse(request: AIChatRequest): Promise<AIChatR
       throw new Error('Conversation history too long');
     }
 
-    // Try getting the model with explicit configuration
-    // Use gemini-1.5-flash for faster responses and lower cost
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    // Try getting the model - let it use the default
+    const model = genAI.getGenerativeModel();
     console.log('Model created:', !!model);
 
     // Build chat history for context
