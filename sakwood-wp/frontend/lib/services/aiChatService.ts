@@ -15,7 +15,7 @@ export async function getAIChatResponse(request: AIChatRequest): Promise<AIChatR
       throw new Error('Conversation history too long');
     }
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    const model = genAI.getGenerativeModel();
 
     // Build chat history for context
     const historyParts = request.history.map(msg => ({
