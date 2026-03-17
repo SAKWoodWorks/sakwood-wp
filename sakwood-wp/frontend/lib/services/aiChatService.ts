@@ -25,7 +25,9 @@ export async function getAIChatResponse(request: AIChatRequest): Promise<AIChatR
 
     const chat = model.startChat({
       history: conversationHistory,
-      systemInstruction: SYSTEM_PROMPT,
+      systemInstruction: {
+        parts: [{ text: SYSTEM_PROMPT }],
+      },
       generationConfig: {
         temperature: 0.7,
         topK: 40,
