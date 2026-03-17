@@ -50,7 +50,7 @@ export function AIChatButton({ language }: AIChatButtonProps) {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-[9999] p-4 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+          className="fixed bottom-6 left-6 z-[9999] p-4 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
           aria-label={language === 'th' ? 'เปิดแชท AI' : 'Open AI chat'}
         >
           <svg
@@ -74,7 +74,7 @@ export function AIChatButton({ language }: AIChatButtonProps) {
       {isOpen && (
         <div
           ref={chatWindowRef}
-          className="fixed bottom-6 right-6 z-[9999] w-full max-w-md h-[600px] shadow-2xl"
+          className="fixed bottom-6 left-6 z-[9999] w-full max-w-md h-[600px] shadow-2xl"
         >
           <AIChatInterface
             language={language}
