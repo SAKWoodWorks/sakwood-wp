@@ -6,22 +6,26 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 export async function getAIChatResponse(request: AIChatRequest): Promise<AIChatResponse> {
   try {
+    // Input validation
+    if (!request.message?.trim()) {
+      throw new Error('Message cannot be empty');
+    }
+
+    if (request.history.length > 50) {
+      throw new Error('Conversation history too long');
+    }
+
     const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
 
-    // Build conversation history
+    // Build conversation history (map 'assistant' to 'model' for Gemini)
     const conversationHistory = request.history.map(msg => ({
       role: msg.role === 'user' ? 'user' : 'model',
       parts: [{ text: msg.content }],
     }));
 
-    // Add system prompt
-    const systemMessage = {
-      role: 'user',
-      parts: [{ text: SYSTEM_PROMPT }],
-    };
-
     const chat = model.startChat({
-      history: [systemMessage, ...conversationHistory],
+      history: conversationHistory,
+      systemInstruction: SYSTEM_PROMPT,
       generationConfig: {
         temperature: 0.7,
         topK: 40,
@@ -34,22 +38,23 @@ export async function getAIChatResponse(request: AIChatRequest): Promise<AIChatR
     const response = result.response;
     const text = response.text();
 
+    // Response validation
+    if (!text?.trim()) {
+      throw new Error('AI returned empty response');
+    }
+
     return {
       response: text,
       timestamp: Date.now(),
     };
   } catch (error) {
     console.error('AI chat error:', error);
+
+    // Preserve error details
+    if (error instanceof Error) {
+      throw error;
+    }
+
     throw new Error('Failed to get AI response');
   }
-}
-
-export async function getProductContext(language: 'en' | 'th'): Promise<any[]> {
-  // This will be implemented to fetch products from WordPress
-  return [];
-}
-
-export async function getShippingContext(province: string): Promise<any> {
-  // This will be implemented to fetch shipping info
-  return null;
 }
