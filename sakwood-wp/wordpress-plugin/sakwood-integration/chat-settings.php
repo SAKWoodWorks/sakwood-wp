@@ -155,6 +155,7 @@ class Sakwood_Chat_Settings {
                     'icon' => '/call-logo.png',
                 ),
             ),
+            'ai_chat_enabled' => true,
             'show_tooltip' => true,
             'tooltip_delay' => 3,
             'pulse_duration' => 5,
@@ -187,6 +188,9 @@ class Sakwood_Chat_Settings {
 
         // Validate show_tooltip
         $validated['show_tooltip'] = isset($settings['show_tooltip']) ? rest_sanitize_boolean($settings['show_tooltip']) : true;
+
+        // Validate ai_chat_enabled
+        $validated['ai_chat_enabled'] = isset($settings['ai_chat_enabled']) ? rest_sanitize_boolean($settings['ai_chat_enabled']) : true;
 
         // Validate tooltip_delay
         $validated['tooltip_delay'] = isset($settings['tooltip_delay']) ? intval($settings['tooltip_delay']) : 3;
@@ -278,6 +282,19 @@ class Sakwood_Chat_Settings {
                     <table class="form-table">
                         <tbody>
                             <tr>
+                                <th scope="row"><?php echo esc_html('AI Chat'); ?></th>
+                                <td>
+                                    <label>
+                                        <input type="checkbox"
+                                               name="ai_chat_enabled"
+                                               value="1"
+                                               <?php checked($settings['ai_chat_enabled'] ?? true, true); ?>>
+                                        <?php echo esc_html('Enable AI Chat Assistant'); ?>
+                                    </label>
+                                    <p class="description"><?php echo esc_html('When enabled, users can chat with AI assistant for product recommendations and support.'); ?></p>
+                                </td>
+                            </tr>
+                            <tr>
                                 <th scope="row"><?php echo esc_html('Show Tooltip'); ?></th>
                                 <td>
                                     <label>
@@ -345,6 +362,7 @@ class Sakwood_Chat_Settings {
             $('#save-chat-settings').on('click', function() {
                 var settings = {
                     platforms: {},
+                    ai_chat_enabled: $('input[name="ai_chat_enabled"]').is(':checked'),
                     show_tooltip: $('input[name="show_tooltip"]').is(':checked'),
                     tooltip_delay: parseInt($('input[name="tooltip_delay"]').val()) || 3,
                     pulse_duration: parseInt($('input[name="pulse_duration"]').val()) || 5

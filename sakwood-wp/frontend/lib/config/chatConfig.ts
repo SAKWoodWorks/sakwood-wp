@@ -9,6 +9,7 @@ export interface ChatPlatform {
 
 export interface ChatConfig {
   platforms: Record<string, ChatPlatform>;
+  aiChatEnabled: boolean;
   showTooltip: boolean;
   tooltipDelay: number; // seconds
   pulseDuration: number; // seconds
@@ -23,14 +24,6 @@ export const defaultChatConfig: ChatConfig = {
       url: '@sakww', // LINE Official Account ID
       color: 'green',
       icon: '/line-logo.png',
-      enabled: true,
-    },
-    ai: {
-      id: 'ai',
-      name: 'AI Assistant',
-      url: 'ai-chat', // Internal route
-      color: 'purple',
-      icon: '/ai-logo.png',
       enabled: true,
     },
     telegram: {
@@ -58,6 +51,7 @@ export const defaultChatConfig: ChatConfig = {
       enabled: false,
     },
   },
+  aiChatEnabled: true,
   showTooltip: true,
   tooltipDelay: 3,
   pulseDuration: 5,
@@ -103,6 +97,7 @@ export async function getChatConfig(): Promise<ChatConfig> {
 
     return {
       platforms: platformsWithIds,
+      aiChatEnabled: data.ai_chat_enabled ?? true,
       showTooltip: data.show_tooltip ?? true,
       tooltipDelay: data.tooltip_delay ?? 3,
       pulseDuration: data.pulse_duration ?? 5,

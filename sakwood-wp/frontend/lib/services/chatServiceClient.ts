@@ -78,6 +78,7 @@ export async function getChatConfigClient(): Promise<ChatConfig> {
 
     return {
       platforms: platformsWithIds,
+      aiChatEnabled: data.ai_chat_enabled ?? true,
       showTooltip: data.show_tooltip ?? true,
       tooltipDelay: data.tooltip_delay ?? 3,
       pulseDuration: data.pulse_duration ?? 5,

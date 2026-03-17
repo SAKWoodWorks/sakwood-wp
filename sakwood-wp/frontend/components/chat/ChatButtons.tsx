@@ -97,14 +97,17 @@ export function ChatButtons({ dictionary, lang = 'th' }: ChatButtonsProps) {
 
   const enabledPlatforms = getEnabledPlatforms(config);
 
-  if (enabledPlatforms.length === 0) {
+  if (enabledPlatforms.length === 0 && !config.aiChatEnabled) {
     return null;
   }
 
+  // Check if AI chat is enabled
+  const isAIChatEnabled = config.aiChatEnabled ?? true;
+
   return (
     <div className="fixed right-4 bottom-4 sm:right-8 sm:bottom-8 z-[9999] flex flex-col items-end gap-3">
-      {/* AI Chat Interface - show when opened */}
-      {isAIChatOpen && (
+      {/* AI Chat Interface - show when opened and enabled */}
+      {isAIChatEnabled && isAIChatOpen && (
         <div
           ref={aiChatRef}
           className="mb-3 w-full max-w-md h-[600px] shadow-2xl animate-slideInRight"
@@ -132,8 +135,8 @@ export function ChatButtons({ dictionary, lang = 'th' }: ChatButtonsProps) {
         </div>
       ))}
 
-      {/* AI Chat Button - show when platform chat is expanded */}
-      {isChatOpen && (
+      {/* AI Chat Button - show when platform chat is expanded and AI chat is enabled */}
+      {isChatOpen && isAIChatEnabled && (
         <div className="animate-slideInRight stagger-0">
           <button
             onClick={toggleAIChat}
@@ -165,8 +168,8 @@ export function ChatButtons({ dictionary, lang = 'th' }: ChatButtonsProps) {
         {/* Chat icon */}
         <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6" />
 
-        {/* Notification dot - only show when closed */}
-        {!isChatOpen && !isAIChatOpen && (
+        {/* Notification dot - only show when closed and at least one chat is available */}
+        {!isChatOpen && !isAIChatOpen && (enabledPlatforms.length > 0 || isAIChatEnabled) && (
           <span className="absolute -top-1 -right-1 w-3 h-3 sm:w-4 sm:h-4 bg-red-500 rounded-full border-2 border-white"></span>
         )}
 

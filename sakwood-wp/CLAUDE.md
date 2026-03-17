@@ -741,3 +741,242 @@ npm run lint
 3. **Next.js image optimization disabled** - WordPress images served directly through proxy
 4. **Language-prefixed API calls** required to avoid middleware query param stripping
 5. **Dual-service pattern** - server-side services use `WORDPRESS_API_URL`, client-side use language-prefixed paths
+
+---
+
+## AI Chatbot Architecture
+
+**Tech Stack:**
+- **Primary AI:** Google Gemini 2.5 Flash (cloud-based)
+- **Fallback AI:** Ollama (local model, optional)
+- **Language Detection:** Auto-detect Thai/English from user message content
+- **Data Source:** Real-time WordPress REST API (all products, not just samples)
+
+**Architecture Overview:**
+
+```
+User Message → Language Detection → Fetch Product Data → AI Processing → Response
+     ↓              ↓                      ↓                    ↓
+  Thai/Eng      detectThaiLanguage    getProducts()      Gemini/Ollama
+                (U+0E00-0E7F)        getCategories()
+                                      getDealerLocations()
+```
+
+**Key Components:**
+
+1. **Language Detection** (`lib/utils/languageDetection.ts`)
+   - Detects Thai characters (U+0E00 to U+0E7F)
+   - Returns 'th' if Thai ratio > 30%, else 'en'
+   - Used for both AI response language and product data language
+
+2. **AI Chat Service** (`lib/services/aiChatService.ts`)
+   - Orchestrates AI chatbot requests
+   - Fetches real product data from WordPress
+   - Builds enhanced prompt with language instruction + system prompt + product data
+   - Supports dual AI models with automatic fallback
+   - Key code:
+   ```typescript
+   const userLanguage = getResponseLanguage(request.message, request.language);
+   const [products, categories, locations, ollamaAvailable] = await Promise.all([
+     getProducts(userLanguage),
+     getCategories(userLanguage),
+     getDealerLocations(),
+     checkOllamaHealth()
+   ]);
+   ```
+
+3. **Product Data Service** (`lib/services/productDataService.ts`)
+   - Fetches ALL products from WordPress (not just 5 per category)
+   - Formats product data with SKUs, prices, dimensions, stock status
+   - Groups by category, sorts by price (low to high)
+   - Shows both Thai and English names
+   - Key function:
+   ```typescript
+   export function formatProductsForAI(products: Product[], language: 'en' | 'th' = 'th'): string
+   ```
+
+4. **System Prompts** (`lib/prompts/systemPrompts.ts`)
+   - Comprehensive system prompt for AI behavior
+   - Instructions for using real product data only
+   - Pricing calculation rules
+   - Shipping zones by region
+   - Quick actions and error messages in Thai/English
+
+5. **Ollama Service** (`lib/services/ollamaService.ts`)
+   - Optional local AI model support
+   - REST API integration with Ollama at `http://localhost:11434`
+   - Functions: `getOllamaChatResponse()`, `checkOllamaHealth()`, `getOllamaModels()`
+   - Enabled via `OLLAMA_ENABLED=true` environment variable
+
+6. **React Components**
+   - `AIChatInterface.tsx` - Main chat UI component
+   - Supports conversation history
+   - Loading states and error handling
+   - SSR-safe mounted state pattern
+
+**Environment Variables:**
+
+**Development** (`frontend/.env.local`):
+```env
+# Required for Gemini (primary AI)
+GEMINI_API_KEY=your_gemini_api_key_here
+
+# Optional for Ollama (local AI fallback)
+OLLAMA_ENABLED=false
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=qwen2.5:7b
+```
+
+**Production** (`docker-compose.prod.yml`):
+```yaml
+frontend:
+  environment:
+    - GEMINI_API_KEY=${GEMINI_API_KEY}  # Required
+    - OLLAMA_ENABLED=false               # Optional, disabled by default
+```
+
+**Ollama Setup Guide:**
+
+See `docs/ollama-setup-guide.md` for complete instructions.
+
+**Recommended Models:**
+- **Qwen2.5 7B** (`qwen2.5:7b`) - Best Thai language support
+- **Llama 3.1 8B** (`llama3.1:8b`) - Good all-around performance
+- **Mistral 7B** (`mistral:7b`) - Fast and efficient
+
+**Installation (Windows):**
+```powershell
+# Download Ollama from https://ollama.ai/download
+# Install and run Ollama
+ollama serve
+
+# Pull recommended model
+ollama pull qwen2.5:7b
+
+# Enable in .env.local
+OLLAMA_ENABLED=true
+```
+
+**Language Detection Algorithm:**
+
+The system auto-detects the user's message language to provide responses in the same language:
+
+```typescript
+export function detectThaiLanguage(text: string): boolean {
+  const cleanText = text.replace(/\s+/g, '').replace(/[.,!?;:'"(){}[\]]/g, '');
+  if (cleanText.length === 0) return false;
+
+  const thaiChars = cleanText.match(/[\u0E00-\u0E7F]/g);
+  const thaiCharCount = thaiChars ? thaiChars.length : 0;
+  const thaiRatio = thaiCharCount / cleanText.length;
+
+  return thaiRatio > 0.3;  // 30% threshold
+}
+```
+
+**Critical Language Instruction:**
+
+The system enforces language matching through multiple layers:
+1. Language detection from user message
+2. System instruction for AI model
+3. Reminder in user prompt
+4. Language-specific product data fetching
+
+```typescript
+const languageInstruction = userLanguage === 'th'
+  ? '🔴 CRITICAL: You MUST respond in THAI language ONLY. The user wrote in Thai. All responses must be in Thai.'
+  : '🔴 CRITICAL: You MUST respond in ENGLISH language ONLY. The user wrote in English. All responses must be in English.';
+```
+
+**Product Data Context:**
+
+AI receives complete product inventory:
+- ALL products (not just samples)
+- Grouped by category
+- Sorted by price (low to high)
+- Includes SKU, dimensions, stock status, product URLs
+- Both Thai and English names
+
+**Quick Actions:**
+
+Predefined chat actions for common tasks:
+- 📦 Product Search - Find products by name/type
+- 💰 Price Quote - Calculate pricing
+- 🚚 Shipping Cost - Estimate by province
+- 🏠 Project Estimate - Plan decks, fences, flooring
+
+**Error Handling:**
+
+- API key validation
+- Timeout handling (30 seconds)
+- Conversation history limit (50 messages)
+- Empty message validation
+- Fallback error messages in Thai/English
+
+---
+
+## Public Locations API
+
+**Endpoint:** `GET /wp-json/sakwood/v1/public-locations`
+
+**Purpose:** Fetch dealer/branch locations visible to public (not logged-in users).
+
+**Features:**
+- Filter by category (dealer, branch, warehouse)
+- Filter by province
+- Geolocation support (latitude/longitude)
+- Used by DealerLocator component alongside dealer data
+
+**TypeScript Interface:**
+
+```typescript
+export interface PublicLocation {
+  id: number;
+  name: string;
+  address: string;
+  category: string;
+  province: string;
+  phone?: string;
+  latitude?: number;
+  longitude?: number;
+  opening_hours?: string;
+  image_url?: string;
+}
+```
+
+**Service File:** `lib/services/publicLocationsService.ts`
+
+**Usage:**
+
+```typescript
+import { getPublicLocations } from '@/lib/services/publicLocationsService';
+
+// Fetch all public locations
+const locations = await getPublicLocations();
+
+// Filter by category
+const dealers = await getPublicLocations('dealer');
+
+// Filter by province
+const bangkokDealers = await getPublicLocations('dealer', 'Bangkok');
+
+// Geolocation search
+const nearbyLocations = await getPublicLocationsByLocation(latitude, longitude, radius);
+```
+
+**WordPress Plugin Files:**
+- `wordpress-plugin/sakwood-integration/public-locations-api.php` - REST API endpoints
+- `wordpress-plugin/sakwood-integration/includes/database/public-locations-database.php` - Database schema
+
+**CSV Import Support:**
+
+Locations can be imported via CSV with columns:
+- name, address, category, province, phone, latitude, longitude, opening_hours
+
+**Integration with Dealer System:**
+
+The Public Locations API complements the Dealer system:
+- **Dealers:** Require login/approval, have territories, discounts
+- **Public Locations:** Visible to all, include branches and warehouses
+
+---
