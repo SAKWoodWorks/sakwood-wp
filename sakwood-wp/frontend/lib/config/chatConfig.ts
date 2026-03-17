@@ -25,6 +25,14 @@ export const defaultChatConfig: ChatConfig = {
       icon: '/line-logo.png',
       enabled: true,
     },
+    ai: {
+      id: 'ai',
+      name: 'AI Assistant',
+      url: 'ai-chat', // Internal route
+      color: 'purple',
+      icon: '/ai-logo.png',
+      enabled: true,
+    },
     telegram: {
       id: 'telegram',
       name: 'Telegram',
