@@ -69,11 +69,16 @@ export function AIChatInterface({ language, onClose }: AIChatInterfaceProps) {
       setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
       console.error('Chat error:', error);
+
+      // Show actual error for debugging
+      const errorDetails = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Error details:', errorDetails);
+
       const errorMessage: ChatMessage = {
         role: 'assistant',
         content: language === 'th'
-          ? 'ขออภัยครับ ระบบขัดข้องชั่วคราว กรุณาลองใหม่'
-          : 'Sorry, system error. Please try again.',
+          ? `ขออภัยครับ ระบบขัดข้อง (${errorDetails})`
+          : `Sorry, system error (${errorDetails})`,
         timestamp: Date.now(),
       };
       setMessages(prev => [...prev, errorMessage]);

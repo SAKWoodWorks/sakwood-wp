@@ -79,8 +79,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('AI chat API error:', error);
 
+    // Return actual error message for debugging
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { error: 'Failed to process chat request' },
+      { error: 'Failed to process chat request', details: errorMessage },
       { status: 500 }
     );
   }
