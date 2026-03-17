@@ -6,6 +6,11 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 export async function getAIChatResponse(request: AIChatRequest): Promise<AIChatResponse> {
   try {
+    // Debug: Check if API key is available
+    const apiKey = process.env.GEMINI_API_KEY;
+    console.log('GEMINI_API_KEY exists:', !!apiKey);
+    console.log('GEMINI_API_KEY length:', apiKey?.length);
+
     // Input validation
     if (!request.message?.trim()) {
       throw new Error('Message cannot be empty');
@@ -16,6 +21,7 @@ export async function getAIChatResponse(request: AIChatRequest): Promise<AIChatR
     }
 
     const model = genAI.getGenerativeModel();
+    console.log('Model created:', !!model);
 
     // Build chat history for context
     const historyParts = request.history.map(msg => ({
