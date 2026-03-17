@@ -36,6 +36,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Enable standalone output for Docker
+  output: 'standalone',
+
   // Image optimization settings
   images: {
     unoptimized: true, // Disable Next.js Image optimization for WordPress uploads

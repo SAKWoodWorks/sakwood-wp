@@ -7,12 +7,19 @@ COPY . .
 RUN npm run build
 
 # Production stage
-FROM node:20-alpine
+FROM node:20-alpine AS runner
 WORKDIR /app
-COPY package.json ./
-RUN npm install --production
-COPY --from=build /app/.next ./.next
+
+ENV NODE_ENV production
+
+# Copy necessary files
 COPY --from=build /app/public ./public
-COPY --from=build /app/next.config.ts ./
+COPY --from=build /app/.next/standalone ./
+COPY --from=build /app/.next/static ./.next/static
+
+# Set the hostname
+ENV HOSTNAME="0.0.0.0"
+
 EXPOSE 3000
-CMD ["npm", "start"]
+
+CMD ["node", "server.js"]
