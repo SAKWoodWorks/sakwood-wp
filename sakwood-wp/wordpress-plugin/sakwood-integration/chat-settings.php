@@ -168,21 +168,25 @@ class Sakwood_Chat_Settings {
     private function validate_settings($settings) {
         $validated = array();
 
-        // Validate platforms
-        if (isset($settings['platforms']) && is_array($settings['platforms'])) {
-            $validated['platforms'] = array();
+        // Get defaults to ensure all platforms are included
+        $defaults = $this->get_default_settings();
+        $validated['platforms'] = array();
 
-            $defaults = $this->get_default_settings();
-
-            foreach ($settings['platforms'] as $platform_id => $platform) {
-                if (isset($defaults['platforms'][$platform_id])) {
-                    $validated['platforms'][$platform_id] = array(
-                        'enabled' => isset($platform['enabled']) ? rest_sanitize_boolean($platform['enabled']) : false,
-                        'url' => isset($platform['url']) ? esc_url_raw($platform['url']) : '',
-                        'color' => isset($platform['color']) ? sanitize_text_field($platform['color']) : 'green',
-                        'icon' => isset($platform['icon']) ? sanitize_text_field($platform['icon']) : '',
-                    );
-                }
+        // Validate platforms - include ALL platforms from defaults
+        foreach ($defaults['platforms'] as $platform_id => $default_platform) {
+            // Check if this platform was submitted in the form
+            if (isset($settings['platforms'][$platform_id])) {
+                $platform = $settings['platforms'][$platform_id];
+                $validated['platforms'][$platform_id] = array(
+                    'enabled' => isset($platform['enabled']) ? rest_sanitize_boolean($platform['enabled']) : false,
+                    'url' => isset($platform['url']) ? esc_url_raw($platform['url']) : '',
+                    'color' => isset($platform['color']) ? sanitize_text_field($platform['color']) : $default_platform['color'],
+                    'icon' => isset($platform['icon']) ? sanitize_text_field($platform['icon']) : $default_platform['icon'],
+                );
+            } else {
+                // Platform not submitted (all checkboxes unchecked) - use defaults with enabled=false
+                $validated['platforms'][$platform_id] = $default_platform;
+                $validated['platforms'][$platform_id]['enabled'] = false;
             }
         }
 
