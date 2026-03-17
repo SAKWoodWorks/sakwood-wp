@@ -2,12 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAIChatResponse } from '@/lib/services/aiChatService';
 import type { AIChatRequest } from '@/lib/types/ai-chat';
 
-// Validate API key on module load
-if (!process.env.GEMINI_API_KEY) {
-  throw new Error('GEMINI_API_KEY environment variable is not set');
-}
-
 export async function POST(request: NextRequest) {
+  // Validate API key at request time (not module load time)
+  if (!process.env.GEMINI_API_KEY) {
+    return NextResponse.json(
+      { error: 'AI service configuration error' },
+      { status: 500 }
+    );
+  }
   try {
     const body = await request.json();
 
