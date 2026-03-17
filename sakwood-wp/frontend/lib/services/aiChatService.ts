@@ -21,7 +21,8 @@ export async function getAIChatResponse(request: AIChatRequest): Promise<AIChatR
     }
 
     // Try getting the model with explicit configuration
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    // Use gemini-1.5-flash for faster responses and lower cost
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
     console.log('Model created:', !!model);
 
     // Build chat history for context
