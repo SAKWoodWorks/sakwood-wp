@@ -22,8 +22,8 @@ export async function getAIChatResponse(request: AIChatRequest): Promise<AIChatR
     // Initialize the client
     const genAI = new GoogleGenerativeAI(apiKey);
 
-    // Use gemini-2.0-flash which is available and fast for chat
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    // Use gemini-2.5-flash which is the latest and available for new users
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     // Build chat history for context
     const historyParts = request.history.map(msg => ({
