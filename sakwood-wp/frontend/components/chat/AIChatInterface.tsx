@@ -38,6 +38,9 @@ export function AIChatInterface({ language, onClose }: AIChatInterfaceProps) {
     setIsLoading(true);
 
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+
       const response = await fetch('/api/ai-chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -46,7 +49,10 @@ export function AIChatInterface({ language, onClose }: AIChatInterfaceProps) {
           language,
           history: messages,
         }),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error('Failed to get response');
@@ -120,9 +126,9 @@ export function AIChatInterface({ language, onClose }: AIChatInterfaceProps) {
           </div>
         )}
 
-        {messages.map((message, index) => (
+        {messages.map((message) => (
           <div
-            key={index}
+            key={message.timestamp}
             className={`flex ${
               message.role === 'user' ? 'justify-end' : 'justify-start'
             }`}
@@ -179,7 +185,7 @@ export function AIChatInterface({ language, onClose }: AIChatInterfaceProps) {
             type="text"
             value={inputMessage}
             onChange={e => setInputMessage(e.target.value)}
-            onKeyPress={e => e.key === 'Enter' && handleSendMessage()}
+            onKeyDown={e => e.key === 'Enter' && handleSendMessage()}
             placeholder={
               language === 'th'
                 ? 'พิมพ์ข้อความ...'
@@ -192,6 +198,7 @@ export function AIChatInterface({ language, onClose }: AIChatInterfaceProps) {
             onClick={handleSendMessage}
             disabled={isLoading || !inputMessage.trim()}
             className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition"
+            aria-label={language === 'th' ? 'ส่งข้อความ' : 'Send message'}
           >
             {isLoading ? '...' : (language === 'th' ? 'ส่ง' : 'Send')}
           </button>
