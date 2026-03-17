@@ -146,7 +146,7 @@ export default async function RootLayout({ children, params }: LayoutProps) {
               <Header menuItems={menuItems} lang={lang as Locale} dictionary={dictionary} />
               <main id="main-content" className="bg-transparent">{children}</main>
               <Footer lang={lang as Locale} />
-              <ChatButtons dictionary={dictionary} />
+              <ChatButtons dictionary={dictionary} lang={lang as Locale} />
               <PromotionalPopup />
               <CookieConsentBanner lang={lang as 'th' | 'en'} />
             </ChatProvider>

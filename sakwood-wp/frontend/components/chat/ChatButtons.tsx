@@ -7,18 +7,18 @@ import { AIChatButton } from './AIChatButton';
 import { getEnabledPlatforms, type ChatConfig } from '@/lib/config/chatConfig';
 import { getChatConfigClient } from '@/lib/services/chatServiceClient';
 import { useChatState } from '@/lib/context/ChatContext';
-import { useLocale } from 'next-international';
+import type { Locale } from '@/i18n-config';
 
 interface ChatButtonsProps {
   dictionary?: Record<string, any>;
+  lang?: Locale;
 }
 
-export function ChatButtons({ dictionary }: ChatButtonsProps) {
+export function ChatButtons({ dictionary, lang = 'th' }: ChatButtonsProps) {
   const [config, setConfig] = useState<ChatConfig | null>(null);
   const [mounted, setMounted] = useState(false);
   const { isChatOpen, setIsChatOpen } = useChatState();
   const containerRef = useRef<HTMLDivElement>(null);
-  const locale = useLocale();
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- Required for SSR-safe component mounting
@@ -63,7 +63,7 @@ export function ChatButtons({ dictionary }: ChatButtonsProps) {
   return (
     <>
       {/* AI Chat Button - always visible, independent of platform buttons */}
-      <AIChatButton language={locale} />
+      <AIChatButton language={lang} />
 
       {/* Platform buttons container */}
       <div ref={containerRef} className="fixed right-4 bottom-4 sm:right-8 sm:bottom-8 z-[9999] flex flex-col items-end gap-3">
