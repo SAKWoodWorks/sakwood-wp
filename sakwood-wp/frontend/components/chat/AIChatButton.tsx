@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { AIChatInterface } from './AIChatInterface';
 
 interface AIChatButtonProps {
@@ -9,6 +9,40 @@ interface AIChatButtonProps {
 
 export function AIChatButton({ language }: AIChatButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const chatWindowRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Handle Escape key to close chat
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen]);
+
+  // Handle click outside to close chat
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (chatWindowRef.current && !chatWindowRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [isOpen]);
+
+  if (!mounted) return null;
 
   return (
     <>
@@ -16,7 +50,7 @@ export function AIChatButton({ language }: AIChatButtonProps) {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 p-4 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
+          className="fixed bottom-6 right-6 z-[9999] p-4 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
           aria-label={language === 'th' ? 'เปิดแชท AI' : 'Open AI chat'}
         >
           <svg
@@ -38,7 +72,10 @@ export function AIChatButton({ language }: AIChatButtonProps) {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-full max-w-md h-[600px] shadow-2xl">
+        <div
+          ref={chatWindowRef}
+          className="fixed bottom-6 right-6 z-[9999] w-full max-w-md h-[600px] shadow-2xl"
+        >
           <AIChatInterface
             language={language}
             onClose={() => setIsOpen(false)}
