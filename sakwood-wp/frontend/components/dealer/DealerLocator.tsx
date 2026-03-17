@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { MapPin, Navigation, Search, Store, Clock, Phone, Mail, Star } from 'lucide-react';
+import { MapPin, Navigation, Search, Store, Clock, Phone, Mail, Star, Building } from 'lucide-react';
 import type { Locale } from '@/i18n-config';
 import { getDealerLocations, getThailandProvinces, type DealerLocation } from '@/lib/services/dealerLocationService';
+import { getAllPublicLocations, getPublicLocationCategories, type PublicLocation } from '@/lib/services/publicLocationsService';
 import { useFocusTrap } from '@/lib/hooks/useFocusTrap';
 import { generateDealerJsonLd } from '@/lib/utils/generateDealerJsonLd';
 import { useToast } from '@/components/ui/Toast';
@@ -56,12 +57,23 @@ declare global {
   }
 }
 
+// Combined location type for display
+type DisplayLocation = DealerLocation | PublicLocation;
+
+function isDealerLocation(loc: DisplayLocation): loc is DealerLocation {
+  return 'tier' in loc;
+}
+
 export function DealerLocator({ lang, dictionary }: DealerLocatorProps) {
   const [dealers, setDealers] = useState<DealerLocation[]>([]);
-  const [filteredDealers, setFilteredDealers] = useState<DealerLocation[]>([]);
+  const [publicLocations, setPublicLocations] = useState<PublicLocation[]>([]);
+  const [allLocations, setAllLocations] = useState<DisplayLocation[]>([]);
+  const [filteredDealers, setFilteredDealers] = useState<DisplayLocation[]>([]);
   const [selectedProvince, setSelectedProvince] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [categories, setCategories] = useState<string[]>([]);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [selectedDealer, setSelectedDealer] = useState<DealerLocation | null>(null);
+  const [selectedDealer, setSelectedDealer] = useState<DisplayLocation | null>(null);
   const [loading, setLoading] = useState(true);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [searchRadius, setSearchRadius] = useState(100);
@@ -146,19 +158,20 @@ export function DealerLocator({ lang, dictionary }: DealerLocatorProps) {
     // Add new markers
     const bounds = new google.LatLngBounds();
 
-    filteredDealers.forEach((dealer) => {
-      const position = { lat: dealer.latitude, lng: dealer.longitude };
+    filteredDealers.forEach((location) => {
+      const position = { lat: location.latitude, lng: location.longitude };
+      const name = isDealerLocation(location) ? location.business_name : location.name;
 
       const marker = new google.Marker({
         position,
         map: mapInstanceRef.current,
-        title: dealer.business_name,
+        title: name,
         animation: google.Animation.DROP,
       });
 
-      // Add click event to show dealer info
+      // Add click event to show location info
       google.event.addListener(marker, 'click', () => {
-        setSelectedDealer(dealer);
+        setSelectedDealer(location);
         mapInstanceRef.current.panTo(position);
         mapInstanceRef.current.setZoom(12);
       });
@@ -173,16 +186,29 @@ export function DealerLocator({ lang, dictionary }: DealerLocatorProps) {
     }
   };
 
-  // Fetch dealers on mount
+  // Fetch dealers and public locations on mount
   useEffect(() => {
-    async function loadDealers() {
+    async function loadLocations() {
       setLoading(true);
-      const data = await getDealerLocations();
-      setDealers(data);
-      setFilteredDealers(data);
+
+      // Load both dealer and public locations
+      const [dealerData, publicData, categoryData] = await Promise.all([
+        getDealerLocations(),
+        getAllPublicLocations(),
+        getPublicLocationCategories()
+      ]);
+
+      setDealers(dealerData);
+      setPublicLocations(publicData);
+      setCategories(categoryData);
+
+      // Combine all locations
+      const combined: DisplayLocation[] = [...dealerData, ...publicData];
+      setAllLocations(combined);
+      setFilteredDealers(combined);
       setLoading(false);
     }
-    loadDealers();
+    loadLocations();
   }, []);
 
   // Inject JSON-LD structured data for SEO
@@ -211,30 +237,56 @@ export function DealerLocator({ lang, dictionary }: DealerLocatorProps) {
     };
   }, [dealers]);
 
-  // Filter by province
+  // Filter by province and category
   const handleProvinceChange = (province: string) => {
     setSelectedProvince(province);
+    applyFilters(province, selectedCategory);
+  };
 
-    if (province === '') {
-      setFilteredDealers(dealers);
-    } else {
-      // Find the Thai name for the selected English province name
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+    applyFilters(selectedProvince, category);
+  };
+
+  const applyFilters = (province: string, category: string) => {
+    let filtered = [...allLocations];
+
+    // Filter by category
+    if (category) {
+      filtered = filtered.filter((loc) => {
+        if (isDealerLocation(loc)) {
+          // Dealers: show if no category selected or if category is 'dealers'
+          return category === 'Dealers';
+        } else {
+          // Public locations: filter by exact category match
+          return loc.category === category;
+        }
+      });
+    }
+
+    // Filter by province
+    if (province) {
       const selectedProvinceObj = provinces.find(p => p.name_en === province);
       const thaiName = selectedProvinceObj?.name;
 
-      const filtered = dealers.filter((d) => {
-        // Check if dealer's province matches (either Thai or English name)
+      filtered = filtered.filter((d) => {
+        // Check if location's province matches (either Thai or English name)
         const provinceMatches = d.province === province || d.province === thaiName;
-        // Check if territories contain the province
-        const territoryMatches = d.territories?.includes(province) || d.territories?.includes(thaiName || '');
-        return provinceMatches || territoryMatches;
-      });
 
-      setFilteredDealers(filtered);
+        // For dealer locations, also check territories
+        if (isDealerLocation(d)) {
+          const territoryMatches = d.territories?.includes(province) || d.territories?.includes(thaiName || '');
+          return provinceMatches || territoryMatches;
+        }
+
+        return provinceMatches;
+      });
     }
+
+    setFilteredDealers(filtered);
   };
 
-  // Find nearest dealers
+  // Find nearest locations
   const handleFindNearest = () => {
     if (!navigator.geolocation) {
       show(lang === 'th' ? 'เบราว์เซอร์ไม่รองรับการระบุตำแหน่ง' : 'Geolocation is not supported by your browser', 'error');
@@ -246,7 +298,19 @@ export function DealerLocator({ lang, dictionary }: DealerLocatorProps) {
         const { latitude, longitude } = position.coords;
         setUserLocation({ lat: latitude, lng: longitude });
 
-        const nearest = await getDealerLocations(undefined, latitude, longitude, searchRadius);
+        // Get nearest dealers
+        const nearestDealers = await getDealerLocations(undefined, latitude, longitude, searchRadius);
+
+        // Get nearest public locations with distance calculation
+        const publicLocsWithDistance = publicLocations.map(loc => ({
+          ...loc,
+          distance: calculateDistance(latitude, longitude, loc.latitude, loc.longitude)
+        })).filter(loc => loc.distance <= searchRadius)
+          .sort((a, b) => a.distance - b.distance);
+
+        // Combine results
+        const nearest: DisplayLocation[] = [...nearestDealers, ...publicLocsWithDistance];
+
         setFilteredDealers(nearest);
 
         if (nearest.length > 0 && mapInstanceRef.current && window.google?.maps) {
@@ -272,7 +336,7 @@ export function DealerLocator({ lang, dictionary }: DealerLocatorProps) {
           });
           markersRef.current.push(userMarker);
         } else {
-          show(lang === 'th' ? `ไม่พบตัวแทนจำหน่ายในรัศมี ${searchRadius} กม.` : `No dealers found within ${searchRadius} km`, 'error');
+          show(lang === 'th' ? `ไม่พบสถานที่ในรัศมี ${searchRadius} กม.` : `No locations found within ${searchRadius} km`, 'error');
         }
       },
       (error) => {
@@ -281,6 +345,25 @@ export function DealerLocator({ lang, dictionary }: DealerLocatorProps) {
       }
     );
   };
+
+  // Calculate distance between two coordinates (in kilometers)
+  function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+    const earthRadius = 6371; // Earth's radius in kilometers
+
+    const latDiff = (lat2 * Math.PI) / 180 - (lat1 * Math.PI) / 180;
+    const lngDiff = (lng2 * Math.PI) / 180 - (lng1 * Math.PI) / 180;
+
+    const a =
+      Math.sin(latDiff / 2) * Math.sin(latDiff / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(lngDiff / 2) *
+        Math.sin(lngDiff / 2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return earthRadius * c;
+  }
 
   return (
     <div className="grid lg:grid-cols-3 gap-8">
@@ -296,8 +379,30 @@ export function DealerLocator({ lang, dictionary }: DealerLocatorProps) {
         {/* Search Controls */}
         <div className="bg-white rounded-lg shadow-md p-6 space-y-4">
           <h2 className="text-xl font-bold text-blue-900 mb-4">
-            {lang === 'th' ? 'ค้นหาตัวแทนจำหน่าย' : 'Find Dealers'}
+            {lang === 'th' ? 'ค้นหาตัวแทนจำหน่ายและสาขา' : 'Find Dealers & Locations'}
           </h2>
+
+          {/* Category Filter */}
+          {categories.length > 0 && (
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                {lang === 'th' ? 'ประเภท' : 'Category'}
+              </label>
+              <select
+                value={selectedCategory}
+                onChange={(e) => handleCategoryChange(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">{lang === 'th' ? 'ทุกประเภท' : 'All Categories'}</option>
+                <option value="Dealers">{lang === 'th' ? 'ตัวแทนจำหน่าย' : 'Dealers'}</option>
+                {categories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {/* Province Filter */}
           <div>
@@ -329,7 +434,7 @@ export function DealerLocator({ lang, dictionary }: DealerLocatorProps) {
 
           {/* Results Count */}
           <p className="text-sm text-gray-600 text-center">
-            {lang === 'th' ? 'พบ' : 'Found'} {filteredDealers.length} {lang === 'th' ? 'รายการ' : 'dealers'}
+            {lang === 'th' ? 'พบ' : 'Found'} {filteredDealers.length} {lang === 'th' ? 'รายการ' : 'locations'}
           </p>
         </div>
 
@@ -347,71 +452,88 @@ export function DealerLocator({ lang, dictionary }: DealerLocatorProps) {
             </div>
           ) : (
             <div className="space-y-4">
-              {filteredDealers.map((dealer) => (
-                <div
-                  key={dealer.id}
-                  onClick={() => setSelectedDealer(dealer)}
-                  className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                    selectedDealer?.id === dealer.id
-                      ? 'border-blue-900 bg-blue-50'
-                      : 'border-gray-200 hover:border-blue-300 hover:shadow-md'
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 mt-1">
-                      <MapPin className="w-5 h-5 text-blue-900" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-blue-900 mb-1 truncate">{dealer.business_name}</h3>
+              {filteredDealers.map((location) => {
+                const isDealer = isDealerLocation(location);
+                const name = isDealer ? location.business_name : location.name;
+                const category = isDealer ? 'dealer' : location.category;
 
-                      {/* Tier Badge */}
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${
-                          dealer.tier === 'platinum'
-                            ? 'bg-purple-700 text-white'
-                            : dealer.tier === 'gold'
-                            ? 'bg-yellow-600 text-white'
-                            : 'bg-gray-600 text-white'
-                        }`}>
-                          <Star className="w-3 h-3" />
-                          {dealer.tierDisplayName}
-                        </span>
-                        {dealer.distance !== undefined && (
-                          <span className="text-xs text-gray-500">
-                            {dealer.distance.toFixed(1)} km
-                          </span>
+                return (
+                  <div
+                    key={location.id}
+                    onClick={() => setSelectedDealer(location)}
+                    className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                      selectedDealer?.id === location.id
+                        ? 'border-blue-900 bg-blue-50'
+                        : 'border-gray-200 hover:border-blue-300 hover:shadow-md'
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 mt-1">
+                        {isDealer ? (
+                          <Star className="w-5 h-5 text-blue-900" />
+                        ) : (
+                          <Building className="w-5 h-5 text-blue-900" />
                         )}
                       </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold text-blue-900 mb-1 truncate">{name}</h3>
 
-                      {/* Location */}
-                      <p className="text-sm text-gray-600 mb-1 line-clamp-2">
-                        {dealer.address}, {dealer.province}
-                      </p>
-
-                      {/* Phone */}
-                      {dealer.phone && (
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <Phone className="w-3.5 h-3.5" />
-                          <span>{dealer.phone}</span>
+                        {/* Type Badge */}
+                        <div className="flex items-center gap-2 mb-2">
+                          {isDealer ? (
+                            <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${
+                              location.tier === 'platinum'
+                                ? 'bg-purple-700 text-white'
+                                : location.tier === 'gold'
+                                ? 'bg-yellow-600 text-white'
+                                : 'bg-gray-600 text-white'
+                            }`}>
+                              <Star className="w-3 h-3" />
+                              {location.tierDisplayName}
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                              <Building className="w-3 h-3" />
+                              {category}
+                            </span>
+                          )}
+                          {location.distance !== undefined && (
+                            <span className="text-xs text-gray-500">
+                              {location.distance.toFixed(1)} km
+                            </span>
+                          )}
                         </div>
-                      )}
+
+                        {/* Location */}
+                        <p className="text-sm text-gray-600 mb-1 line-clamp-2">
+                          {location.address}, {location.province}
+                        </p>
+
+                        {/* Phone */}
+                        {location.phone && (
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <Phone className="w-3.5 h-3.5" />
+                            <span>{location.phone}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
       </div>
 
-      {/* Selected Dealer Modal */}
+      {/* Selected Location Modal */}
       {selectedDealer && (
         <div
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
           onClick={() => setSelectedDealer(null)}
           role="dialog"
           aria-modal="true"
-          aria-labelledby="dealer-modal-title"
+          aria-labelledby="location-modal-title"
         >
           <div
             ref={modalRef}
@@ -422,17 +544,26 @@ export function DealerLocator({ lang, dictionary }: DealerLocatorProps) {
               {/* Header */}
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <h3 id="dealer-modal-title" className="text-xl font-bold text-blue-900 mb-1">{selectedDealer.business_name}</h3>
-                  <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold ${
-                    selectedDealer.tier === 'platinum'
-                      ? 'bg-purple-700 text-white'
-                      : selectedDealer.tier === 'gold'
-                      ? 'bg-yellow-600 text-white'
-                      : 'bg-gray-600 text-white'
-                  }`}>
-                    <Star className="w-4 h-4" />
-                    {selectedDealer.tierDisplayName} Dealer
-                  </span>
+                  <h3 id="location-modal-title" className="text-xl font-bold text-blue-900 mb-1">
+                    {isDealerLocation(selectedDealer) ? selectedDealer.business_name : selectedDealer.name}
+                  </h3>
+                  {isDealerLocation(selectedDealer) ? (
+                    <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold ${
+                      selectedDealer.tier === 'platinum'
+                        ? 'bg-purple-700 text-white'
+                        : selectedDealer.tier === 'gold'
+                        ? 'bg-yellow-600 text-white'
+                        : 'bg-gray-600 text-white'
+                    }`}>
+                      <Star className="w-4 h-4" />
+                      {selectedDealer.tierDisplayName} Dealer
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold bg-blue-100 text-blue-800">
+                      <Building className="w-4 h-4" />
+                      {selectedDealer.category}
+                    </span>
+                  )}
                 </div>
                 <button
                   onClick={() => setSelectedDealer(null)}
@@ -497,7 +628,7 @@ export function DealerLocator({ lang, dictionary }: DealerLocatorProps) {
                   </div>
                 )}
 
-                {selectedDealer.territories && selectedDealer.territories.length > 0 && (
+                {isDealerLocation(selectedDealer) && selectedDealer.territories && selectedDealer.territories.length > 0 && (
                   <div className="flex items-start gap-3">
                     <Store className="w-5 h-5 text-blue-900 flex-shrink-0 mt-0.5" />
                     <div>
@@ -509,7 +640,24 @@ export function DealerLocator({ lang, dictionary }: DealerLocatorProps) {
                   </div>
                 )}
 
-                {selectedDealer.discountPercentage > 0 && (
+                {!isDealerLocation(selectedDealer) && selectedDealer.website && (
+                  <div className="flex items-start gap-3">
+                    <Building className="w-5 h-5 text-blue-900 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-semibold text-gray-700">{lang === 'th' ? 'เว็บไซต์' : 'Website'}</p>
+                      <a
+                        href={selectedDealer.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-900 hover:underline text-sm break-all"
+                      >
+                        {selectedDealer.website}
+                      </a>
+                    </div>
+                  </div>
+                )}
+
+                {isDealerLocation(selectedDealer) && selectedDealer.discountPercentage > 0 && (
                   <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
                     <p className="text-green-800 font-semibold">
                       {lang === 'th' ? 'ส่วนลด' : 'Discount'} {selectedDealer.discountPercentage}%

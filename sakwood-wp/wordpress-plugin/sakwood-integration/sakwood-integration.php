@@ -76,6 +76,8 @@ class Sakwood_Integration {
         // Load Dealer components
         require_once SAKWOOD_PLUGIN_DIR . 'includes/database/dealer-database.php';
         require_once SAKWOOD_PLUGIN_DIR . 'dealer-api.php';
+        require_once SAKWOOD_PLUGIN_DIR . 'includes/database/public-locations-database.php';
+        require_once SAKWOOD_PLUGIN_DIR . 'public-locations-api.php';
 
         // Load Popup Settings
         require_once SAKWOOD_PLUGIN_DIR . 'popup-settings.php';
