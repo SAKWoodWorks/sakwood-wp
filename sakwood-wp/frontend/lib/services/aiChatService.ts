@@ -2,14 +2,13 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import type { ChatMessage, AIChatRequest, AIChatResponse } from '@/lib/types/ai-chat';
 import { SYSTEM_PROMPT } from '@/lib/prompts/systemPrompts';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-
 export async function getAIChatResponse(request: AIChatRequest): Promise<AIChatResponse> {
   try {
-    // Debug: Check if API key is available
     const apiKey = process.env.GEMINI_API_KEY;
-    console.log('GEMINI_API_KEY exists:', !!apiKey);
-    console.log('GEMINI_API_KEY prefix:', apiKey?.substring(0, 10));
+
+    if (!apiKey) {
+      throw new Error('GEMINI_API_KEY is not set');
+    }
 
     // Input validation
     if (!request.message?.trim()) {
@@ -20,9 +19,11 @@ export async function getAIChatResponse(request: AIChatRequest): Promise<AIChatR
       throw new Error('Conversation history too long');
     }
 
-    // Try getting the model - let it use the default
-    const model = genAI.getGenerativeModel();
-    console.log('Model created:', !!model);
+    // Initialize the client
+    const genAI = new GoogleGenerativeAI(apiKey);
+
+    // Use gemini-2.0-flash which is available and fast for chat
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
     // Build chat history for context
     const historyParts = request.history.map(msg => ({
@@ -41,7 +42,7 @@ export async function getAIChatResponse(request: AIChatRequest): Promise<AIChatR
       },
     });
 
-    // Send message with system instruction
+    // Send message with system instruction prepended
     const result = await chat.sendMessage(
       `${SYSTEM_PROMPT}\n\nUser: ${request.message}`
     );
