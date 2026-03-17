@@ -9,7 +9,7 @@ export async function getAIChatResponse(request: AIChatRequest): Promise<AIChatR
     // Debug: Check if API key is available
     const apiKey = process.env.GEMINI_API_KEY;
     console.log('GEMINI_API_KEY exists:', !!apiKey);
-    console.log('GEMINI_API_KEY length:', apiKey?.length);
+    console.log('GEMINI_API_KEY prefix:', apiKey?.substring(0, 10));
 
     // Input validation
     if (!request.message?.trim()) {
@@ -20,7 +20,8 @@ export async function getAIChatResponse(request: AIChatRequest): Promise<AIChatR
       throw new Error('Conversation history too long');
     }
 
-    const model = genAI.getGenerativeModel();
+    // Try getting the model with explicit configuration
+    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
     console.log('Model created:', !!model);
 
     // Build chat history for context
