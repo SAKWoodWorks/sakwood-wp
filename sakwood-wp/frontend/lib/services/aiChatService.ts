@@ -15,19 +15,17 @@ export async function getAIChatResponse(request: AIChatRequest): Promise<AIChatR
       throw new Error('Conversation history too long');
     }
 
-    const model = genAI.getGenerativeModel({ model: 'models/gemini-pro' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
 
-    // Build conversation history (map 'assistant' to 'model' for Gemini)
-    const conversationHistory = request.history.map(msg => ({
+    // Build chat history for context
+    const historyParts = request.history.map(msg => ({
       role: msg.role === 'user' ? 'user' : 'model',
       parts: [{ text: msg.content }],
     }));
 
+    // Create a chat session
     const chat = model.startChat({
-      history: conversationHistory,
-      systemInstruction: {
-        parts: [{ text: SYSTEM_PROMPT }],
-      },
+      history: historyParts,
       generationConfig: {
         temperature: 0.7,
         topK: 40,
@@ -36,7 +34,11 @@ export async function getAIChatResponse(request: AIChatRequest): Promise<AIChatR
       },
     });
 
-    const result = await chat.sendMessage(request.message);
+    // Send message with system instruction
+    const result = await chat.sendMessage(
+      `${SYSTEM_PROMPT}\n\nUser: ${request.message}`
+    );
+
     const response = result.response;
     const text = response.text();
 
