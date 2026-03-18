@@ -177,7 +177,15 @@ async function getProductsViaREST(
 ): Promise<ProductsResponse> {
   try {
     // Use WordPress API URL directly (no language prefix needed for REST API)
-    const baseUrl = process.env.WORDPRESS_API_URL || process.env.NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL?.replace('/graphql', '') || 'http://localhost:8006';
+    // WORDPRESS_API_URL can be either:
+    // - http://sak_wp:80/wp-json (includes /wp-json)
+    // - http://localhost:8006 (doesn't include /wp-json)
+    let baseUrl = process.env.WORDPRESS_API_URL || process.env.NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL?.replace('/graphql', '') || 'http://localhost:8006';
+
+    // Remove /wp-json if it's already in the baseUrl
+    if (baseUrl.endsWith('/wp-json')) {
+      baseUrl = baseUrl.replace('/wp-json', '');
+    }
 
     // Build query parameters
     const params = new URLSearchParams({
