@@ -83,7 +83,6 @@ export async function getOrderDetails(orderId: number): Promise<OrderDetails> {
     }
 
     const data = await response.json();
-    console.log('Order fetched successfully:', data);
     return data;
   } catch (error) {
     console.error('Error fetching order details:', error);

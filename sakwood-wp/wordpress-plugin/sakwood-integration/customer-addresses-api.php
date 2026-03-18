@@ -28,35 +28,35 @@ class Sakwood_Customer_Addresses_API {
         register_rest_route('sakwood/v1', '/customer/addresses', array(
             'methods' => 'GET',
             'callback' => array($this, 'get_addresses'),
-            'permission_callback' => '__return_true', // TODO: Fix cookie auth
+            'permission_callback' => array($this, 'check_permission'),
         ));
 
         // Get single address
         register_rest_route('sakwood/v1', '/customer/addresses/(?P<address_id>[a-zA-Z0-9_]+)', array(
             'methods' => 'GET',
             'callback' => array($this, 'get_address'),
-            'permission_callback' => '__return_true', // TODO: Fix cookie auth
+            'permission_callback' => array($this, 'check_permission'),
         ));
 
         // Create new address
         register_rest_route('sakwood/v1', '/customer/addresses', array(
             'methods' => 'POST',
             'callback' => array($this, 'create_address'),
-            'permission_callback' => '__return_true', // TODO: Fix cookie auth
+            'permission_callback' => array($this, 'check_permission'),
         ));
 
         // Update address
         register_rest_route('sakwood/v1', '/customer/addresses/(?P<address_id>[a-zA-Z0-9_]+)', array(
             'methods' => 'POST',
             'callback' => array($this, 'update_address'),
-            'permission_callback' => '__return_true', // TODO: Fix cookie auth
+            'permission_callback' => array($this, 'check_permission'),
         ));
 
         // Delete address
         register_rest_route('sakwood/v1', '/customer/addresses/(?P<address_id>[a-zA-Z0-9_]+)', array(
             'methods' => 'DELETE',
             'callback' => array($this, 'delete_address'),
-            'permission_callback' => '__return_true', // TODO: Fix cookie auth
+            'permission_callback' => array($this, 'check_permission'),
         ));
     }
 

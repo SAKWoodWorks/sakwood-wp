@@ -77,7 +77,9 @@ class Sakwood_Product_API {
         register_rest_route('sakwood/v1', '/products/(?P<slug>[^/]+)', array(
             'methods' => 'POST',
             'callback' => array($this, 'update_product'),
-            'permission_callback' => '__return_true', // TODO: Add proper authentication
+            'permission_callback' => function() {
+                return current_user_can('manage_options');
+            },
             'args' => array(
                 'slug' => array(
                     'required' => true,

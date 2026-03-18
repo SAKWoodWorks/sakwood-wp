@@ -25,7 +25,6 @@ export async function getAIChatResponse(request: AIChatRequest): Promise<AIChatR
 
     // Detect user's message language (not context language)
     const userLanguage = getResponseLanguage(request.message, request.language);
-    console.log(`🌐 Detected user language: ${userLanguage}`);
 
     // Fetch real product data from WordPress (use detected language)
     const [products, categories, locations, ollamaAvailable] = await Promise.all([
@@ -52,15 +51,12 @@ export async function getAIChatResponse(request: AIChatRequest): Promise<AIChatR
 
     // Use Ollama if available, otherwise fall back to Google Gemini
     if (ollamaAvailable && process.env.OLLAMA_ENABLED === 'true') {
-      console.log('🏠 Using Ollama (local model)');
       responseText = await getOllamaChatResponse(
         request.message,
         enhancedPrompt,
         request.history
       );
     } else {
-      console.log('☁️ Using Google Gemini (cloud API)');
-
       const apiKey = process.env.GEMINI_API_KEY;
       if (!apiKey) {
         throw new Error('GEMINI_API_KEY is not set and Ollama is not available');
