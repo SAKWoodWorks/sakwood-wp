@@ -383,7 +383,178 @@ docker-compose -f docker-compose.prod.yml logs frontend | grep -i error
 docker-compose -f docker-compose.prod.yml logs wordpress | grep -i error
 ```
 
+### Next.js API Routes in Production
+
+**CRITICAL: Next.js API routes require standalone mode to work in Docker production environment.**
+
+**Configuration (frontend/next.config.ts):**
+```typescript
+const nextConfig: NextConfig = {
+  output: 'standalone', // REQUIRED for API routes in Docker
+  // ... other config
+};
+```
+
+**Dockerfile (frontend/Dockerfile):**
+```dockerfile
+# Build stage
+FROM node:20-alpine AS build
+WORKDIR /app
+COPY package.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+
+# Production stage - MUST use standalone output
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV production
+
+COPY --from=build /app/public ./public
+COPY --from=build /app/.next/standalone ./
+COPY --from=build /app/.next/static ./.next/static
+
+# CRITICAL: Explicitly copy API routes
+COPY --from=build /app/.next/server/app/api ./app/api
+
+ENV HOSTNAME="0.0.0.0"
+EXPOSE 3000
+CMD ["node", "server.js"]
+```
+
+**Why This Is Required:**
+- Standard `npm start` doesn't serve API routes properly in Docker
+- Standalone mode creates a self-contained Node.js server
+- API routes must be explicitly copied in Dockerfile
+- Without this, `/api/*` endpoints return 404 in production
+
+**Verification:**
+```bash
+# Check if API routes exist in container
+docker exec sak_frontend find /app -name "api" -type d
+
+# Test API route
+curl http://localhost:8007/api/chat
+```
+
+**Build Output Location:**
+- Standalone build files: `/app/.next/standalone/`
+- Server files: `/app/.next/server/`
+- API routes: `/app/.next/server/app/api/`
+
+### Chat Settings System Architecture
+
+**WordPress Admin Interface:**
+- Location: `Settings → Chat Settings` in WordPress admin
+- Database option: `sakwood_chat_settings` in `wp_options` table
+- REST API endpoint: `/wp-json/sakwood/v1/chat`
+
+**Configuration Fields:**
+```php
+{
+  platforms: {
+    line: { enabled: true, url: "...", color: "green", icon: "/line-logo.png" },
+    telegram: { enabled: false, url: "...", color: "blue", icon: "/telegram-logo.png" },
+    messenger: { enabled: false, url: "...", color: "indigo", icon: "/messenger-logo.png" },
+    call: { enabled: false, url: "...", color: "black", icon: "/call-logo.png" }
+  },
+  ai_chat_enabled: true,  // Master toggle for AI chat
+  show_tooltip: true,
+  tooltip_delay: 3,
+  pulse_duration: 5
+}
+```
+
+**Frontend Flow:**
+1. **WordPress Plugin** (`chat-settings.php`): Saves settings to database via REST API
+2. **Next.js API Route** (`app/api/chat/route.ts`): Proxies requests to WordPress, handles CORS
+3. **Frontend Service** (`chatServiceClient.ts`): Fetches config on client-side
+4. **ChatButtons Component**: Conditionally renders buttons based on `enabled` flags
+
+**Critical Validation Rules:**
+- Unchecked checkboxes are NOT sent in HTML forms
+- PHP must handle missing platform keys as `enabled: false`
+- Default for `aiChatEnabled` must be `false`, not `true`
+- All platforms default to `enabled: true` unless explicitly set to `false`
+
+**TypeScript Interfaces:**
+```typescript
+// lib/config/chatConfig.ts
+export interface ChatConfig {
+  platforms: Record<string, ChatPlatform>;
+  aiChatEnabled: boolean;  // Master toggle for AI chat
+  showTooltip: boolean;
+  tooltipDelay: number;
+  pulseDuration: number;
+}
+
+export interface ChatPlatform {
+  id: string;
+  name: string;
+  url: string;
+  color: string;
+  icon: string;
+  enabled: boolean;
+}
+```
+
+### WORDPRESS_API_URL Format Handling Pattern
+
+**CRITICAL: Different services expect different URL formats.**
+
+**Two URL Patterns Used:**
+
+1. **Base URL WITH `/wp-json` suffix:** Used by `menuService.ts`, chat API, etc.
+   - Format: `http://sak_wp:80/wp-json` or `http://localhost:8006/wp-json`
+   - Service constructs: `${BASE_URL}/menu` → `http://sak_wp:80/wp-json/menu` ✅
+   - Environment variable: `WORDPRESS_API_URL=http://sak_wp:80/wp-json`
+
+2. **Base URL WITHOUT `/wp-json` suffix:** Used by `productService.ts`
+   - Format: `http://sak_wp:80` or `http://localhost:8006`
+   - Service constructs: `${BASE_URL}/wp-json/sakwood/v1/products` → `http://sak_wp:80/wp-json/sakwood/v1/products` ✅
+
+**Smart Handling Pattern (productService.ts):**
+```typescript
+let baseUrl = process.env.WORDPRESS_API_URL || 'http://localhost:8006';
+
+// Remove /wp-json if it's already in the baseUrl
+if (baseUrl.endsWith('/wp-json')) {
+  baseUrl = baseUrl.replace('/wp-json', '');
+}
+
+const url = `${baseUrl}/wp-json/sakwood/v1/products?${params}`;
+```
+
+**Production Environment Variables (docker-compose.prod.yml):**
+```yaml
+frontend:
+  environment:
+    # Server-side: Base URL WITH /wp-json (used by menuService.ts, chat API)
+    - WORDPRESS_API_URL=http://sak_wp:80/wp-json
+    - WORDPRESS_GRAPHQL_URL=http://sak_wp:80/graphql
+    # Client-side: External URLs (for browser access)
+    - NEXT_PUBLIC_WORDPRESS_API_URL=https://wp.sakww.com/wp-json/sakwood/v1
+    - NEXT_PUBLIC_WORDPRESS_GRAPHQL_URL=https://wp.sakww.com/graphql
+```
+
+**Development Environment Variables (.env.local):**
+```env
+# Both formats work for development
+WORDPRESS_API_URL=http://localhost:8006/wp-json
+NEXT_PUBLIC_WORDPRESS_API_URL=http://localhost:8006/wp-json/sakwood/v1
+```
+
+**When Adding New Services:**
+- Check if the service expects `WORDPRESS_API_URL` with or without `/wp-json`
+- Add smart handling like productService.ts if service needs URL without `/wp-json`
+- Document the expected format in service file comments
+
 ### Common Production Issues
+
+**Issue: API routes return 404 in production**
+- **Cause:** Next.js not using standalone mode or API routes not copied in Dockerfile
+- **Fix:** Enable `output: 'standalone'` in next.config.ts and explicitly copy `app/api` directory in Dockerfile
+- **Verification:** `curl http://localhost:8007/api/chat`
 
 **Issue: Frontend shows "Failed to fetch" errors or "REST API failed: 404"**
 
