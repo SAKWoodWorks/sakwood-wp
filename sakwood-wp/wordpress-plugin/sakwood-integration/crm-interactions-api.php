@@ -27,7 +27,9 @@ class Sakwood_CRM_Interactions_API {
         register_rest_route('sakwood/v1', '/customer/crm/interactions', array(
             'methods' => 'GET',
             'callback' => array($this, 'get_interactions'),
-            'permission_callback' => '__return_true',
+            'permission_callback' => function() {
+                return is_user_logged_in() && current_user_can('read');
+            },
             'args' => array(
                 'user_id' => array(
                     'required' => false,
@@ -52,7 +54,9 @@ class Sakwood_CRM_Interactions_API {
         register_rest_route('sakwood/v1', '/customer/crm/interactions/(?P<id>[0-9]+)', array(
             'methods' => 'GET',
             'callback' => array($this, 'get_interaction'),
-            'permission_callback' => '__return_true',
+            'permission_callback' => function() {
+                return is_user_logged_in() && current_user_can('read');
+            },
             'args' => array(
                 'user_id' => array(
                     'required' => false,
@@ -69,7 +73,9 @@ class Sakwood_CRM_Interactions_API {
         register_rest_route('sakwood/v1', '/customer/crm/interactions-summary', array(
             'methods' => 'GET',
             'callback' => array($this, 'get_interactions_summary'),
-            'permission_callback' => '__return_true',
+            'permission_callback' => function() {
+                return is_user_logged_in() && current_user_can('read');
+            },
             'args' => array(
                 'user_id' => array(
                     'required' => false,
@@ -86,13 +92,21 @@ class Sakwood_CRM_Interactions_API {
         global $wpdb;
 
         $user_id = isset($request['user_id']) ? intval($request['user_id']) : get_current_user_id();
+        $current_user_id = get_current_user_id();
         $per_page = intval($request['per_page']);
         $page = intval($request['page']);
         $type = isset($request['type']) ? sanitize_text_field($request['type']) : '';
 
-        if (!$user_id) {
+        if (!$current_user_id) {
             return new WP_Error('not_authenticated', __('User not authenticated', 'sakwood'), array('status' => 401));
         }
+
+        // Verify user owns the data or is admin
+        if ($user_id !== $current_user_id && !current_user_can('manage_options')) {
+            return new WP_Error('forbidden', __('You do not have permission to view these interactions', 'sakwood'), array('status' => 403));
+        }
+
+        $user_id = $current_user_id; // Always use logged-in user ID for security
 
         $table_customers = $wpdb->prefix . 'sakwood_customers';
         $table_interactions = $wpdb->prefix . 'sakwood_interactions';
@@ -172,11 +186,19 @@ class Sakwood_CRM_Interactions_API {
         global $wpdb;
 
         $user_id = isset($request['user_id']) ? intval($request['user_id']) : get_current_user_id();
+        $current_user_id = get_current_user_id();
         $interaction_id = intval($request['id']);
 
-        if (!$user_id) {
+        if (!$current_user_id) {
             return new WP_Error('not_authenticated', __('User not authenticated', 'sakwood'), array('status' => 401));
         }
+
+        // Verify user owns the data or is admin
+        if ($user_id !== $current_user_id && !current_user_can('manage_options')) {
+            return new WP_Error('forbidden', __('You do not have permission to view this interaction', 'sakwood'), array('status' => 403));
+        }
+
+        $user_id = $current_user_id; // Always use logged-in user ID for security
 
         $table_customers = $wpdb->prefix . 'sakwood_customers';
         $table_interactions = $wpdb->prefix . 'sakwood_interactions';
@@ -229,10 +251,18 @@ class Sakwood_CRM_Interactions_API {
         global $wpdb;
 
         $user_id = isset($request['user_id']) ? intval($request['user_id']) : get_current_user_id();
+        $current_user_id = get_current_user_id();
 
-        if (!$user_id) {
+        if (!$current_user_id) {
             return new WP_Error('not_authenticated', __('User not authenticated', 'sakwood'), array('status' => 401));
         }
+
+        // Verify user owns the data or is admin
+        if ($user_id !== $current_user_id && !current_user_can('manage_options')) {
+            return new WP_Error('forbidden', __('You do not have permission to view this summary', 'sakwood'), array('status' => 403));
+        }
+
+        $user_id = $current_user_id; // Always use logged-in user ID for security
 
         $table_customers = $wpdb->prefix . 'sakwood_customers';
         $table_interactions = $wpdb->prefix . 'sakwood_interactions';

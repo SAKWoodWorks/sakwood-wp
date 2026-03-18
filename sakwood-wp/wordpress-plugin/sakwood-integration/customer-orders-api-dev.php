@@ -1,9 +1,9 @@
 <?php
 /**
- * Customer Orders REST API (Development Mode)
+ * Customer Orders REST API
  *
  * REST API endpoints for fetching customer orders
- * DEVELOPMENT MODE: No authentication required for testing
+ * REQUIRES: User authentication and ownership verification
  *
  * @package SakwoodIntegration
  */
@@ -22,52 +22,29 @@ class Sakwood_Customer_Orders_API_Dev {
     }
 
     /**
-     * Register REST API routes (NO AUTH FOR DEVELOPMENT)
+     * Register REST API routes (SECURED - Authentication Required)
      */
     public function register_routes() {
-        // Get customer orders - NO AUTH for development
+        // Get customer orders - REQUIRES AUTHENTICATION
         register_rest_route('sakwood/v1', '/customer/orders', array(
             'methods' => 'GET',
             'callback' => array($this, 'get_customer_orders'),
-            'permission_callback' => '__return_true', // DEV MODE: No auth required
+            'permission_callback' => function() {
+                return is_user_logged_in() && current_user_can('read');
+            },
         ));
 
-        // Get single order details - NO AUTH for development
+        // Get single order details - REQUIRES AUTHENTICATION
         register_rest_route('sakwood/v1', '/customer/orders/(?P<order_id>\d+)', array(
             'methods' => 'GET',
             'callback' => array($this, 'get_order_details'),
-            'permission_callback' => '__return_true', // DEV MODE: No auth required
+            'permission_callback' => function() {
+                return is_user_logged_in() && current_user_can('read');
+            },
         ));
 
-        // Test endpoint to get user ID from email
-        register_rest_route('sakwood/v1', '/customer/orders/dev/get-user-id', array(
-            'methods' => 'POST',
-            'callback' => array($this, 'get_user_id_from_email'),
-            'permission_callback' => '__return_true',
-        ));
-    }
-
-    /**
-     * Get user ID from email (for development)
-     */
-    public function get_user_id_from_email($request) {
-        $email = $request->get_param('email');
-
-        if (empty($email)) {
-            return new WP_Error('no_email', 'Email is required', array('status' => 400));
-        }
-
-        $user = get_user_by('email', $email);
-
-        if (!$user) {
-            return new WP_Error('user_not_found', 'User not found', array('status' => 404));
-        }
-
-        return array(
-            'user_id' => $user->ID,
-            'email' => $user->user_email,
-            'display_name' => $user->display_name,
-        );
+        // Test endpoint to get user ID from email - REMOVED FOR SECURITY
+        // This endpoint allowed anyone to look up user IDs by email address
     }
 
     /**
@@ -76,23 +53,8 @@ class Sakwood_Customer_Orders_API_Dev {
     public function get_customer_orders($request) {
         $user_id = get_current_user_id();
 
-        // DEV MODE: Allow passing user_id as parameter
         if (!$user_id) {
-            $dev_user_id = $request->get_param('user_id');
-            if ($dev_user_id) {
-                $user_id = intval($dev_user_id);
-            }
-        }
-
-        if (!$user_id) {
-            return array(
-                'orders' => array(),
-                'total' => 0,
-                'page' => 1,
-                'per_page' => 10,
-                'total_pages' => 0,
-                'dev_notice' => 'No user_id found. Pass ?user_id=1 to test',
-            );
+            return new WP_Error('not_authenticated', __('User not authenticated', 'sakwood'), array('status' => 401));
         }
 
         // Get pagination parameters
@@ -123,8 +85,6 @@ class Sakwood_Customer_Orders_API_Dev {
                 'page' => $page,
                 'per_page' => $per_page,
                 'total_pages' => 0,
-                'dev_mode' => true,
-                'user_id' => $user_id,
             );
         }
 
@@ -146,8 +106,6 @@ class Sakwood_Customer_Orders_API_Dev {
             'page' => $page,
             'per_page' => $per_page,
             'total_pages' => ceil($total / $per_page),
-            'dev_mode' => true,
-            'user_id' => $user_id,
         );
     }
 
@@ -156,36 +114,22 @@ class Sakwood_Customer_Orders_API_Dev {
      */
     public function get_order_details($request) {
         $user_id = get_current_user_id();
-
-        // DEV MODE: Allow passing user_id as parameter
-        if (!$user_id) {
-            $dev_user_id = $request->get_param('user_id');
-            if ($dev_user_id) {
-                $user_id = intval($dev_user_id);
-            }
-        }
-
         $order_id = intval($request['order_id']);
 
         if (!$user_id) {
-            return new WP_Error('not_authenticated', 'User not authenticated (DEV MODE: pass ?user_id=X)', array('status' => 401));
+            return new WP_Error('not_authenticated', __('User not authenticated', 'sakwood'), array('status' => 401));
         }
 
         // Get order
         $order = wc_get_order($order_id);
 
         if (!$order) {
-            return new WP_Error('order_not_found', 'Order not found', array('status' => 404));
+            return new WP_Error('order_not_found', __('Order not found', 'sakwood'), array('status' => 404));
         }
 
-        // DEV MODE: Skip ownership check
-        if ($request->get_param('skip_ownership_check')) {
-            // Proceed without checking ownership
-        } else {
-            // Verify order belongs to current user
-            if ($order->get_customer_id() !== $user_id) {
-                return new WP_Error('forbidden', 'You do not have permission to view this order', array('status' => 403));
-            }
+        // Verify order belongs to current user (or admin)
+        if ($order->get_customer_id() !== $user_id && !current_user_can('manage_options')) {
+            return new WP_Error('forbidden', __('You do not have permission to view this order', 'sakwood'), array('status' => 403));
         }
 
         return $this->format_order_details_for_response($order);

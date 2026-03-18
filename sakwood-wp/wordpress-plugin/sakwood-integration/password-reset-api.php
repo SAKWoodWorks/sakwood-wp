@@ -49,6 +49,19 @@ class Sakwood_Password_Reset_API {
             return new WP_Error('invalid_email', 'Please provide a valid email address', array('status' => 400));
         }
 
+        // Rate limiting: 5 requests per hour per IP
+        $ip_address = $this->get_client_ip();
+        $rate_limit_key = 'password_reset_rate_' . md5($ip_address);
+        $request_count = get_transient($rate_limit_key);
+
+        if ($request_count !== false && $request_count >= 5) {
+            return new WP_Error('too_many_requests', 'Too many password reset requests. Please try again later.', array('status' => 429));
+        }
+
+        // Increment counter
+        $new_count = $request_count === false ? 1 : $request_count + 1;
+        set_transient($rate_limit_key, $new_count, HOUR_IN_SECONDS);
+
         // Check if user exists
         $user = get_user_by('email', $email);
 
@@ -156,6 +169,26 @@ class Sakwood_Password_Reset_API {
             'success' => true,
             'message' => 'Password has been reset successfully',
         );
+    }
+
+    /**
+     * Get client IP address
+     */
+    private function get_client_ip() {
+        $ip_keys = array('HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_X_FORWARDED', 'HTTP_X_CLUSTER_CLIENT_IP', 'HTTP_FORWARDED_FOR', 'HTTP_FORWARDED', 'REMOTE_ADDR');
+
+        foreach ($ip_keys as $key) {
+            if (array_key_exists($key, $_SERVER) === true) {
+                foreach (explode(',', $_SERVER[$key]) as $ip) {
+                    $ip = trim($ip);
+                    if (filter_var($ip, FILTER_VALIDATE_IP) !== false) {
+                        return $ip;
+                    }
+                }
+            }
+        }
+
+        return '0.0.0.0';
     }
 }
 

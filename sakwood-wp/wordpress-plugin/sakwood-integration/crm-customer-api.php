@@ -27,7 +27,9 @@ class Sakwood_CRM_Customer_API {
         register_rest_route('sakwood/v1', '/customer/crm/profile', array(
             'methods' => 'GET',
             'callback' => array($this, 'get_customer_profile'),
-            'permission_callback' => '__return_true',
+            'permission_callback' => function() {
+                return is_user_logged_in() && current_user_can('read');
+            },
             'args' => array(
                 'user_id' => array(
                     'required' => false,
@@ -40,7 +42,9 @@ class Sakwood_CRM_Customer_API {
         register_rest_route('sakwood/v1', '/customer/crm/stats', array(
             'methods' => 'GET',
             'callback' => array($this, 'get_customer_stats'),
-            'permission_callback' => '__return_true',
+            'permission_callback' => function() {
+                return is_user_logged_in() && current_user_can('read');
+            },
             'args' => array(
                 'user_id' => array(
                     'required' => false,
@@ -53,7 +57,9 @@ class Sakwood_CRM_Customer_API {
         register_rest_route('sakwood/v1', '/customer/crm/profile', array(
             'methods' => 'POST',
             'callback' => array($this, 'update_customer_profile'),
-            'permission_callback' => '__return_true',
+            'permission_callback' => function() {
+                return is_user_logged_in() && current_user_can('read');
+            },
             'args' => array(
                 'user_id' => array(
                     'required' => false,
@@ -70,6 +76,16 @@ class Sakwood_CRM_Customer_API {
         global $wpdb;
 
         $user_id = isset($request['user_id']) ? intval($request['user_id']) : get_current_user_id();
+        $current_user_id = get_current_user_id();
+
+        if (!$current_user_id) {
+            return new WP_Error('not_authenticated', __('User not authenticated', 'sakwood'), array('status' => 401));
+        }
+
+        // Verify user owns the data or is admin
+        if ($user_id !== $current_user_id && !current_user_can('manage_options')) {
+            return new WP_Error('forbidden', __('You do not have permission to view this profile', 'sakwood'), array('status' => 403));
+        }
 
         if (!$user_id) {
             return new WP_Error('not_authenticated', __('User not authenticated', 'sakwood'), array('status' => 401));
@@ -152,6 +168,16 @@ class Sakwood_CRM_Customer_API {
         global $wpdb;
 
         $user_id = isset($request['user_id']) ? intval($request['user_id']) : get_current_user_id();
+        $current_user_id = get_current_user_id();
+
+        if (!$current_user_id) {
+            return new WP_Error('not_authenticated', __('User not authenticated', 'sakwood'), array('status' => 401));
+        }
+
+        // Verify user owns the data or is admin
+        if ($user_id !== $current_user_id && !current_user_can('manage_options')) {
+            return new WP_Error('forbidden', __('You do not have permission to view these statistics', 'sakwood'), array('status' => 403));
+        }
 
         if (!$user_id) {
             return new WP_Error('not_authenticated', __('User not authenticated', 'sakwood'), array('status' => 401));
@@ -221,6 +247,16 @@ class Sakwood_CRM_Customer_API {
         global $wpdb;
 
         $user_id = isset($request['user_id']) ? intval($request['user_id']) : get_current_user_id();
+        $current_user_id = get_current_user_id();
+
+        if (!$current_user_id) {
+            return new WP_Error('not_authenticated', __('User not authenticated', 'sakwood'), array('status' => 401));
+        }
+
+        // Verify user owns the data or is admin
+        if ($user_id !== $current_user_id && !current_user_can('manage_options')) {
+            return new WP_Error('forbidden', __('You do not have permission to update this profile', 'sakwood'), array('status' => 403));
+        }
 
         if (!$user_id) {
             return new WP_Error('not_authenticated', __('User not authenticated', 'sakwood'), array('status' => 401));

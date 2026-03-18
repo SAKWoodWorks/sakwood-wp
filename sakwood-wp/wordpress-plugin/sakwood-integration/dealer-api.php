@@ -32,11 +32,11 @@ class Sakwood_Dealer_API {
             'permission_callback' => array($this, 'check_wholesale_permission'),
         ));
 
-        // Check application status (public)
+        // Check application status (requires login)
         register_rest_route('sakwood/v1', '/dealer/status/(?P<application_id>[a-zA-Z0-9-]+)', array(
             'methods' => 'GET',
             'callback' => array($this, 'get_application_status'),
-            'permission_callback' => '__return_true',
+            'permission_callback' => 'is_user_logged_in',
         ));
 
         // Get current user's dealer info
@@ -111,11 +111,13 @@ class Sakwood_Dealer_API {
             'permission_callback' => array($this, 'check_admin_permission'),
         ));
 
-        // Get all dealer tiers (admin/public)
+        // Get all dealer tiers (wholesale customers only)
         register_rest_route('sakwood/v1', '/dealer/tiers', array(
             'methods' => 'GET',
             'callback' => array($this, 'get_dealer_tiers'),
-            'permission_callback' => '__return_true',
+            'permission_callback' => function() {
+                return is_user_logged_in() && current_user_can('read');
+            },
         ));
 
         // Get all active dealer locations (public - for map)
