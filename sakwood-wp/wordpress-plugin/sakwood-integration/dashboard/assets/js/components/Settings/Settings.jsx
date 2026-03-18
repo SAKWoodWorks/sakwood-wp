@@ -52,7 +52,7 @@ function Settings() {
                     <div className="setting-card">
                         <h3>Chat Platforms</h3>
                         <p>Configure LINE, Telegram, and Messenger chat buttons.</p>
-                        <a href="/wp-admin/admin.php?page=sakwood-chat" className="btn-settings-link" target="_blank" rel="noopener noreferrer">
+                        <a href="/wp-admin/admin.php?page=sakwood-chat-settings" className="btn-settings-link" target="_blank" rel="noopener noreferrer">
                             Configure Chat
                         </a>
                     </div>

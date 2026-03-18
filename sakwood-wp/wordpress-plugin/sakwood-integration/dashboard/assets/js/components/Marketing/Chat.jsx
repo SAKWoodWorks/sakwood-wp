@@ -15,32 +15,32 @@ function Chat() {
                     <div className="setting-card">
                         <h3>LINE Official Account</h3>
                         <p>Configure LINE OA messaging and rich menus.</p>
-                        <a href="/wp-admin/admin.php?page=sakwood-chat&platform=line" className="btn-settings-link" target="_blank" rel="noopener noreferrer">
-                            Configure LINE
+                        <a href="/wp-admin/admin.php?page=sakwood-chat-settings" className="btn-settings-link" target="_blank" rel="noopener noreferrer">
+                            Configure Chat Settings
                         </a>
                     </div>
 
                     <div className="setting-card">
                         <h3>Telegram Bot</h3>
                         <p>Set up Telegram bot for instant messaging.</p>
-                        <a href="/wp-admin/admin.php?page=sakwood-chat&platform=telegram" className="btn-settings-link" target="_blank" rel="noopener noreferrer">
-                            Configure Telegram
+                        <a href="/wp-admin/admin.php?page=sakwood-chat-settings" className="btn-settings-link" target="_blank" rel="noopener noreferrer">
+                            Configure Chat Settings
                         </a>
                     </div>
 
                     <div className="setting-card">
                         <h3>Facebook Messenger</h3>
                         <p>Connect Facebook Messenger for customer chat.</p>
-                        <a href="/wp-admin/admin.php?page=sakwood-chat&platform=messenger" className="btn-settings-link" target="_blank" rel="noopener noreferrer">
-                            Configure Messenger
+                        <a href="/wp-admin/admin.php?page=sakwood-chat-settings" className="btn-settings-link" target="_blank" rel="noopener noreferrer">
+                            Configure Chat Settings
                         </a>
                     </div>
 
                     <div className="setting-card">
                         <h3>Phone/WhatsApp</h3>
                         <p>Display phone number and WhatsApp button.</p>
-                        <a href="/wp-admin/admin.php?page=sakwood-chat&platform=whatsapp" className="btn-settings-link" target="_blank" rel="noopener noreferrer">
-                            Configure Phone
+                        <a href="/wp-admin/admin.php?page=sakwood-chat-settings" className="btn-settings-link" target="_blank" rel="noopener noreferrer">
+                            Configure Chat Settings
                         </a>
                     </div>
                 </div>
