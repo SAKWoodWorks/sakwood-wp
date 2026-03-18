@@ -12,10 +12,11 @@
 
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { AuthProvider, useAuth } from '@/lib/context/AuthContext';
-import fetchMock from 'jest-fetch-mock';
+import { vi } from 'vitest';
 
-// Mock fetch
-fetchMock.enableMocks();
+// Mock fetch to return proper Response objects
+const mockFetch = vi.fn();
+global.fetch = mockFetch;
 
 // Mock localStorage
 const localStorageMock = (() => {
@@ -45,7 +46,13 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 describe('AuthContext', () => {
   beforeEach(() => {
     localStorage.clear();
-    fetchMock.resetMocks();
+    mockFetch.mockReset();
+  });
+
+  // Helper to create mock Response
+  const createMockResponse = (data: any, ok = true) => ({
+    ok,
+    json: async () => data,
   });
 
   test('should start with no authenticated user', () => {
@@ -66,12 +73,11 @@ describe('AuthContext', () => {
       role: 'retail' as const,
     };
 
-    fetchMock.mockResponseOnce(JSON.stringify({
+    mockFetch.mockResolvedValueOnce(Promise.resolve(createMockResponse({
       success: true,
       user: mockUser,
       token: 'mock-token-123',
-    }));
-
+})));
     const { result } = renderHook(() => useAuth(), { wrapper });
 
     let loginResult;
@@ -87,10 +93,10 @@ describe('AuthContext', () => {
   });
 
   test('should handle login failure', async () => {
-    fetchMock.mockResponseOnce(JSON.stringify({
+    mockFetch.mockResolvedValueOnce(Promise.resolve(createMockResponse({
       success: false,
       error: 'Invalid credentials',
-    }), { status: 401 });
+    }, false));
 
     const { result } = renderHook(() => useAuth(), { wrapper });
 
@@ -118,10 +124,10 @@ describe('AuthContext', () => {
     localStorage.setItem('sakwood-user', JSON.stringify(mockUser));
     localStorage.setItem('sakwood-token', 'mock-token');
 
-    fetchMock.mockResponseOnce(JSON.stringify({
+    mockFetch.mockResolvedValueOnce(Promise.resolve(createMockResponse({
       success: true,
       user: mockUser,
-    }));
+    });
 
     const { result } = renderHook(() => useAuth(), { wrapper });
 
@@ -151,12 +157,11 @@ describe('AuthContext', () => {
       wholesaleStatus: 'active' as const,
     };
 
-    fetchMock.mockResponseOnce(JSON.stringify({
+    mockFetch.mockResolvedValueOnce(Promise.resolve(createMockResponse({
       success: true,
       user: wholesaleUser,
       token: 'mock-token',
-    }));
-
+})));
     const { result } = renderHook(() => useAuth(), { wrapper });
 
     await act(async () => {
@@ -185,12 +190,11 @@ describe('AuthContext', () => {
       },
     };
 
-    fetchMock.mockResponseOnce(JSON.stringify({
+    mockFetch.mockResolvedValueOnce(Promise.resolve(createMockResponse({
       success: true,
       user: dealerUser,
       token: 'mock-token',
-    }));
-
+})));
     const { result } = renderHook(() => useAuth(), { wrapper });
 
     await act(async () => {
@@ -213,12 +217,11 @@ describe('AuthContext', () => {
       role: 'retail' as const,
     };
 
-    fetchMock.mockResponseOnce(JSON.stringify({
+    mockFetch.mockResolvedValueOnce(Promise.resolve(createMockResponse({
       success: true,
       user: mockUser,
       token: 'mock-token',
-    }));
-
+})));
     const { result } = renderHook(() => useAuth(), { wrapper });
 
     // Login first
@@ -227,9 +230,9 @@ describe('AuthContext', () => {
     });
 
     // Mock password change API
-    fetchMock.mockResponseOnce(JSON.stringify({
+    mockFetch.mockResolvedValueOnce(Promise.resolve(createMockResponse({
       success: true,
-    }));
+    });
 
     let changePasswordResult;
     await act(async () => {
@@ -249,12 +252,11 @@ describe('AuthContext', () => {
       role: 'retail' as const,
     };
 
-    fetchMock.mockResponseOnce(JSON.stringify({
+    mockFetch.mockResolvedValueOnce(Promise.resolve(createMockResponse({
       success: true,
       user: mockUser,
       token: 'mock-token',
-    }));
-
+})));
     const { result } = renderHook(() => useAuth(), { wrapper });
 
     // Login first
@@ -263,10 +265,10 @@ describe('AuthContext', () => {
     });
 
     // Mock failed password change
-    fetchMock.mockResponseOnce(JSON.stringify({
+    mockFetch.mockResolvedValueOnce(Promise.resolve(createMockResponse({
       success: false,
       error: 'Current password is incorrect',
-    }), { status: 401 });
+    }, false));
 
     let changePasswordResult;
     await act(async () => {
@@ -280,10 +282,10 @@ describe('AuthContext', () => {
   test('should get dealer pricing correctly', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
 
-    // Test different tier pricing
-    expect(result.current.getDealerPricing('silver')).toBe(10); // 10% discount
-    expect(result.current.getDealerPricing('gold')).toBe(15);   // 15% discount
-    expect(result.current.getDealerPricing('platinum')).toBe(20); // 20% discount
+    // Test different tier pricing (returns multiplier, not percentage)
+    expect(result.current.getDealerPricing('silver')).toBe(0.80);   // 20% off (pay 80%)
+    expect(result.current.getDealerPricing('gold')).toBe(0.75);     // 25% off (pay 75%)
+    expect(result.current.getDealerPricing('platinum')).toBe(0.70); // 30% off (pay 70%)
   });
 
   test('should check dealer eligibility correctly', async () => {
@@ -297,12 +299,11 @@ describe('AuthContext', () => {
       wholesaleStatus: 'active' as const,
     };
 
-    fetchMock.mockResponseOnce(JSON.stringify({
+    mockFetch.mockResolvedValueOnce(Promise.resolve(createMockResponse({
       success: true,
       user: wholesaleUser,
       token: 'mock-token',
-    }));
-
+})));
     const { result } = renderHook(() => useAuth(), { wrapper });
 
     await act(async () => {

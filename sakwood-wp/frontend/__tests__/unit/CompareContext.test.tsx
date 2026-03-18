@@ -19,6 +19,7 @@ global.localStorage = localStorageMock;
 describe('CompareContext', () => {
   beforeEach(() => {
     localStorageMock.getItem.mockClear();
+    localStorageMock.getItem.mockReturnValue(null);
     localStorageMock.setItem.mockClear();
     localStorageMock.clear.mockClear();
   });
@@ -50,9 +51,9 @@ describe('CompareContext', () => {
 
       const { result } = renderHook(() => useCompare(), { wrapper });
 
-      // Wait for useEffect to run
+      // Wait for useEffect to run and verify items were loaded
       act(() => {
-        expect(result.current.compareItems).toEqual([]);
+        expect(result.current.compareItems).toEqual(savedItems);
       });
     });
   });
@@ -107,8 +108,11 @@ describe('CompareContext', () => {
 
       act(() => {
         result.current.addToCompare(mockProduct);
-        expect(result.current.compareItems).toHaveLength(1);
+      });
 
+      expect(result.current.compareItems).toHaveLength(1);
+
+      act(() => {
         result.current.removeFromCompare(mockProduct.id);
       });
 
@@ -132,8 +136,11 @@ describe('CompareContext', () => {
 
       act(() => {
         result.current.addToCompare(mockProduct);
-        expect(result.current.compareItems).toHaveLength(1);
+      });
 
+      expect(result.current.compareItems).toHaveLength(1);
+
+      act(() => {
         result.current.clearCompare();
       });
 
