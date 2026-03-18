@@ -96,7 +96,7 @@ describe('AuthContext', () => {
     mockFetch.mockResolvedValueOnce(Promise.resolve(createMockResponse({
       success: false,
       error: 'Invalid credentials',
-    }, false));
+    }, false)));
 
     const { result } = renderHook(() => useAuth(), { wrapper });
 
@@ -268,7 +268,7 @@ describe('AuthContext', () => {
     mockFetch.mockResolvedValueOnce(Promise.resolve(createMockResponse({
       success: false,
       error: 'Current password is incorrect',
-    }, false));
+    }, false)));
 
     let changePasswordResult;
     await act(async () => {
