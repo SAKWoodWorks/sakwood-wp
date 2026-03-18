@@ -60,7 +60,7 @@ function Settings() {
                     <div className="setting-card">
                         <h3>Promotional Popups</h3>
                         <p>Manage promotional popup messages for visitors.</p>
-                        <a href="/wp-admin/admin.php?page=sakwood-popups" className="btn-settings-link" target="_blank" rel="noopener noreferrer">
+                        <a href="/wp-admin/admin.php?page=sakwood-popup-settings" className="btn-settings-link" target="_blank" rel="noopener noreferrer">
                             Manage Popups
                         </a>
                     </div>
@@ -68,16 +68,8 @@ function Settings() {
                     <div className="setting-card">
                         <h3>Hero Slider</h3>
                         <p>Configure homepage hero slides and animations.</p>
-                        <a href="/wp-admin/admin.php?page=sakwood-slider" className="btn-settings-link" target="_blank" rel="noopener noreferrer">
-                            Configure Slider
-                        </a>
-                    </div>
-
-                    <div className="setting-card">
-                        <h3>API Configuration</h3>
-                        <p>REST API and GraphQL endpoint settings.</p>
-                        <a href="/wp-admin/admin.php?page=sakwood-api" className="btn-settings-link" target="_blank" rel="noopener noreferrer">
-                            API Settings
+                        <a href="/wp-admin/edit.php?post_type=hero_slide" className="btn-settings-link" target="_blank" rel="noopener noreferrer">
+                            Manage Slides
                         </a>
                     </div>
                 </div>

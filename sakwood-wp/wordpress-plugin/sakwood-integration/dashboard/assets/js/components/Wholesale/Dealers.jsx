@@ -15,7 +15,7 @@ function Dealers() {
                     <div className="setting-card">
                         <h3>All Dealers</h3>
                         <p>View and manage all dealer accounts.</p>
-                        <a href="/wp-admin/admin.php?page=sakwood-dealer-list" className="btn-settings-link" target="_blank" rel="noopener noreferrer">
+                        <a href="/wp-admin/admin.php?page=sakwood-wholesale" className="btn-settings-link" target="_blank" rel="noopener noreferrer">
                             View Dealers
                         </a>
                     </div>
@@ -23,7 +23,7 @@ function Dealers() {
                     <div className="setting-card">
                         <h3>Add New Dealer</h3>
                         <p>Register a new dealer or distributor.</p>
-                        <a href="/wp-admin/admin.php?page=sakwood-dealer-list&action=add" className="btn-settings-link" target="_blank" rel="noopener noreferrer">
+                        <a href="/wp-admin/admin.php?page=sakwood-wholesale&action=add" className="btn-settings-link" target="_blank" rel="noopener noreferrer">
                             Add Dealer
                         </a>
                     </div>
@@ -31,7 +31,7 @@ function Dealers() {
                     <div className="setting-card">
                         <h3>Dealer Applications</h3>
                         <p>Review pending dealer applications.</p>
-                        <a href="/wp-admin/admin.php?page=sakwood-dealer-applications" className="btn-settings-link" target="_blank" rel="noopener noreferrer">
+                        <a href="/wp-admin/admin.php?page=sakwood-wholesale-pending" className="btn-settings-link" target="_blank" rel="noopener noreferrer">
                             Applications
                         </a>
                     </div>
@@ -39,7 +39,7 @@ function Dealers() {
                     <div className="setting-card">
                         <h3>Pending Approvals</h3>
                         <p>View dealers awaiting approval.</p>
-                        <a href="/wp-admin/admin.php?page=sakwood-dealer-list&filter=pending" className="btn-settings-link" target="_blank" rel="noopener noreferrer">
+                        <a href="/wp-admin/admin.php?page=sakwood-wholesale&filter=pending" className="btn-settings-link" target="_blank" rel="noopener noreferrer">
                             Pending
                         </a>
                     </div>

@@ -84,8 +84,8 @@ function HeroSlider() {
                     <div className="setting-card">
                         <h3>Global Configuration</h3>
                         <p>Configure slider behavior and timing.</p>
-                        <a href="/wp-admin/admin.php?page=sakwood-slider" className="btn-settings-link" target="_blank" rel="noopener noreferrer">
-                            Slider Settings
+                        <a href="/wp-admin/edit.php?post_type=hero_slide" className="btn-settings-link" target="_blank" rel="noopener noreferrer">
+                            Manage Slides
                         </a>
                     </div>
                 </div>

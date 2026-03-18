@@ -2,7 +2,7 @@ import React from 'react';
 
 function Popups() {
     return (
-        <div className="sakwood-popups-page">
+        <div className="sakwood-popup-settings-page">
             <h1>Promotional Popups</h1>
 
             <div className="settings-section">
@@ -15,7 +15,7 @@ function Popups() {
                     <div className="setting-card">
                         <h3>All Popups</h3>
                         <p>View and manage all promotional popups.</p>
-                        <a href="/wp-admin/admin.php?page=sakwood-popups" className="btn-settings-link" target="_blank" rel="noopener noreferrer">
+                        <a href="/wp-admin/admin.php?page=sakwood-popup-settings" className="btn-settings-link" target="_blank" rel="noopener noreferrer">
                             Manage Popups
                         </a>
                     </div>
@@ -23,7 +23,7 @@ function Popups() {
                     <div className="setting-card">
                         <h3>Add New Popup</h3>
                         <p>Create a new promotional popup.</p>
-                        <a href="/wp-admin/admin.php?page=sakwood-popups&action=add" className="btn-settings-link" target="_blank" rel="noopener noreferrer">
+                        <a href="/wp-admin/admin.php?page=sakwood-popup-settings&action=add" className="btn-settings-link" target="_blank" rel="noopener noreferrer">
                             Add Popup
                         </a>
                     </div>
@@ -31,7 +31,7 @@ function Popups() {
                     <div className="setting-card">
                         <h3>Active Popups</h3>
                         <p>View currently active popups on site.</p>
-                        <a href="/wp-admin/admin.php?page=sakwood-popups&filter=active" className="btn-settings-link" target="_blank" rel="noopener noreferrer">
+                        <a href="/wp-admin/admin.php?page=sakwood-popup-settings&filter=active" className="btn-settings-link" target="_blank" rel="noopener noreferrer">
                             Active Popups
                         </a>
                     </div>
@@ -39,7 +39,7 @@ function Popups() {
                     <div className="setting-card">
                         <h3>Popup Analytics</h3>
                         <p>View popup performance metrics.</p>
-                        <a href="/wp-admin/admin.php?page=sakwood-popups&action=analytics" className="btn-settings-link" target="_blank" rel="noopener noreferrer">
+                        <a href="/wp-admin/admin.php?page=sakwood-popup-settings&action=analytics" className="btn-settings-link" target="_blank" rel="noopener noreferrer">
                             View Analytics
                         </a>
                     </div>
