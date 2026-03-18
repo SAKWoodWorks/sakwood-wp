@@ -17,6 +17,9 @@ COPY --from=build /app/public ./public
 COPY --from=build /app/.next/standalone ./
 COPY --from=build /app/.next/static ./.next/static
 
+# Explicitly copy API routes (standalone might miss them)
+COPY --from=build /app/.next/server/app/api ./app/api
+
 # Set the hostname
 ENV HOSTNAME="0.0.0.0"
 
