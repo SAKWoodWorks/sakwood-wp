@@ -1,0 +1,488 @@
+/**
+ * Customer Segmentation Admin Styles
+ * 
+ * @package SakwoodIntegration
+ * @since 1.1.0
+ */
+
+/* General Layout */
+.sakwood-segments-page,
+.sakwood-segment-form-page,
+.sakwood-members-page,
+.sakwood-activity-page,
+.sakwood-analytics-page {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Stats Grid */
+.sakwood-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.sakwood-stat-card {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sakwood-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.stat-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.stat-value {
+    font-size: 28px;
+    font-weight: 600;
+    color: #1d2327;
+    line-height: 1.2;
+}
+
+.stat-label {
+    color: #646970;
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+/* Tables */
+.sakwood-table-container {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 20px;
+}
+
+.sakwood-table-container table {
+    margin: 0;
+}
+
+.sakwood-table-container thead th {
+    background: #f6f7f7;
+    font-weight: 600;
+    padding: 12px;
+}
+
+.sakwood-table-container tbody td {
+    padding: 12px;
+    vertical-align: middle;
+}
+
+/* Segment Color Dot */
+.segment-color-dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: middle;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+/* Segment Type Badge */
+.segment-type-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    background: #f0f0f1;
+}
+
+.segment-type-badge.dynamic {
+    background: #e0e7ff;
+    color: #4338ca;
+}
+
+.segment-type-badge.manual {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+/* Status Badge */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.status-badge.active {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-badge.inactive {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* Action Badge */
+.action-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* Actions Column */
+.actions {
+    white-space: nowrap;
+}
+
+.actions .button {
+    margin: 2px;
+}
+
+/* Form Styles */
+.sakwood-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.sakwood-form-main {
+    min-width: 0;
+}
+
+.sakwood-form-sidebar {
+    min-width: 0;
+}
+
+.postbox {
+    border-radius: 8px;
+    border: 1px solid #c3c4c7;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.postbox .hndle {
+    background: #f6f7f7;
+    border-bottom: 1px solid #c3c4c7;
+    padding: 12px 15px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.postbox .inside {
+    padding: 15px;
+}
+
+.form-table th {
+    padding: 20px 10px 20px 0;
+    width: 200px;
+}
+
+.form-table td {
+    padding: 15px 10px;
+}
+
+.form-table .description {
+    margin-top: 8px;
+    color: #646970;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.required {
+    color: #d63638;
+    font-weight: 600;
+}
+
+/* Rules Editor */
+.rule-group {
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 15px;
+    background: #f6f7f7;
+}
+
+.rule-group-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.rule-group-header strong {
+    flex: 1;
+    min-width: 120px;
+}
+
+.match-type {
+    min-width: 150px;
+}
+
+.rule-group-rules {
+    margin-bottom: 10px;
+}
+
+.rule-row {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 2fr auto;
+    gap: 10px;
+    margin-bottom: 10px;
+    align-items: center;
+}
+
+.rule-type,
+.rule-operator,
+.rule-value {
+    width: 100%;
+    min-width: 0;
+}
+
+.rule-preview {
+    background: #f0f0f1;
+    padding: 15px;
+    border-radius: 4px;
+    margin-top: 20px;
+}
+
+.rule-preview h3 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+#rule-description {
+    margin: 0;
+    color: #646970;
+    font-size: 14px;
+}
+
+/* Quick Start Guide */
+.sakwood-quick-start {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 8px;
+    padding: 30px;
+    margin-top: 30px;
+}
+
+.sakwood-quick-start h2 {
+    margin: 0 0 25px 0;
+    font-size: 18px;
+}
+
+.sakwood-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+}
+
+.step {
+    display: flex;
+    gap: 15px;
+}
+
+.step-number {
+    width: 40px;
+    height: 40px;
+    background: #3B82F6;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.step-content h3 {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+}
+
+.step-content p {
+    margin: 0;
+    color: #646970;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Analytics Page */
+.sakwood-chart-container {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.sakwood-chart-container h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+.sakwood-bar-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.bar-row {
+    display: grid;
+    grid-template-columns: 250px 1fr 100px;
+    gap: 15px;
+    align-items: center;
+}
+
+.bar-label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.bar-label small {
+    color: #646970;
+    font-size: 13px;
+}
+
+.bar-container {
+    background: #f0f0f1;
+    border-radius: 4px;
+    height: 32px;
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 10px;
+    transition: width 0.3s ease;
+    min-width: 50px;
+}
+
+.bar-value {
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.bar-percentage {
+    text-align: right;
+}
+
+/* Dashboard Widget */
+.sakwood-dashboard-widget ul li {
+    transition: background 0.2s ease;
+}
+
+.sakwood-dashboard-widget ul li:hover {
+    background: #f6f7f7;
+    border-radius: 4px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .sakwood-form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .sakwood-form-sidebar {
+        order: -1;
+    }
+}
+
+@media (max-width: 782px) {
+    .rule-row {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    
+    .bar-row {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .bar-container {
+        height: 24px;
+    }
+    
+    .sakwood-stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Loading States */
+.sakwood-loading {
+    opacity: 0.6;
+    pointer-events: none;
+    position: relative;
+}
+
+.sakwood-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #3B82F6;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Empty States */
+.text-center {
+    text-align: center;
+    padding: 40px 20px;
+    color: #646970;
+}
+
+/* Utility Classes */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}

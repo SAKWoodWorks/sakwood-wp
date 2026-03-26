@@ -152,6 +152,9 @@ class Sakwood_Integration {
         require_once SAKWOOD_PLUGIN_DIR . 'user-management.php';
         require_once SAKWOOD_PLUGIN_DIR . 'password-management.php';
 
+        // Load Customer Segmentation Module
+        require_once SAKWOOD_PLUGIN_DIR . 'customer-segmentation.php';
+
         // Load Admin Access Blocking (Security - prevents customers from accessing wp-admin)
         require_once SAKWOOD_PLUGIN_DIR . 'block-admin-access.php';
 
